@@ -1,0 +1,43 @@
+server {
+  listen      80;
+  listen   [::]:80;
+  server_name {{ domain }};
+
+  location /.well-known/acme-challenge {
+    root {{ srv_dir }}/.letsencrypt;
+  }
+
+{% if cert_exists %}
+  location / {
+    return 301 https://$host$request_uri;
+  }
+}
+
+server {
+  listen      443 ssl http2;
+  listen [::]:443 ssl http2;
+  server_name {{ domain }};
+
+  ssl_certificate         /etc/letsencrypt/live/{{ domain }}/fullchain.pem;
+  ssl_certificate_key     /etc/letsencrypt/live/{{ domain }}/privkey.pem;
+  ssl_trusted_certificate /etc/letsencrypt/live/{{ domain }}/fullchain.pem;
+  ssl_session_cache shared:SSL:50m;
+  ssl_session_timeout 1h;
+  ssl_stapling on;
+  ssl_stapling_verify on;
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_prefer_server_ciphers on;
+  ssl_dhparam /etc/nginx/dhparams.pem;
+
+  access_log /var/log/nginx/{{ domain | replace('.', '-') }}.log;
+  error_log /var/log/nginx/{{ domain | replace('.', '-') }}-error.log error;
+
+  location / {
+    alias {{ srv_dir }}/;
+  }
+{% else %}
+  location / {
+    alias {{ srv_dir }}/;
+  }
+{% endif %}
+}

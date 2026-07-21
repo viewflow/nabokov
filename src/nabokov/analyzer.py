@@ -63,16 +63,38 @@ def _register_components() -> None:
 
 
 MODEL = "en_core_web_sm"
+MODEL_URL = (
+    "https://github.com/explosion/spacy-models/releases/download/"
+    "en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl"
+)
 
 
 def download_model() -> None:
-    """Fetch the spaCy language model into the current environment."""
+    """Fetch the spaCy language model into the current environment.
+
+    Installs straight into ``sys.executable`` rather than delegating to
+    ``spacy.cli.download``: that helper falls back to a bare ``uv pip
+    install`` when no ``pip`` binary is on PATH (the case inside a `uvx`
+    tool environment, which ships without pip), and without ``--python``
+    that installs into whichever venv `uv` happens to discover from the
+    cwd — not the environment `nabokov` is actually running in.
+    """
+    import importlib.util
+    import shutil
+    import subprocess
     import sys
 
-    from spacy.cli.download import download
-
     print(f"nabokov: downloading language model {MODEL} (one-time)…", file=sys.stderr)
-    download(MODEL)
+    if importlib.util.find_spec("pip") is not None:
+        cmd = [sys.executable, "-m", "pip", "install", "--no-input", MODEL_URL]
+    elif shutil.which("uv"):
+        cmd = ["uv", "pip", "install", "--python", sys.executable, MODEL_URL]
+    else:
+        raise RuntimeError(
+            "No package installer found. spaCy models require either pip or uv "
+            "to be available to download and install."
+        )
+    subprocess.run(cmd, check=True)  # noqa: S603 - cmd built from constants above
 
 
 @lru_cache(maxsize=1)
