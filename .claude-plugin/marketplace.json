@@ -1,0 +1,22 @@
+{
+  "name": "viewflow",
+  "owner": {
+    "name": "Mikhail Podgurskiy",
+    "email": "mikhail@viewflow.io"
+  },
+  "metadata": {
+    "description": "Viewflow tools for Claude Code: the nabokov prose linter and its editing skill."
+  },
+  "plugins": [
+    {
+      "name": "nabokov",
+      "source": "./",
+      "description": "Prose linter with a de-slop editing skill: readability and AI-tell checks, rewrites that keep your meaning.",
+      "version": "26.7.1",
+      "license": "MIT",
+      "homepage": "https://nabokov.viewflow.io",
+      "repository": "https://github.com/viewflow/nabokov",
+      "keywords": ["prose", "linter", "de-slop", "humanizer", "readability"]
+    }
+  ]
+}

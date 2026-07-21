@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nabokov · a prose linter that de-slops AI text</title>
+<meta name="description" content="A console prose linter: hard sentences, adverbs, passive voice, and the tells of AI slop. Ships with a Claude Code skill to de-slop, unslop, and humanize AI writing without losing your meaning.">
+<meta property="og:title" content="nabokov · a prose linter that de-slops AI text">
+<meta property="og:description" content="Readability checks plus AI-slop detection in a flake8 workflow, with an agent skill to de-slop and humanize AI writing.">
+<style>
+  :root {
+    --paper: #faf8f2;
+    --card: #fffdf7;
+    --ink: #23222a;
+    --muted: #6e6b76;
+    --hairline: #e3ded2;
+    --rule-blue: #c3d5e8;
+    --rule-red: #e2707a;
+    --term-bg: #16151c;
+    --term-fg: #d6d4de;
+    --term-dim: #8a8794;
+    --adv: #2455b8;   --adv-bg: #d8e6ff;
+    --pas: #1e7a54;   --pas-bg: #d9f2e1;
+    --wrd: #a93e9c;   --wrd-bg: #f6dcf2;
+    --adv-t: #7fa7f0; --pas-t: #57c99b; --wrd-t: #d98bd0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Iowan Old Style", Georgia, "Times New Roman", serif;
+    line-height: 1.55;
+    padding: 0 1.25rem;
+  }
+  .col { max-width: 42rem; margin: 0 auto; }
+  code, pre, .mono {
+    font-family: ui-monospace, "SF Mono", Menlo, "Cascadia Code", Consolas, monospace;
+  }
+
+  header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 1.4rem 0 0;
+    font-size: 0.85rem;
+  }
+  header .name { letter-spacing: 0.02em; }
+  header a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--hairline); }
+  header a:hover, header a:focus-visible { color: var(--ink); border-color: var(--ink); }
+  a:focus-visible { outline: 2px solid var(--adv); outline-offset: 3px; }
+
+  .hero { padding: 4.5rem 0 2.5rem; }
+  h1 {
+    font-size: clamp(2.4rem, 6vw, 3.6rem);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+  .sub { color: var(--muted); font-size: 0.95rem; margin-top: 0.9rem; }
+
+  /* — the index card — */
+  .card {
+    position: relative;
+    background:
+      linear-gradient(var(--rule-red), var(--rule-red)) 0 3.05rem / 100% 1px no-repeat,
+      repeating-linear-gradient(transparent, transparent calc(1.75rem - 1px), var(--rule-blue) calc(1.75rem - 1px), var(--rule-blue) 1.75rem),
+      var(--card);
+    background-origin: border-box;
+    border: 1px solid var(--hairline);
+    border-radius: 3px;
+    box-shadow: 0 1px 2px rgba(35, 34, 42, 0.07), 0 12px 28px -18px rgba(35, 34, 42, 0.35);
+    padding: 3.5rem 2rem 1.6rem;
+    margin: 1.5rem 0 0;
+  }
+  .card .tab {
+    position: absolute; top: 0.8rem; left: 2rem;
+    font-size: 0.75rem; color: var(--muted);
+  }
+  .card p {
+    font-size: 1.25rem;
+    line-height: 1.75rem; /* matches the ruling */
+    font-style: italic;
+  }
+  mark {
+    color: inherit;
+    padding: 0 0.15em;
+    border-bottom: 2px solid;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    animation: paint 0.5s both;
+    animation-delay: var(--d, 0.3s);
+  }
+  mark.adv { background: var(--adv-bg); border-color: var(--adv); }
+  mark.pas { background: var(--pas-bg); border-color: var(--pas); }
+  mark.wrd { background: var(--wrd-bg); border-color: var(--wrd); }
+  @keyframes paint {
+    from { background-color: transparent; border-color: transparent; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    mark { animation: none; }
+  }
+
+  /* — terminal — */
+  pre {
+    background: var(--term-bg);
+    color: var(--term-fg);
+    font-size: 0.82rem;
+    line-height: 1.7;
+    padding: 1.1rem 1.3rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 1.1rem 0 0;
+  }
+  pre .p { color: var(--term-dim); }
+  pre .adv { color: var(--adv-t); }
+  pre .pas { color: var(--pas-t); }
+  pre .wrd { color: var(--wrd-t); }
+  pre .ok  { color: #9ad17b; }
+
+  section { padding: 2.6rem 0; border-top: 1px solid var(--hairline); }
+  .hero + section { border-top: 0; }
+  h2 {
+    font-size: 0.95rem; font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    margin-bottom: 1.2rem;
+  }
+  section p + p { margin-top: 0.7rem; }
+  section a { color: inherit; text-underline-offset: 2px; text-decoration-color: #b0ab9d; }
+  section a:hover { text-decoration-color: currentColor; }
+  details { margin-top: 1.3rem; }
+  summary {
+    cursor: pointer;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  summary:hover { color: var(--ink); }
+
+  .toc {
+    display: none;
+    position: fixed;
+    top: 8rem;
+    left: calc(50% - 21rem - 12rem);
+    width: 10rem;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.75rem;
+  }
+  @media (min-width: 70rem) { .toc { display: block; } }
+  .toc a {
+    display: block;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 0.3rem 0 0.3rem 0.9rem;
+    border-left: 1px solid var(--hairline);
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .toc a:hover { color: var(--ink); }
+  .toc a.on { color: var(--ink); border-left-color: var(--ink); }
+
+  .rules { list-style: none; font-size: 0.9rem; }
+  .rules li {
+    display: grid;
+    grid-template-columns: 5.5rem 8.5rem 1fr;
+    gap: 1rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px dashed var(--hairline);
+    align-items: baseline;
+  }
+  .rules li:last-child { border-bottom: 0; }
+  .rules .code { font-size: 0.8rem; }
+  .rules .rname { color: var(--muted); font-size: 0.8rem; }
+  .c201 { color: #b8483e; } .c301 { color: var(--adv); } .c302 { color: var(--pas); }
+  .c303 { color: #8a6d1f; } .c401 { color: var(--wrd); } .c5xx { color: #0e7f8f; }
+  .rules.plain li { grid-template-columns: 10rem 1fr; }
+  .rules + p { margin-top: 1.1rem; }
+  @media (max-width: 34rem) {
+    .rules li { grid-template-columns: 5rem 1fr; }
+    .rules.plain li { grid-template-columns: 1fr; gap: 0.15rem; }
+    .rules .desc { grid-column: 1 / -1; padding-left: 0; }
+  }
+
+  footer {
+    padding: 2.6rem 0 3.5rem;
+    border-top: 1px solid var(--hairline);
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  footer pre { margin-bottom: 1.4rem; }
+  footer a { color: inherit; }
+  footer a:hover { color: var(--ink); }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #17161d;
+      --ink: #dcdae3;
+      --muted: #918e9c;
+      --hairline: #2c2b34;
+      --adv: #274f9e; --pas: #1d6b4b; --wrd: #93378a;
+    }
+    .card { color: #23222a; box-shadow: 0 14px 40px -18px rgba(0, 0, 0, 0.8); border-color: #00000033; }
+    .card mark.adv { border-color: #2455b8; }
+    .card mark.pas { border-color: #1e7a54; }
+    .card mark.wrd { border-color: #a93e9c; }
+    .card .tab { color: #6e6b76; }
+    pre { border: 1px solid var(--hairline); }
+  }
+</style>
+</head>
+<body>
+<nav class="toc" aria-label="Sections">
+  <a href="#top">top</a>
+  <a href="#checks">what it flags</a>
+  <a href="#ai">ai</a>
+  <a href="#try">try it</a>
+  <a href="#skill">the skill</a>
+</nav>
+<div class="col">
+
+<header>
+  <span class="name mono">nabokov</span>
+  <a href="https://github.com/viewflow/nabokov">source on GitHub</a>
+</header>
+
+<div class="hero" id="top">
+  <h1>A linter for English prose.</h1>
+  <p class="sub mono">Hard sentences, adverbs, passive voice: one warning per line.</p>
+
+  <figure class="card" aria-label="An index card with a linted sentence">
+    <figcaption class="tab mono">draft.md</figcaption>
+    <p>The rollout <mark class="pas" style="--d:.3s">was <mark class="adv" style="--d:.9s">quietly</mark> delayed by the team</mark>, <mark class="wrd" style="--d:1.5s">in order to</mark> <mark class="adv" style="--d:2.1s">fully</mark> polish the launch.</p> <!-- nabokov: ignore -->
+  </figure>
+
+  <pre><code>$ nabokov --format=flake8 draft.md <!-- nabokov: ignore -->
+<span class="p">draft.md:1:13:</span> <span class="pas">NB302</span> passive voice: 'was quietly delayed by the team' <!-- nabokov: ignore -->
+<span class="p">draft.md:1:17:</span> <span class="adv">NB301</span> adverb 'quietly' — consider a stronger verb <!-- nabokov: ignore -->
+<span class="p">draft.md:1:46:</span> <span class="wrd">NB401</span> wordy: 'in order to' → to <!-- nabokov: ignore -->
+<span class="p">draft.md:1:58:</span> <span class="adv">NB301</span> adverb 'fully' — consider a stronger verb <!-- nabokov: ignore -->
+
+4 issues in 1 file</code></pre>
+</div>
+
+<section>
+  <p>Code gets review. Prose gets a shrug.</p>
+  <p>nabokov reads your draft and prints each problem as a warning. Every check has a code, so you can select or silence it. Run it on a file, a folder, or piped text.</p>
+  <p>The <a href="https://hemingwayapp.com">Hemingway Editor</a>, a writing app, inspired the rule set. nabokov runs the checks with <a href="https://spacy.io">spaCy</a>, a library that understands English grammar. It knows a verb from a noun, so fewer false alarms.</p>
+</section>
+
+<section id="checks">
+  <h2>what it flags</h2>
+  <ul class="rules">
+    <li><span class="code c201">NB201</span> <span class="rname">hard sentence</span> <span class="desc">Too long and tangled to follow.</span></li>
+    <li><span class="code c301">NB301</span> <span class="rname">adverb</span> <span class="desc">Words ending in -ly that prop up weak verbs.</span></li>
+    <li><span class="code c302">NB302</span> <span class="rname">passive voice</span> <span class="desc">The actor hides behind the verb.</span></li>
+    <li><span class="code c303">NB303</span> <span class="rname">qualifier</span> <span class="desc">Soft words that weaken the point.</span></li>
+    <li><span class="code c401">NB401</span> <span class="rname">wordy phrase</span> <span class="desc">Ten words where three would do.</span></li>
+    <li><span class="code c5xx">NB5xx</span> <span class="rname">AI tells</span> <span class="desc">Signs of machine-written text, off by default.</span></li>
+  </ul>
+</section>
+
+<section id="ai">
+  <h2>--ai</h2>
+  <p>AI text has an accent. The <code>--ai</code> flag hunts for it. Buzzwords, chatbot filler, the "not this, but that" reflex. Plus sentences that all sound the same.</p>
+  <p>The list of signs comes from Wikipedia's <a href="https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing">guide to spotting AI writing</a>.</p>
+</section>
+
+<section id="try">
+  <h2>try it</h2>
+  <pre><code>$ uvx nabokov draft.md</code></pre>
+  <p class="sub mono">One command, no setup: uvx fetches nabokov and the language model on first run.</p>
+  <details>
+    <summary>install it for good</summary>
+    <pre><code>$ uv tool install nabokov <!-- nabokov: ignore -->
+$ nabokov download-model
+$ nabokov draft.md</code></pre>
+    <p class="sub mono">Python 3.12 or newer.</p>
+  </details>
+</section>
+
+<section id="skill">
+  <h2>nabokov-editor, the skill</h2>
+  <p>Static rules see form, not meaning. The repo ships <code>nabokov-editor</code>, a skill that teaches AI agents to edit prose. It replaces the scattered humanizer, unslop, and anti-slop prompts. Your agent runs the linter, fixes the findings, then reads for what rules miss:</p>
+  <ul class="rules plain">
+    <li><span class="rname">empty prose</span> <span class="desc">Grammatical sentences that say nothing.</span></li>
+    <li><span class="rname">no lived detail</span> <span class="desc">Confident prose without one concrete fact.</span></li>
+    <li><span class="rname">false ranges</span> <span class="desc">From X to Y on no real scale.</span></li>
+    <li><span class="rname">synonym cycling</span> <span class="desc">The hero, the protagonist, the main character.</span></li>
+    <li><span class="rname">gap-filling</span> <span class="desc">Stock phrases where the source says nothing.</span></li>
+    <li><span class="rname">hollow closers</span> <span class="desc">The future looks bright.</span></li>
+  </ul>
+  <p>Fixes keep the meaning. Big edits wait for your approval.</p>
+  <pre><code># Claude Code <!-- nabokov: ignore -->
+/plugin marketplace add viewflow/nabokov
+/plugin install nabokov@viewflow
+
+# Cursor, Codex, Gemini CLI, and other agents <!-- nabokov: ignore -->
+$ npx skills add viewflow/nabokov</code></pre>
+  <p class="sub mono">Then ask your agent to de-slop a file.</p>
+</section>
+
+<footer>
+  <p>This page lints itself.</p>
+  <pre><code>$ nabokov --ai index.html
+<span class="ok">0 issues in 1 file</span></code></pre>
+  <p>MIT · an experiment from <a href="https://viewflow.io">viewflow.io</a></p>
+</footer>
+
+</div>
+<script>
+  const links = [...document.querySelectorAll(".toc a")];
+  const sections = links
+    .map(a => document.getElementById(a.hash.slice(1)))
+    .filter(Boolean);
+  function update() {
+    const line = innerHeight * 0.2;
+    let active = sections[0];
+    for (const s of sections) {
+      if (s.getBoundingClientRect().top <= line) active = s;
+    }
+    links.forEach(a => a.classList.toggle("on", a.hash.slice(1) === active.id));
+  }
+  let tick = false;
+  addEventListener("scroll", () => {
+    if (!tick) {
+      tick = true;
+      requestAnimationFrame(() => { update(); tick = false; });
+    }
+  }, { passive: true });
+  addEventListener("resize", update);
+  update();
+</script>
+</body>
+</html>

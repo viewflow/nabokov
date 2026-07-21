@@ -1,0 +1,61 @@
+{
+  "_source": "https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing (retrieved 2026-07-21)",
+  "_note": "Signal lists for the NB5xx 'signs of AI writing' rules. Curated to favor precision; these are tells, not proof.",
+  "puffery": [
+    "delve", "tapestry", "testament", "realm", "landscape", "boast", "showcase",
+    "underscore", "garner", "foster", "cultivate", "leverage", "robust", "vibrant",
+    "meticulous", "pivotal", "profound", "intricate", "nestled", "renowned",
+    "groundbreaking", "seamless", "bustling", "myriad", "plethora", "elevate",
+    "harness", "resonate", "exemplify", "embody", "epitomize", "multifaceted",
+    "embark", "metropolis", "labyrinth", "labyrinthine", "gossamer", "enigma",
+    "metamorphosis", "indelible", "reverberate", "revolutionize", "virtuoso",
+    "symphony", "keen", "pesky", "unleash", "unlock", "navigate",
+    "synergy", "paradigm", "unprecedented", "unparalleled", "transformative",
+    "innovative", "empower", "streamline", "optimize", "supercharge", "turbocharge",
+    "interplay", "breathtaking", "stunning", "must-visit"
+  ],
+  "intensifiers": [
+    "very", "really", "quite", "extremely", "incredibly", "truly", "highly",
+    "actually", "basically", "literally", "simply", "absolutely", "utterly",
+    "totally", "completely", "genuinely", "remarkably", "undeniably", "undoubtedly",
+    "clearly", "obviously"
+  ],
+  "editorializing": [
+    "plays a crucial role", "plays a vital role", "plays a significant role",
+    "plays a key role", "plays a pivotal role", "plays an important role",
+    "rich cultural heritage", "rich history", "rich tapestry", "cultural tapestry",
+    "lasting impact", "enduring legacy", "deeply rooted", "stands as a testament",
+    "a testament to", "in the heart of", "natural beauty", "diverse array",
+    "indelible mark", "continues to thrive", "it's important to note",
+    "it is important to note", "it's worth noting", "it is worth noting",
+    "important to remember", "when it comes to", "in today's world",
+    "in the world of", "the world of", "in today's digital era",
+    "in today's society", "navigating the complexities", "navigating the landscape",
+    "delving into", "embark on a journey", "it's essential to", "it is essential to",
+    "game changer", "game-changer", "hustle and bustle", "align with", "aligns with",
+    "various factors", "a range of considerations", "a wide range of", "serves as",
+    "stands as", "leaves an indelible mark", "marks a pivotal moment",
+    "a leading expert in", "active social media presence", "experts argue",
+    "observers note", "industry reports", "evolving landscape", "key turning point",
+    "represents a shift"
+  ],
+  "filler": [
+    "i hope this helps", "let me know if", "would you like me to", "feel free to",
+    "don't hesitate to", "great question", "excellent question", "good question",
+    "you're absolutely right", "as an ai", "in conclusion", "in summary",
+    "to sum up", "thank you for asking", "great point", "please let me know",
+    "would you like to hear more", "here's why that matters", "here's the thing",
+    "here's the truth", "the takeaway", "let me explain", "hope that helps",
+    "here's the kicker", "and the best part", "the quiet part out loud",
+    "saying the quiet part out loud", "this changes everything", "let that sink in",
+    "the smoking gun", "at its core", "in essence", "generally speaking",
+    "let me walk you through", "full stop", "let's dive in", "let's explore",
+    "let's break this down", "without further ado", "here's what you need to know",
+    "the real question is", "what really matters", "the heart of the matter",
+    "real talk", "let's be honest"
+  ],
+  "transitions": [
+    "moreover", "furthermore", "additionally", "notably", "importantly",
+    "subsequently", "consequently", "firstly"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "readability_targets": {
+    "ACCESSIBLE": {
+      "tooFewWordCount": 8,
+      "hardReadabilityLevel": 8,
+      "veryHardReadabilityLevel": 12
+    },
+    "NORMAL": {
+      "tooFewWordCount": 14,
+      "hardReadabilityLevel": 10,
+      "veryHardReadabilityLevel": 14
+    },
+    "TECHNICAL": {
+      "tooFewWordCount": 14,
+      "hardReadabilityLevel": 14,
+      "veryHardReadabilityLevel": 18
+    }
+  },
+  "default_target": "NORMAL",
+  "ari": {
+    "coef_letters_per_word": 4.71,
+    "coef_words_per_sentence": 0.5,
+    "constant": 21.43,
+    "note": "level=max(round(letters/words*4.71 + words/sentences*0.5 - 21.43),0); letters=count of \\w chars"
+  },
+  "passive_regex": "\\s(is|are|was|were|be|been|being)\\s([a-z]{2,30})\\b(\\sby\\b)?",
+  "passive_participle_rule": "second word ends in 'ed' OR is a key in passive_irregulars",
+  "adverb_rule": "token matches /ly$/ and lowercased token not in adverb_exceptions",
+  "word_token_regex": "\\b[\\w'-]+\\b",
+  "phrase_match_max_words": 4
+}

@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# uv / virtualenv
+.venv/
+
+# caches
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.pyright/
+
+# OS
+.DS_Store
+
+# local calibration corpus (copyrighted essays — never commit)
+.corpus/
