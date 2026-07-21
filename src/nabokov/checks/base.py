@@ -42,7 +42,9 @@ class Rule:
     codes: tuple[str, ...] = ()
     default_on: bool = True
     # WARNING = a confident tell the LLM should normally fix; INFO = an advisory
-    # "hard part" static isn't sure about, left for the LLM to decide.
+    # "hard part" static isn't sure about, left for the LLM to decide. The style
+    # rules (NB301/NB302/NB303) emit WARNING but the analyzer demotes them to INFO
+    # while the document stays inside its per-1000-word budget — see _apply_budgets.
     severity: Severity = Severity.WARNING
 
     def check(self, ctx: CheckContext) -> Iterable[Issue]:

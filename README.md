@@ -51,6 +51,7 @@ nabokov --format=flake8 x.md     # path:line:col: CODE message
 cat notes.txt | nabokov -        # read from stdin
 nabokov docs/                    # walk a directory of .txt / .md / .html files
 nabokov --max-grade 9 x.md       # exit non-zero if the grade goes over 9
+nabokov --target essay draft.md  # judge against the ESSAY reading level
 nabokov --select NB302 x.md      # run one rule
 nabokov --ignore NB301 x.md      # skip a rule
 nabokov --list-rules             # print every code
@@ -83,6 +84,27 @@ Run `nabokov --list-rules` to see them all. The full reference lives in
 - **NB303**: qualifiers and hedges.
 - **NB401**: wordy phrases, with a simpler suggestion.
 - **NB101**: the document grade, reported with `--max-grade`.
+
+## Reading-level targets
+
+One bar does not fit every text. `--target` sets the level nabokov holds a sentence
+to (case-insensitive):
+
+- **accessible** — plain language; sentences count as hard from grade 8, very hard from 12.
+- **normal** — the default; hard from grade 10, very hard from 14.
+- **technical** — docs for expert readers; hard from grade 14, very hard from 18.
+- **essay** — essays, blog posts, opinion pieces. The TECHNICAL thresholds, plus the
+  loosest style budgets for a writer's voice.
+
+```sh
+nabokov --target technical api-guide.md
+nabokov --target essay draft.md
+```
+
+Each target also carries style budgets, counted per 1000 words. Adverbs, passive
+voice, qualifiers, and wordy phrases stay `info` within budget. Over budget, they
+become warnings. To make a target stick, set `target` in your
+config instead of passing the flag each run (see below).
 
 ## Signs of AI writing (opt-in)
 
@@ -128,8 +150,11 @@ nabokov walks up from the current directory to find one. CLI flags win.
 
 ```toml
 [tool.nabokov]
-target = "NORMAL"       # ACCESSIBLE | NORMAL | TECHNICAL
+target = "NORMAL"       # ACCESSIBLE | NORMAL | TECHNICAL | ESSAY
 ignore = ["NB301"]      # e.g. stop flagging adverbs
+
+[tool.nabokov.budgets]  # optional: per-1000-word style budgets (see docs/RULES.md)
+NB301 = 20              # adverbs stay advisory (info) up to this density
 ```
 
 Suppress one line inline:

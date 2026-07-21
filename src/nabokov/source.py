@@ -78,6 +78,10 @@ class SourceFile:
         col = offset - self._line_starts[line_idx] + 1
         return line_idx + 1, col
 
+    def offset(self, line: int, col: int) -> int:
+        """Map a 1-based (line, col) back to a 0-based char offset (linecol inverse)."""
+        return self._line_starts[line - 1] + col - 1
+
     def line_text(self, line: int) -> str:
         """Return the original text of a 1-based line number (no trailing newline)."""
         start = self._line_starts[line - 1]
@@ -167,6 +171,20 @@ def _blank_table_pipes(match: re.Match[str]) -> str:
     return line.replace("|", " ") if line.count("|") >= 2 else line
 
 
+def _blank_list_marker(match: re.Match[str]) -> str:
+    """Blank a list marker, leaving a newline where the bullet sat.
+
+    The extra newline gives the marker's line a blank-line boundary, so the
+    sentence component starts a new sentence at every list item — a tight list
+    (no blank lines between items) is not glued into one mega-sentence. Length
+    is preserved; only whitespace shape changes.
+    """
+    seg = match.group(0)
+    out = re.sub(r"[^\n]", " ", seg)
+    bullet = len(seg) - len(seg.lstrip())
+    return out[:bullet] + "\n" + out[bullet + 1 :]
+
+
 def blank_markdown(text: str) -> str:
     """Return ``text`` with non-prose Markdown markup replaced by equal-length spaces."""
     text = _FRONTMATTER.sub(_blank, text)  # YAML metadata block at the top
@@ -184,7 +202,7 @@ def blank_markdown(text: str) -> str:
     text = _RULE_OR_SEP.sub(_blank, text)
     text = _LINE.sub(_blank_table_pipes, text)
     text = _BLOCKQUOTE.sub(_blank, text)
-    text = _LIST_MARKER.sub(_blank, text)
+    text = _LIST_MARKER.sub(_blank_list_marker, text)
     text = _EMPHASIS.sub(_blank, text)
     return text
 

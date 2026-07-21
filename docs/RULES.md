@@ -18,7 +18,9 @@ Run `nabokov --list-rules` to print this catalog from the tool itself.
 
 Readability uses the Automated Readability Index (ARI):
 `grade = round(letters/words × 4.71 + words/sentences × 0.5 − 21.43)`. Thresholds come
-from the reading-level target (`--target`): NORMAL (default), ACCESSIBLE, or TECHNICAL.
+from the reading-level target (`--target`): NORMAL (default), ACCESSIBLE, TECHNICAL, or
+ESSAY (voice-friendly: tolerates the longer sentences literary prose sustains
+deliberately, and carries the loosest style budgets — see below).
 
 | Code | Name | Color | Flags |
 |------|------|-------|-------|
@@ -26,7 +28,17 @@ from the reading-level target (`--target`): NORMAL (default), ACCESSIBLE, or TEC
 | `NB201` | very-hard-sentence | red | A sentence whose reading level is very high (NORMAL: grade ≥ 14, ≥ 14 words). |
 | `NB202` | hard-sentence | yellow | A sentence whose reading level is high (NORMAL: grade 10–13, ≥ 14 words). |
 
-Sentences shorter than the target's minimum word count are never flagged.
+Sentence boundaries: a blank line always ends a sentence, and in *line-oriented*
+documents (one thought per line — almost every non-blank line ends in terminal
+punctuation) every newline does, so an unpunctuated heading or title never glues
+into the paragraph below it. Hard-wrapped prose is unaffected.
+
+Sentences shorter than the target's minimum word count are never flagged. Both
+sentence findings are warnings — a long sentence in a readable document is rhythm,
+not failure; the hard document-level gate is `NB101` via `--max-grade`. When the
+whole document reads fine for its target, `NB202` drops further to `info`: a
+grade-11 sentence in a grade-8 document is the long half of burstiness, so only the
+extreme `NB201` sentences stay warnings there.
 
 ```
 report.md:12:1: NB201 very hard to read (grade 17)
@@ -38,13 +50,58 @@ report.md:12:1: NB201 very hard to read (grade 17)
 |------|------|-------|-------|---------|
 | `NB301` | adverb | blue | An `-ly` adverb spaCy confirms (POS = ADV), minus the exception list. | "He ran **quickly**." |
 | `NB302` | passive-voice | green | A passive construction, via spaCy dependency parse (`auxpass`), incl. the "by …" agent. | "The report **was written by the team**." |
-| `NB303` | qualifier | blue | A weakening/hedging phrase from the qualifier list. | "**I think** we should wait." |
+| `NB303` | qualifier | blue | A weakening/hedging phrase from the qualifier list. "just" is only flagged in hedge positions ("it's **just** a way to…") — restrictive "just one", the imperative opener "Just tell me…", and temporal "I'd just read" are precision devices and skipped. | "**I think** we should wait." |
 | `NB401` | complex-phrase | magenta | A wordy phrase with a simpler alternative (the message shows the suggestion). | "**in order to**" → "to" |
 
 ```
 report.md:3:8: NB302 passive voice: 'was written by the team'
 report.md:3:40: NB401 wordy: 'utilize' → use
 ```
+
+### Style budgets — severity by density
+
+An adverb, qualifier, passive, or wordy phrase is a style *signal*, not a defect —
+the defect is overuse. `NB301`/`NB302`/`NB303`/`NB401` findings are therefore
+advisory (`info`) while the document stays inside its per-1000-word budget, and
+escalate to `warning` only when the text overuses the pattern. Short texts get a
+flat grace of 2 occurrences.
+
+Default budgets per 1000 words, by target:
+
+| Target | NB301 adverbs | NB302 passive | NB303 qualifiers | NB401 wordy |
+|--------|---------------|---------------|------------------|-------------|
+| ACCESSIBLE | 10 | 5 | 8 | 2 |
+| NORMAL | 15 | 8 | 10 | 3 |
+| TECHNICAL | 10 | 15 | 8 | 3 |
+| ESSAY | 25 | 15 | 15 | 6 |
+
+ESSAY is calibrated against a corpus of Paul Graham essays: strong essayistic prose
+produces no style-layer warnings there. Override any budget in config:
+
+```toml
+[tool.nabokov.budgets]
+NB301 = 20   # per 1000 words
+```
+
+Two more calibration choices keep the layer honest: an `NB301` finding is dropped
+when `NB303`/`NB510` already flags the same words ("probably" is a hedge, not a
+manner adverb — one finding per span), and the `NB301` message only says "consider a
+stronger verb" when the adverb actually modifies a verb; elsewhere it says
+"consider cutting it".
+
+### Quoted material
+
+Quotes are evidence, not the author's prose, so findings that fall entirely inside
+quoted material are dropped. A quoted region is a Markdown blockquote (`>` lines) or
+a quoted span of at least 2 words — straight or curly double quotes, or curly single
+quotes (that pair is apostrophe-safe). A multi-word quoted phrase is a mention,
+dialogue, or citation — "phrases like ‘objective considerations of contemporary
+phenomena’" is exhibiting the phrase, not using it. A single quoted word keeps its
+findings. A hard-sentence finding (`NB201`/`NB202`) whose span is *mostly* quotation
+— an author's short sentence framing a long citation — is demoted to info: the
+grade belongs to the quoted prose, not the author's. (Plain-text files that lost
+their quote markers and italics, e.g. a blog post saved as `.txt`, can't be fully
+protected — keep the markup when you can.)
 
 ## Signs of AI writing (NB5) — opt-in
 
@@ -59,12 +116,12 @@ leaves those for the LLM to decide). Severity shows in the `json` reporter.
 | Code | Name | Sev | Flags | Example |
 |------|------|-----|-------|---------|
 | `NB501` | ai-negation-contrast | warning | "it's not X, it's Y" / "not only X but Y" antithesis, and "No X, no Y, just Z". | "This **isn't just fast, it's** transformative." |
-| `NB502` | ai-puffery | warning | Overused buzzword vocabulary (lemma-matched). | delve, tapestry, embark, labyrinth, synergy … |
+| `NB502` | ai-puffery | warning | Overused buzzword vocabulary (lemma-matched). A lemma the document repeats 3+ times (2+ under 1000 words) is treated as topic vocabulary, not decoration, and drops to info ("optimize" in an essay about optimization). | delve, tapestry, embark, labyrinth, synergy … |
 | `NB503` | ai-editorializing | info | Promotional / "importance" / vague-attribution phrases. | "**plays a crucial role**", "**experts argue**" |
 | `NB504` | ai-filler | warning | Chatbot filler, sycophancy, signposting. | "**Great question!**", "**here's the kicker**", "**let's dive in**" |
-| `NB505` | ai-transition | info | Overused formal transitions. | "**Moreover**", "**Furthermore**" |
+| `NB505` | ai-transition | info | Overused formal transitions and discourse markers — including "in conclusion", "generally speaking", "feel free to", which human formal prose has used for centuries (they lived in the filler list before). | "**Moreover**", "**Furthermore**", "**In conclusion**" |
 | `NB506` | ai-em-dash | warning | Em-dash overuse — a *density* above the human range (> 12 per 1000 words; essayists reach ~11). | "It was fast — clean — simple — done." |
-| `NB507` | ai-rule-of-three | warning | 3+ consecutive short staccato fragments on one line. | "The jokes. The wins. The team." |
+| `NB507` | ai-rule-of-three | info | 3+ consecutive short *verbless* fragments on one line. Short sentences with a verb ("Stop the orchestra. Repeat it.") are human staccato and not flagged; the verbless human anaphora ("No iPhone. No podcasts. No music.") is formally identical to the AI tell, so the finding stays advisory. | "The jokes. The wins. The team." |
 | `NB508` | ai-emoji | warning | Emoji as formatting (≥ 3 in the document). | "✅ fast ✅ safe 🚀 shipped" |
 | `NB509` | ai-monotonous-rhythm | info | Flat sentence rhythm (low burstiness / length variety). | uniform mid-length sentences throughout |
 | `NB510` | ai-intensifier | info | Weak intensifiers / weasel words. | "**very**", "**really**", "**basically**" |
@@ -98,8 +155,12 @@ extend_select = ["NB5"]
 
 ## Severities & exit codes
 
-Findings are advisory warnings; `NB101` (over `--max-grade`) and `NB201` are errors.
-Exit `0` = clean, `1` = findings (`--exit-zero` to soften), `2` = usage error.
+`NB101` (over `--max-grade`) is the only error. `NB2xx` and the confident `NB5xx`
+tells are warnings; `NB301`/`NB302`/`NB303`/`NB401` are `info` within their style
+budget and `warning` over it (see *Style budgets* above); `NB202` drops to `info`
+when the whole document reads fine for its target; the advisory `NB5xx` checks are
+`info`. Exit `0` = clean, `1` = findings (`--exit-zero` to soften), `2` = usage
+error.
 
 ## Data
 

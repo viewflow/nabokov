@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import math
 import re
-from dataclasses import dataclass
+from collections import Counter
+from dataclasses import dataclass, replace
 from functools import lru_cache
 
 from .checks import ALL_RULES, CheckContext
-from .config import Config
+from .config import BUDGET_CODES, Config
+from .data_loader import thresholds
 from .issue import DocumentStats, Issue, Severity
 from .readability import classify, letters_in, reading_level
 from .source import SourceFile
@@ -36,6 +39,35 @@ class AnalysisResult:
 
 _component_registered = False
 
+# A document is "line-oriented" (one thought per line — aphorism lists, blog dumps)
+# when almost every non-blank line ends in terminal punctuation. There, a newline is
+# a real boundary, so unpunctuated headings/titles don't glue into the paragraph
+# below. Hard-wrapped prose (most lines end mid-sentence) never qualifies.
+_TERMINAL_CHARS = set(".!?:;…")
+_LINE_CLOSERS = "\"'”’)]}*_"  # noqa: RUF001 - curly closing quotes are intentional
+_LINE_ORIENTED_RATIO = 0.8
+_LINE_ORIENTED_MIN_LINES = 5
+
+
+def _is_line_oriented(text: str) -> bool:
+    lines = [line.strip() for line in text.split("\n")]
+    lines = [line for line in lines if line]
+    if len(lines) < _LINE_ORIENTED_MIN_LINES:
+        return False
+    punctuated = sum(1 for line in lines if line.rstrip(_LINE_CLOSERS)[-1:] in _TERMINAL_CHARS)
+    return punctuated / len(lines) >= _LINE_ORIENTED_RATIO
+
+
+def _starts_sentence(prev, tok, line_oriented: bool, list_marks: set[str]) -> bool:
+    """Should ``tok`` open a new sentence, given the whitespace token before it?"""
+    if prev is None:
+        return True  # first token of the document
+    if not prev.is_space:
+        return False
+    if prev.text.count("\n") >= 2:
+        return True  # blank line = paragraph break
+    return "\n" in prev.text and (line_oriented or tok.text in list_marks)
+
 
 def _register_components() -> None:
     """Register a component that makes a blank line a hard sentence boundary.
@@ -44,6 +76,8 @@ def _register_components() -> None:
     heading/badge/list fragment onto the following paragraph into one fake run-on —
     which otherwise inflates the grade and mislocates findings in Markdown. The
     newlines live inside a single whitespace token, so we key off that token.
+    In line-oriented documents every newline is a boundary; elsewhere a list-marker
+    line still starts its own sentence so tight lists are not glued.
     """
     global _component_registered
     if _component_registered:
@@ -52,8 +86,11 @@ def _register_components() -> None:
 
     @Language.component("blank_line_boundaries")
     def blank_line_boundaries(doc):
+        list_marks = {"-", "*", "•", "+"}
+        line_oriented = _is_line_oriented(doc.text)
         for i, tok in enumerate(doc):
-            if i == 0 or (doc[i - 1].is_space and doc[i - 1].text.count("\n") >= 2):
+            prev = doc[i - 1] if i else None
+            if _starts_sentence(prev, tok, line_oriented, list_marks):
                 tok.is_sent_start = True
             elif tok.is_space:
                 tok.is_sent_start = False
@@ -84,7 +121,11 @@ def download_model() -> None:
     import subprocess
     import sys
 
-    print(f"nabokov: downloading language model {MODEL} (one-time)…", file=sys.stderr)
+    print(
+        f"nabokov: downloading language model {MODEL} (~13 MB, one-time)…",
+        file=sys.stderr,
+        flush=True,
+    )
     if importlib.util.find_spec("pip") is not None:
         cmd = [sys.executable, "-m", "pip", "install", "--no-input", MODEL_URL]
     elif shutil.which("uv"):
@@ -95,6 +136,7 @@ def download_model() -> None:
             "to be available to download and install."
         )
     subprocess.run(cmd, check=True)  # noqa: S603 - cmd built from constants above
+    print("nabokov: model installed, loading…", file=sys.stderr, flush=True)
 
 
 @lru_cache(maxsize=1)
@@ -105,21 +147,24 @@ def load_nlp(auto_download: bool = True):
     first run we fetch it automatically. Disable with ``auto_download=False``.
     """
     import importlib
+    import importlib.util
 
-    import spacy
-
-    _register_components()
-    try:
-        nlp = spacy.load(MODEL, disable=["ner"])
-    except OSError:
+    # Check for the model package before the multi-second spaCy import, so on a
+    # first run the download message appears immediately instead of after a
+    # long silent pause that looks like a hang.
+    if importlib.util.find_spec(MODEL) is None:
         if not auto_download:
             raise RuntimeError(
                 f"spaCy model {MODEL!r} is not installed. "
                 f"Run `nabokov download-model` (or `python -m spacy download {MODEL}`)."
-            ) from None
+            )
         download_model()
         importlib.invalidate_caches()
-        nlp = spacy.load(MODEL, disable=["ner"])
+
+    import spacy
+
+    _register_components()
+    nlp = spacy.load(MODEL, disable=["ner"])
     nlp.add_pipe("blank_line_boundaries", before="parser")
     return nlp
 
@@ -150,7 +195,11 @@ class Engine:
                     issues.append(issue)
 
         issues = _apply_noqa(issues, source)
+        issues = _drop_quoted(issues, source)
+        issues = _dedup_adverbs(issues)
         stats = _document_stats(doc, self.config.target, issues)
+        issues = _apply_budgets(issues, stats.words, self.config)
+        issues = _demote_hard_sentences(issues, stats)
 
         if (
             self.config.max_grade is not None
@@ -199,6 +248,127 @@ def _apply_noqa(issues: list[Issue], source: SourceFile) -> list[Issue]:
         elif issue.code not in rule:
             kept.append(issue)
     return kept
+
+
+# Quoted material is evidence, not the author's prose — findings inside it are
+# dropped. A quoted region is a Markdown blockquote, or a quoted span (straight or
+# curly double quotes, or curly single quotes — that pair is apostrophe-safe) of at
+# least _QUOTED_MIN_WORDS words: a multi-word quoted phrase is a mention, dialogue,
+# or citation, none of which is the author's usage. A hard-sentence finding whose
+# span is mostly quotation (an author's sentence framing a long citation) is
+# demoted to info — the grade belongs to the quoted prose, not the author's.
+_QUOTED_SPAN = re.compile(r"“[^“”]{1,2000}”|‘[^‘’]{1,2000}’|\"[^\"\n]{1,2000}\"")  # noqa: RUF001
+_QUOTED_MIN_WORDS = 2
+_QUOTED_MAJORITY = 0.5
+_BLOCKQUOTE_LINE = re.compile(r"^\s*>")
+
+
+def _quoted_regions(source: SourceFile) -> list[tuple[int, int]]:
+    """0-based [start, end) char ranges of quoted material in the document."""
+    regions = []
+    for match in _QUOTED_SPAN.finditer(source.analysis_text):
+        if len(match.group(0).split()) >= _QUOTED_MIN_WORDS:
+            regions.append((match.start(), match.end()))
+    if source.is_markdown:
+        run_start = None
+        n_lines = source.original_text.count("\n") + 1
+        for lineno in range(1, n_lines + 2):
+            quoted = lineno <= n_lines and _BLOCKQUOTE_LINE.match(source.line_text(lineno))
+            if quoted and run_start is None:
+                run_start = lineno
+            elif not quoted and run_start is not None:
+                last = lineno - 1
+                regions.append(
+                    (
+                        source.offset(run_start, 1),
+                        source.offset(last, 1) + len(source.line_text(last)),
+                    )
+                )
+                run_start = None
+    return regions
+
+
+def _drop_quoted(issues: list[Issue], source: SourceFile) -> list[Issue]:
+    """Drop issues inside quoted material; demote mostly-quoted hard sentences."""
+    regions = _quoted_regions(source)
+    if not regions:
+        return issues
+    kept = []
+    for issue in issues:
+        start = source.offset(issue.line, issue.col)
+        end = source.offset(issue.end_line, issue.end_col)
+        if any(r_start <= start and end <= r_end for r_start, r_end in regions):
+            continue
+        if issue.code in ("NB201", "NB202") and end > start:
+            overlap = sum(
+                max(0, min(end, r_end) - max(start, r_start)) for r_start, r_end in regions
+            )
+            if overlap / (end - start) > _QUOTED_MAJORITY:
+                issue = replace(issue, severity=Severity.INFO)
+        kept.append(issue)
+    return kept
+
+
+# NB301 defers to a qualifier/intensifier finding on the same words: "probably" is a
+# hedge, not a manner adverb, and one finding per span is enough.
+_DEDUP_WINNERS = {"NB303", "NB510"}
+
+
+def _dedup_adverbs(issues: list[Issue]) -> list[Issue]:
+    """Drop NB301 issues whose span is already covered by NB303/NB510."""
+    winners = [
+        ((i.line, i.col), (i.end_line, i.end_col)) for i in issues if i.code in _DEDUP_WINNERS
+    ]
+    if not winners:
+        return issues
+    kept = []
+    for issue in issues:
+        if issue.code == "NB301":
+            start, end = (issue.line, issue.col), (issue.end_line, issue.end_col)
+            if any(w_start < end and start < w_end for w_start, w_end in winners):
+                continue
+        kept.append(issue)
+    return kept
+
+
+def _style_budgets(config: Config) -> dict[str, float]:
+    """The per-1000-word budgets for the active target, with config overrides."""
+    defaults = thresholds()["style_budgets"]
+    table = dict(defaults.get(config.target, defaults["NORMAL"]))
+    table.update(config.budgets)
+    return {code: rate for code, rate in table.items() if code in BUDGET_CODES}
+
+
+def _apply_budgets(issues: list[Issue], words: int, config: Config) -> list[Issue]:
+    """Density-based severity for the style checks (NB301/NB302/NB303).
+
+    An adverb, qualifier, or passive is a style signal, not a defect — the defect is
+    overuse. Within the target's per-1000-word budget the findings are advisory
+    (info); over it they escalate to warnings. Short texts get a flat grace of 2
+    occurrences so a single adverb in a tweet-sized snippet never escalates.
+    """
+    budgets = _style_budgets(config)
+    counts = Counter(i.code for i in issues)
+    out = []
+    for issue in issues:
+        rate = budgets.get(issue.code)
+        if rate is not None:
+            allowed = max(2, math.ceil(rate * words / 1000))
+            if counts[issue.code] <= allowed:
+                issue = replace(issue, severity=Severity.INFO)
+        out.append(issue)
+    return out
+
+
+def _demote_hard_sentences(issues: list[Issue], stats: DocumentStats) -> list[Issue]:
+    """NB202 drops to info when the whole document reads fine for its target.
+
+    A grade-11 sentence in a grade-8 document is rhythm — the long half of
+    burstiness — not a defect. The extreme NB201 sentences stay warnings.
+    """
+    if stats.readability != "normal":
+        return issues
+    return [replace(i, severity=Severity.INFO) if i.code == "NB202" else i for i in issues]
 
 
 def _document_stats(doc, target: str, issues: list[Issue]) -> DocumentStats:

@@ -1,6 +1,6 @@
 [project]
 name = "nabokov"
-version = "26.7.1"
+version = "26.7.2"
 description = "A console prose linter — readability checks plus opt-in AI-writing / de-slop checks. Like flake8, but for English."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -81,6 +81,8 @@ ignore = ["E501", "S101", "RUF012"]
 "tests/**" = ["S"]
 # en/em dashes in the AI-tell regexes are intentional, not typos
 "src/nabokov/checks/ai_writing.py" = ["RUF001"]
+# curly quotes/apostrophes in quoted-material fixtures are the point of the tests
+"tests/test_budgets.py" = ["RUF001", "RUF003"]
 
 [tool.ruff.format]
 quote-style = "double"

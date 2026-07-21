@@ -28,7 +28,9 @@ class SentenceRule(Rule):
             if bucket == VERY_HARD:
                 code, name = "NB201", "very-hard-sentence"
                 message = f"very hard to read (grade {level})"
-                severity = Severity.ERROR
+                # A long sentence in a readable document is rhythm, not failure —
+                # the document-level gate is NB101 (--max-grade), which stays an error.
+                severity = Severity.WARNING
             elif bucket == HARD:
                 code, name = "NB202", "hard-sentence"
                 message = f"hard to read (grade {level})"

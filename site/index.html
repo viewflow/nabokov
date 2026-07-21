@@ -212,6 +212,7 @@
 <nav class="toc" aria-label="Sections">
   <a href="#top">top</a>
   <a href="#checks">what it flags</a>
+  <a href="#target">target</a>
   <a href="#ai">ai</a>
   <a href="#try">try it</a>
   <a href="#skill">the skill</a>
@@ -257,6 +258,13 @@
     <li><span class="code c401">NB401</span> <span class="rname">wordy phrase</span> <span class="desc">Ten words where three would do.</span></li>
     <li><span class="code c5xx">NB5xx</span> <span class="rname">AI tells</span> <span class="desc">Signs of machine-written text, off by default.</span></li>
   </ul>
+</section>
+
+<section id="target">
+  <h2>--target</h2>
+  <p>One bar does not fit every text. <code>--target</code> names your reader. Plain language wants <code>accessible</code>. Expert docs want <code>technical</code>. Prose with a voice gets <code>essay</code>. The default is <code>normal</code>.</p>
+  <p>Each target sets the style budgets too. An essay earns more adverbs than a manual. Under budget, findings stay advisory; over it, they turn into warnings.</p>
+  <pre><code>$ nabokov --target essay draft.md</code></pre>
 </section>
 
 <section id="ai">

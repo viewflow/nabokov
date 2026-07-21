@@ -9,7 +9,7 @@ a separate concern from the core readability checks, so the whole NB5xx range is
 Rules (all off by default, all category "ai"):
   NB501 negation-contrast   NB502 puffery          NB503 editorializing (info)
   NB504 filler              NB505 transitions (info)  NB506 em-dash overuse
-  NB507 rule-of-three       NB508 emoji overuse    NB509 monotonous rhythm (info)
+  NB507 rule-of-three (info)  NB508 emoji overuse  NB509 monotonous rhythm (info)
   NB510 intensifiers (info) NB511 participial closer (info)  NB512 repeated opener (info)
   NB513 curly quotes (info) NB514 title-case heading (info)  NB515 predicate hyphen (info)
   NB516 bold-label listicle (info)
@@ -20,6 +20,7 @@ from __future__ import annotations
 import bisect
 import re
 import statistics
+from collections import Counter
 from collections.abc import Iterable
 from typing import Any
 
@@ -224,9 +225,10 @@ class RuleOfThreeRule(Rule):
     """NB507 — three or more consecutive short sentence fragments on one line.
 
     The staccato "The jokes. The wins. The team." emphasis pattern the Reddit thread
-    repeatedly named. Kept conservative: fragments must be <= 4 words, end in
-    sentence punctuation, and sit on the same physical line (so Markdown lists and
-    normal short sentences across lines are not swept up).
+    repeatedly named. Kept conservative: fragments must be <= 4 words, *verbless*,
+    end in sentence punctuation, and sit on the same physical line. Short sentences
+    with a verb ("Stop the orchestra. Solo that motif. Repeat it.") are deliberate
+    human staccato, not the AI listicle tell — only noun fragments count.
     """
 
     code = "NB507"
@@ -234,6 +236,10 @@ class RuleOfThreeRule(Rule):
     category = "ai"
     codes = ("NB507",)
     default_on = False
+    # The AI listicle staccato and the human anaphora ("No iPhone. No podcasts.
+    # No music.") are formally identical — only intent separates them — so this
+    # stays advisory for the judgment layer to decide.
+    severity = Severity.INFO
 
     _MAX_WORDS = 4
 
@@ -256,7 +262,11 @@ class RuleOfThreeRule(Rule):
         for sent in sents:
             words = [t for t in sent if not (t.is_punct or t.is_space)]
             stripped = sent.text.strip()
-            is_fragment = 1 <= len(words) <= self._MAX_WORDS and stripped[-1:] in ".!?"
+            is_fragment = (
+                1 <= len(words) <= self._MAX_WORDS
+                and stripped[-1:] in ".!?"
+                and not any(t.pos_ in ("VERB", "AUX") for t in sent)
+            )
             # a run must sit on ONE physical line (staccato emphasis), so a bulleted
             # list of short items on separate lines is not flagged.
             same_line = bool(run) and line_of(run[-1].start_char) == line_of(sent.start_char)
@@ -280,6 +290,7 @@ class RuleOfThreeRule(Rule):
                 start,
                 end,
                 snippet,
+                severity=self.severity,
             )
 
 
@@ -571,7 +582,7 @@ class _ListRule(Rule):
             wm.add(self.code, [[{"LEMMA": word.lower()}], [{"LOWER": word.lower()}]])
         return pm, wm
 
-    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+    def _spans(self, ctx: CheckContext):
         if self._phrase_matcher is None:
             self._phrase_matcher, self._word_matcher = self._build(ctx.nlp)
         raw: list[tuple[int, int]] = []
@@ -579,8 +590,10 @@ class _ListRule(Rule):
             raw += [(s, e) for _mid, s, e in self._phrase_matcher(ctx.doc)]
         if len(self._word_matcher):
             raw += [(s, e) for _mid, s, e in self._word_matcher(ctx.doc)]
-        for start, end in _resolve_overlaps(raw):
-            span = ctx.doc[start:end]
+        return [ctx.doc[start:end] for start, end in _resolve_overlaps(raw)]
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        for span in self._spans(ctx):
             yield _issue(
                 ctx,
                 self.code,
@@ -599,11 +612,44 @@ class PufferyRule(_ListRule):
     category = "ai"
     codes = ("NB502",)
 
+    # Puffery is decoration, and decoration is rare. A lemma the document keeps
+    # repeating ("optimize" in an essay about optimization) is its topic vocabulary,
+    # so those findings drop to info for the author to judge. Short documents reach
+    # topical at 2 uses — twice in a few hundred words is a subject, not garnish.
+    _TOPICAL_USES = 3
+    _SHORT_DOC_WORDS = 1000
+
     def _terms(self) -> list[str]:
         return ai_writing()["puffery"]
 
     def _message(self, text: str) -> str:
         return f"AI tell: puffery '{text}'"
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        spans = self._spans(ctx)
+        lemma_counts = Counter(self._lemma_key(span) for span in spans)
+        doc_words = sum(1 for t in ctx.doc if not (t.is_punct or t.is_space))
+        threshold = self._TOPICAL_USES if doc_words >= self._SHORT_DOC_WORDS else 2
+        for span in spans:
+            count = lemma_counts[self._lemma_key(span)]
+            topical = count >= threshold
+            message = self._message(span.text)
+            if topical:
+                message += f" (used {count}× — likely topic vocabulary)"
+            yield _issue(
+                ctx,
+                self.code,
+                self.name,
+                message,
+                span.start_char,
+                span.end_char,
+                span.text,
+                severity=Severity.INFO if topical else self.severity,
+            )
+
+    @staticmethod
+    def _lemma_key(span) -> str:
+        return " ".join(tok.lemma_.lower() for tok in span)
 
 
 class EditorializingRule(_ListRule):

@@ -40,15 +40,15 @@
     "represents a shift"
   ],
   "filler": [
-    "i hope this helps", "let me know if", "would you like me to", "feel free to",
+    "i hope this helps", "let me know if", "would you like me to",
     "don't hesitate to", "great question", "excellent question", "good question",
-    "you're absolutely right", "as an ai", "in conclusion", "in summary",
-    "to sum up", "thank you for asking", "great point", "please let me know",
+    "you're absolutely right", "as an ai",
+    "thank you for asking", "great point", "please let me know",
     "would you like to hear more", "here's why that matters", "here's the thing",
     "here's the truth", "the takeaway", "let me explain", "hope that helps",
     "here's the kicker", "and the best part", "the quiet part out loud",
     "saying the quiet part out loud", "this changes everything", "let that sink in",
-    "the smoking gun", "at its core", "in essence", "generally speaking",
+    "the smoking gun",
     "let me walk you through", "full stop", "let's dive in", "let's explore",
     "let's break this down", "without further ado", "here's what you need to know",
     "the real question is", "what really matters", "the heart of the matter",
@@ -56,6 +56,8 @@
   ],
   "transitions": [
     "moreover", "furthermore", "additionally", "notably", "importantly",
-    "subsequently", "consequently", "firstly"
+    "subsequently", "consequently", "firstly",
+    "in conclusion", "in summary", "to sum up", "generally speaking",
+    "in essence", "at its core", "feel free to"
   ]
 }

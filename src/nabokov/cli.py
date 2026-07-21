@@ -67,6 +67,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--target",
+        type=str.upper,
         choices=sorted(VALID_TARGETS),
         default=None,
         help="reading-level target (default: NORMAL)",

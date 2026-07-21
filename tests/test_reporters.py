@@ -33,9 +33,10 @@ def test_json_format_shape(analyze):
 
 
 def test_github_annotations(analyze):
+    # a lone adverb is within the style budget, so it reports as a notice
     result = analyze("He quickly ran to the store.", name="a.txt")
     text = _render("github", result)
-    assert "::warning file=a.txt,line=1,col=4::NB301" in text
+    assert "::notice file=a.txt,line=1,col=4::NB301" in text
 
 
 def test_color_never_is_plain(analyze):

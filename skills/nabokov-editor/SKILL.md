@@ -33,6 +33,10 @@ nabokov --format=flake8 <file>        # readability + style checks
 nabokov --format=flake8 --ai <file>   # add the AI-writing / de-slop checks (NB5xx)
 ```
 
+For essays, blog posts, and opinion pieces add `--target essay` — it tolerates the
+longer sentences literary prose sustains deliberately and carries the loosest style
+budgets.
+
 Loop on the `flake8` output. What the static layer covers:
 
 - **Readability**: hard / very-hard sentences, a document grade (`--max-grade`).
@@ -45,11 +49,23 @@ Loop on the `flake8` output. What the static layer covers:
 
 Full code list: `nabokov --list-rules` and `docs/RULES.md`.
 
-**Triage by severity** (from `--format=json`): a `warning` is a confident tell — fix it
-with a small, meaning-preserving edit. An `info` is an advisory "hard part" static isn't
-sure about (burstiness, intensifiers, transitions, editorializing, participial closers,
-repeated openers) — you decide whether changing it improves the text or just fights the
-author's voice. Static suggests; you decide.
+**Triage by severity** (from `--format=json`): an `error` is a document-level failure
+(NB101 over `--max-grade`). A `warning` on NB2xx/NB4xx/NB5xx is a confident tell — fix
+it with a small, meaning-preserving edit. An `info` is advisory — you decide whether
+changing it improves the text or just fights the author's voice. Static suggests; you
+decide.
+
+The style checks (NB301 adverbs, NB302 passive, NB303 qualifiers, NB401 wordy
+phrases) use **severity-by-density**: each finding is `info` while the document
+stays inside its per-1000-word budget, and the whole set escalates to `warning`
+only when the text overuses the pattern. NB202 likewise drops to `info` when the
+whole document reads fine for its target, and a puffery lemma (NB502) the document
+repeats 3+ times is topic vocabulary, reported as `info`. An escalated style warning means "too many", **not** "each one
+is wrong" — thin them out; don't eradicate them. As a rule of thumb, cut at most about
+a third of the flagged qualifiers/adverbs — the ones doing no work — and leave the
+rest. And in first-person or opinion prose, hedges ("I think", "probably") are
+epistemic honesty: deleting one turns a hedged claim into an absolute claim. That is a
+meaning change and goes through the approval gate.
 
 ## Layer 2 — judgment (read the text yourself)
 
@@ -81,19 +97,24 @@ the core of every humanizer skill, and the part a linter cannot do:
 4. **Approval gate**: if a fix needs a *big change* (below), collect it and ask first.
 5. **Re-lint**: run nabokov again; fix anything new. Tokenization estimates are
    imperfect, so expect a couple of passes.
-6. **Stop** when the static layer is clean and the judgment issues are resolved
-   (minus anything the user declined).
-7. **Verify & report**: links, code, and structure intact; meaning preserved.
+6. **Dryness check**: zero style findings is NOT the goal. If the rewrite lowered
+   burstiness (NB509 appears or worsens), stripped every hedge and adverb, or reads
+   flatter than the original, the text got drier — not better. Restore texture:
+   put back the hedges and rhythm that carried the author's voice.
+7. **Stop** when warnings and errors are resolved and the judgment issues are
+   handled (minus anything the user declined). Remaining `info` findings are fine —
+   they are the author's call, not defects.
+8. **Verify & report**: links, code, and structure intact; meaning preserved.
    Summarize *N found → M fixed, K needed approval*.
 
 ## Fix playbook — static (small edits, apply directly)
 
 | Code | Fix |
 |------|-----|
-| NB201 / NB202 | Split into shorter sentences (nabokov never flags one under the target's minimum — 14 words for the default NORMAL, 8 for ACCESSIBLE), but keep it natural. |
-| NB301 | Cut the adverb or fold it into a stronger verb. |
-| NB302 | Rewrite in active voice. |
-| NB303 / NB510 | Delete the hedge or weak intensifier unless it earns its place. |
+| NB201 / NB202 | Split into shorter sentences (nabokov never flags one under the target's minimum — 14 words for the default NORMAL, 8 for ACCESSIBLE), but keep it natural. Long sentences are half of burstiness — never split them all. |
+| NB301 | Only when escalated to warning: thin the adverbs out — fold the weakest into stronger verbs, keep the ones doing work. As `info`, leave unless one clearly adds nothing. |
+| NB302 | Only when escalated to warning: rewrite the weakest in active voice. Passive that puts the right thing first is fine. |
+| NB303 / NB510 | Thin, don't eradicate: cut at most about a third — the ones doing no work. In first-person prose a hedge is epistemic honesty; deleting it changes the claim's strength (approval gate). |
 | NB401 | Use the simpler suggestion in the message. |
 | NB501–NB508 | Recast the tell: drop the antithesis, cut puffery, trim em-dashes/emoji, break the triad. |
 | NB509 | Vary sentence length — mix short and long — to raise burstiness. |
@@ -128,6 +149,17 @@ Batch these so the user approves several at once.
 ## Guardrails
 
 - **Meaning first.** If a clean fix and a faithful fix conflict, keep meaning and ask.
+- **Quotes are evidence, not the author's prose.** Never edit quoted material —
+  block quotes, epigraphs, poem or song excerpts, dialogue attributed to others.
+  The same goes for **mentions**: phrases the author cites as specimens or examples
+  ("phrases like X", "tags like Y", a wordy expression held up for criticism) are
+  being exhibited, not used — never "fix" them, even when the italics or quote marks
+  that marked them were lost in conversion. nabokov drops findings inside blockquotes
+  and quoted spans; extend the same respect to quotes and mentions its heuristics
+  miss (e.g. quoted verse in a plain-text file).
+- **Don't dry the text out.** A rewrite that strips every hedge, adverb, and long
+  sentence "passes the linter" and reads like cardboard. Zero `info` findings is an
+  anti-goal; measure success by warnings resolved with voice intact.
 - **Never fabricate** facts, examples, or numbers to satisfy a check.
 - **Preserve markup** — nabokov ignores URLs, code, and headings; so must you.
 - **Respect voice.** The `--ai` checks flag emoji, em-dashes, and punchy phrasing that

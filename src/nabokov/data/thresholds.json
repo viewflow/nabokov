@@ -14,9 +14,21 @@
       "tooFewWordCount": 14,
       "hardReadabilityLevel": 14,
       "veryHardReadabilityLevel": 18
+    },
+    "ESSAY": {
+      "tooFewWordCount": 14,
+      "hardReadabilityLevel": 14,
+      "veryHardReadabilityLevel": 18
     }
   },
   "default_target": "NORMAL",
+  "style_budgets": {
+    "_note": "per-1000-word budgets for the style checks; within budget the findings are info, over it they are warnings. ESSAY is calibrated so the Paul Graham corpus stays advisory.",
+    "ACCESSIBLE": {"NB301": 10, "NB302": 5, "NB303": 8, "NB401": 2},
+    "NORMAL": {"NB301": 15, "NB302": 8, "NB303": 10, "NB401": 3},
+    "TECHNICAL": {"NB301": 10, "NB302": 15, "NB303": 8, "NB401": 3},
+    "ESSAY": {"NB301": 25, "NB302": 15, "NB303": 15, "NB401": 6}
+  },
   "ari": {
     "coef_letters_per_word": 4.71,
     "coef_words_per_sentence": 0.5,

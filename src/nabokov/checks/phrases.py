@@ -52,7 +52,13 @@ class _PhraseDictRule(Rule):
         raw = [(start, end) for _mid, start, end in self._matcher(ctx.doc)]
         for start, end in _resolve_overlaps(raw):
             span = ctx.doc[start:end]
+            if not self._keep(span):
+                continue
             yield self._issue_for(ctx, span.text.lower(), span)
+
+    def _keep(self, span) -> bool:
+        """Hook for subclasses to veto a dictionary match from its context."""
+        return True
 
 
 class ComplexPhraseRule(_PhraseDictRule):
@@ -88,6 +94,22 @@ class ComplexPhraseRule(_PhraseDictRule):
         )
 
 
+def _prev_word(tok):
+    for i in range(tok.i - 1, -1, -1):
+        t = tok.doc[i]
+        if not (t.is_space or t.is_punct):
+            return t
+    return None
+
+
+def _next_word(tok):
+    for i in range(tok.i + 1, len(tok.doc)):
+        t = tok.doc[i]
+        if not (t.is_space or t.is_punct):
+            return t
+    return None
+
+
 class QualifierRule(_PhraseDictRule):
     code = "NB303"
     name = "qualifier"
@@ -96,6 +118,24 @@ class QualifierRule(_PhraseDictRule):
 
     def _phrase_keys(self) -> Iterable[str]:
         return qualifiers()
+
+    def _keep(self, span) -> bool:
+        # "just" is only a hedge in some positions. Restrictive "just one useful
+        # insight" (= only), the imperative opener "Just tell me what to do", and
+        # temporal "I'd just read it" (= recently) are precision devices — skip
+        # them. The minimizer after a copula ("it's just a way to…") stays flagged.
+        if len(span) != 1 or span.text.lower() != "just":
+            return True
+        tok = span[0]
+        prev, nxt = _prev_word(tok), _next_word(tok)
+        if prev is not None and prev.lemma_.lower() == "be":
+            return True
+        if nxt is None:
+            return True
+        restrictive = nxt.pos_ in ("DET", "NUM", "NOUN", "PROPN")
+        imperative = tok.is_sent_start and nxt.tag_ == "VB"
+        temporal = prev is not None and prev.pos_ == "AUX" and nxt.tag_ in ("VBN", "VBD")
+        return not (restrictive or imperative or temporal)
 
     def _issue_for(self, ctx: CheckContext, phrase: str, span) -> Issue:
         start = span.start_char

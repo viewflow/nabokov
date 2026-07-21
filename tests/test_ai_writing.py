@@ -52,6 +52,13 @@ def test_transition(analyze):
     assert "NB505" in _codes(analyze, "Moreover, the results improved across the board.")
 
 
+def test_formal_marker_is_transition_not_filler(analyze):
+    # "In conclusion" is centuries-old formal prose, not chatbot filler — advisory only
+    codes = _codes(analyze, "In conclusion, the plan works well for everyone involved.")
+    assert "NB505" in codes
+    assert "NB504" not in codes
+
+
 def test_em_dash_overuse_threshold(analyze):
     # two em dashes: below threshold, not flagged
     assert "NB506" not in _codes(analyze, "A — B and then — C happened.")

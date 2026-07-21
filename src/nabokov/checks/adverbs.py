@@ -35,10 +35,17 @@ class AdverbRule(Rule):
             end = tok.idx + len(tok.text)
             line, col = ctx.source.linecol(start)
             end_line, end_col = ctx.source.linecol(end)
+            # "a stronger verb" only makes sense for adverbs that modify a real verb;
+            # sentence adverbs and copula modifiers ("probably", "merely a label")
+            # get an honest message instead.
+            if tok.head.pos_ == "VERB":  # noqa: SIM108 - parallel branches read clearer
+                hint = "consider a stronger verb"
+            else:
+                hint = "consider cutting it"
             yield Issue(
                 code="NB301",
                 name="adverb",
-                message=f"adverb '{tok.text}' — consider a stronger verb",
+                message=f"adverb '{tok.text}' — {hint}",
                 line=line,
                 col=col,
                 end_line=end_line,
