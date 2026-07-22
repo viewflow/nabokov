@@ -161,10 +161,7 @@ def test_puffery_still_flags_verb_sense(analyze):
 
 
 def test_filler_skips_reported_speech_and_punctuation(analyze):
-    text = (
-        "She asked a great question during the seminar. "
-        "End every sentence with a full stop."
-    )
+    text = "She asked a great question during the seminar. End every sentence with a full stop."
     r = analyze(text, config=Config(select=("NB504",)))
     assert not r.issues
 
@@ -174,6 +171,39 @@ def test_filler_still_flags_chatbot_openers(analyze):
     r = analyze(text, config=Config(select=("NB504",)))
     codes = [i.code for i in r.issues]
     assert codes.count("NB504") == 3
+
+
+def test_quoted_text_exempt(analyze):
+    # mention, not use: quoting tell-words or chatbot speech is not writing it
+    text = (
+        'Words like "delve" and "tapestry" mark AI text. '
+        '"Great question!" said the interviewer. '
+        "Curly too: “Let me explain the tapestry.”"
+    )
+    r = analyze(text, config=Config(select=("NB502", "NB504")))
+    assert not r.issues
+
+
+def test_quoted_exemption_stays_inside_the_quotes(analyze):
+    # the same sentence still flags tells OUTSIDE the quote pair
+    text = 'He said "delve" is overused, then embarked on a tapestry of excuses.'
+    r = analyze(text, config=Config(select=("NB502",)))
+    flagged = {i.text.lower() for i in r.issues}
+    assert flagged == {"embarked", "tapestry"}
+
+
+def test_unpaired_quote_does_not_exempt(analyze):
+    # a stray quote (inch mark) must not silently swallow the paragraph
+    text = 'The shelf is 15" wide, a testament to seamless synergy.'
+    r = analyze(text, config=Config(select=("NB502",)))
+    assert len(r.issues) == 3
+
+
+def test_straight_quote_does_not_span_lines(analyze):
+    # an unbalanced straight quote on one line can't pair across a newline
+    text = 'She wrote 15" on the tag.\nA tapestry of synergy followed."\n'
+    r = analyze(text, config=Config(select=("NB502",)))
+    assert len(r.issues) == 2
 
 
 def test_intensifier_still_flags_degree_very(analyze):

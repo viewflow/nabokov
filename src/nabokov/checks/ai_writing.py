@@ -691,7 +691,8 @@ class _ListRule(Rule):
 
     A term caught inside one of ``_exception_terms()`` is dropped: fixed
     expressions where the word loses its tell-sense ("quite a few",
-    "test harness", "a great question" in reported speech).
+    "test harness", "a great question" in reported speech). Quoted material is
+    handled downstream — the analyzer drops findings inside quoted regions.
     """
 
     default_on = False
@@ -730,9 +731,7 @@ class _ListRule(Rule):
 
     def _spans(self, ctx: CheckContext):
         if self._phrase_matcher is None:
-            self._phrase_matcher, self._word_matcher, self._exception_matcher = self._build(
-                ctx.nlp
-            )
+            self._phrase_matcher, self._word_matcher, self._exception_matcher = self._build(ctx.nlp)
         raw: list[tuple[int, int]] = []
         if len(self._phrase_matcher):
             raw += [(s, e) for _mid, s, e in self._phrase_matcher(ctx.doc)]
@@ -1119,7 +1118,5 @@ class IntensifierRule(_ListRule):
 
     def _spans(self, ctx: CheckContext):
         return [
-            span
-            for span in super()._spans(ctx)
-            if not (len(span) == 1 and self._skip(span[0]))
+            span for span in super()._spans(ctx) if not (len(span) == 1 and self._skip(span[0]))
         ]

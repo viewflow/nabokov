@@ -255,9 +255,12 @@ def _apply_noqa(issues: list[Issue], source: SourceFile) -> list[Issue]:
 # dropped. A quoted region is a Markdown blockquote, or a quoted span (straight or
 # curly double quotes, or curly single quotes — that pair is apostrophe-safe) of at
 # least _QUOTED_MIN_WORDS words: a multi-word quoted phrase is a mention, dialogue,
-# or citation, none of which is the author's usage. A hard-sentence finding whose
-# span is mostly quotation (an author's sentence framing a long citation) is
-# demoted to info — the grade belongs to the quoted prose, not the author's.
+# or citation, none of which is the author's usage. A single-word quote does not
+# make a region (an inch mark must not swallow its neighborhood), but when the
+# quote holds exactly the flagged term — 'the word "delve"' — that is a pure
+# mention and the finding drops too. A hard-sentence finding whose span is mostly
+# quotation (an author's sentence framing a long citation) is demoted to info —
+# the grade belongs to the quoted prose, not the author's.
 _QUOTED_SPAN = re.compile(r"“[^“”]{1,2000}”|‘[^‘’]{1,2000}’|\"[^\"\n]{1,2000}\"")  # noqa: RUF001
 _QUOTED_MIN_WORDS = 2
 _QUOTED_MAJORITY = 0.5
@@ -289,16 +292,28 @@ def _quoted_regions(source: SourceFile) -> list[tuple[int, int]]:
     return regions
 
 
+def _mention_regions(source: SourceFile) -> list[tuple[int, int]]:
+    """0-based [start, end) interiors of every quoted span, single words included."""
+    return [
+        (match.start() + 1, match.end() - 1)
+        for match in _QUOTED_SPAN.finditer(source.analysis_text)
+    ]
+
+
 def _drop_quoted(issues: list[Issue], source: SourceFile) -> list[Issue]:
     """Drop issues inside quoted material; demote mostly-quoted hard sentences."""
     regions = _quoted_regions(source)
-    if not regions:
+    mentions = _mention_regions(source)
+    if not regions and not mentions:
         return issues
     kept = []
     for issue in issues:
         start = source.offset(issue.line, issue.col)
         end = source.offset(issue.end_line, issue.end_col)
         if any(r_start <= start and end <= r_end for r_start, r_end in regions):
+            continue
+        # exact mention: the quote holds nothing but the flagged term
+        if any(start == m_start and end == m_end for m_start, m_end in mentions):
             continue
         if issue.code in ("NB201", "NB202") and end > start:
             overlap = sum(

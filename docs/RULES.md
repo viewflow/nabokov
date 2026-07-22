@@ -112,8 +112,10 @@ quoted material are dropped. A quoted region is a Markdown blockquote (`>` lines
 a quoted span of at least 2 words: straight or curly double quotes, or curly single
 quotes (that pair is apostrophe-safe). A multi-word quoted phrase is a mention,
 dialogue, or citation — "phrases like ‘objective considerations of contemporary
-phenomena’" is exhibiting the phrase, not using it. A single quoted word keeps its
-findings. A hard-sentence finding (`NB201`/`NB202`) whose span is *mostly* quotation
+phenomena’" is exhibiting the phrase, not using it. A single quoted word keeps the
+findings *around* it (an inch mark must not swallow its neighborhood), but when the
+quote holds exactly the flagged term — 'the word "delve"' — that is a pure mention
+and the finding drops. A hard-sentence finding (`NB201`/`NB202`) whose span is *mostly* quotation
 (an author's short sentence framing a long citation) is demoted to info: the
 grade belongs to the quoted prose, not the author's. (Plain-text files that lost
 their quote markers and italics, e.g. a blog post saved as `.txt`, can't be fully
