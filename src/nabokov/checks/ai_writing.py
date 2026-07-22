@@ -47,6 +47,61 @@ _NEGATION_PATTERNS = [
         r"\bno\b[^.?!\n,]{1,30},\s*no\b[^.?!\n,]{1,30},\s*(?:no|just)\b",
         re.IGNORECASE,
     ),
+    # split-sentence form: the negation and the correction in two sentences —
+    # "The headline isn't the speed. The real story is Y."
+    re.compile(
+        r"\b(?:isn'?t|aren'?t|wasn'?t|weren'?t|is not|are not)\b[^.?!\n]{0,60}[.!]\s+"
+        r"(?:The|Its|It'?s)\s+(?:real|actual|true)\b",
+        re.IGNORECASE,
+    ),
+    # multi-negation countdown: "It's not the price. It's not the features.
+    # It's the trust."
+    re.compile(
+        r"\b(?:it|that)(?:'?s| is) not\b[^.?!\n]{1,40}\.\s+"
+        r"(?:it|that)(?:'?s| is) not\b[^.?!\n]{1,40}\.\s+"
+        r"(?:it|that)(?:'?s| is)\b",
+        re.IGNORECASE,
+    ),
+]
+
+# "could potentially", "may eventually" — a modal stacked with a hedge adverb;
+# each cancels the other, leaving a sentence that asserts nothing.
+_HEDGE_STACK = re.compile(
+    r"\b(?:could|may|might|would)\s+(?:potentially|eventually|ultimately|possibly|"
+    r"perhaps|conceivably)\b",
+    re.IGNORECASE,
+)
+
+# Fingerprints, not tells: chat-UI citation tokens, AI-tool URL parameters,
+# unfilled template placeholders, and knowledge-cutoff disclaimers. Their
+# presence is near-proof of an unedited paste. (Adapted from
+# conorbronsdon/avoid-ai-writing and Aboudjem/humanizer-skill, MIT.)
+_AI_ARTIFACTS = [
+    (
+        "chat citation markup",
+        re.compile(
+            r"citeturn\d\w*|oai_?cit\w*|contentReference\[oaicite:\d+\]\{index=\d+\}|grok_card|\[attached_file:\d+\]"
+        ),
+    ),
+    (
+        "AI-tool URL parameter",
+        re.compile(
+            r"(?:utm_source|referrer)=(?:chatgpt\.com|copilot\.com|openai|claude\.ai|perplexity\.ai|grok\.com)"
+        ),
+    ),
+    (
+        "unfilled placeholder",
+        re.compile(
+            r"\[(?:Your|Insert|Add|Enter|Describe|Specify|Choose)\b[^\]\n]{2,60}\]|\b\d{4}-XX-XX\b"
+        ),
+    ),
+    (
+        "knowledge-cutoff disclaimer",
+        re.compile(
+            r"as of my (?:last|latest) (?:update|training)|my knowledge cutoff|i (?:do not|don'?t) have access to real[- ]time",
+            re.IGNORECASE,
+        ),
+    ),
 ]
 
 _EM_DASH = re.compile(r"—|(?<=\s)–(?=\s)")
@@ -402,7 +457,13 @@ class PredicateHyphenRule(Rule):
 
 
 class BoldListicleRule(Rule):
-    """NB516 — a stack of "**Label:**" bold-header bullets (AI listicle formatting)."""
+    """NB516 — a stack of "**Label:**" bold-header bullets (AI listicle formatting).
+
+    Also flags the label-period tell: ``**Intros.** gloss text`` where a human
+    writes ``**Intros:**`` — the colon says "here's what this label means"; the
+    period reads as a sentence the following clause then contradicts. That one
+    fires per item, no stack needed.
+    """
 
     code = "NB516"
     name = "ai-bold-listicle"
@@ -412,18 +473,34 @@ class BoldListicleRule(Rule):
     severity = Severity.INFO
 
     _THRESHOLD = 3
+    # "- **Intros.** gloss" — a short bold noun-phrase label ended with a period
+    _LABEL_PERIOD = re.compile(
+        r"^[ \t]*(?:[-*+]|\d+[.)])[ \t]+(\*\*[^*\n:]{2,40}\.\*\*)[ \t]+\S", re.MULTILINE
+    )
 
     def check(self, ctx: CheckContext) -> Iterable[Issue]:
         text = ctx.source.original_text
         hits = [m for m in _BOLD_LABEL.finditer(text) if not _in_code(ctx, m.start(1) + 2)]
-        if len(hits) < self._THRESHOLD:
-            return
-        for m in hits:
+        if len(hits) >= self._THRESHOLD:
+            for m in hits:
+                yield _issue(
+                    ctx,
+                    "NB516",
+                    "ai-bold-listicle",
+                    f"AI tell: bold-label listicle ({len(hits)} in this document)",
+                    m.start(1),
+                    m.end(1),
+                    m.group(1),
+                    severity=self.severity,
+                )
+        for m in self._LABEL_PERIOD.finditer(text):
+            if _in_code(ctx, m.start(1) + 2):
+                continue
             yield _issue(
                 ctx,
                 "NB516",
                 "ai-bold-listicle",
-                f"AI tell: bold-label listicle ({len(hits)} in this document)",
+                f"AI tell: bold label ends with a period — a human writes '{m.group(1)[:-3]}:**'",
                 m.start(1),
                 m.end(1),
                 m.group(1),
@@ -691,6 +768,64 @@ class TransitionRule(_ListRule):
 
     def _message(self, text: str) -> str:
         return f"AI tell: overused transition '{text}'"
+
+
+class AiArtifactRule(Rule):
+    """NB519 — AI artifacts: fingerprints, not tells.
+
+    Chat-UI citation tokens (``citeturn0search0``, ``oaicite``), AI-tool URL
+    parameters (``utm_source=chatgpt.com``), unfilled template placeholders
+    (``[Your Name]``), and knowledge-cutoff disclaimers ("as of my last
+    update"). Unlike every other NB5xx signal these are near-proof of an
+    unedited paste, so they warn without any density gating. Scans the
+    *original* text — URLs are blanked in the analysis text for Markdown.
+    """
+
+    code = "NB519"
+    name = "ai-artifact"
+    category = "ai"
+    codes = ("NB519",)
+    default_on = False
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        text = ctx.source.original_text
+        for kind, pattern in _AI_ARTIFACTS:
+            for m in pattern.finditer(text):
+                yield _issue(
+                    ctx,
+                    "NB519",
+                    "ai-artifact",
+                    f"AI artifact: {kind} '{m.group(0)}' — near-proof of an unedited paste",
+                    m.start(),
+                    m.end(),
+                    m.group(0),
+                )
+
+
+class HedgeStackRule(Rule):
+    """NB520 — a modal stacked with a hedge adverb ("could potentially").
+
+    Either word alone is honest hedging; the stack asserts nothing while
+    sounding cautious. The fix is to pick one.
+    """
+
+    code = "NB520"
+    name = "ai-hedge-stack"
+    category = "ai"
+    codes = ("NB520",)
+    default_on = False
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        for m in _HEDGE_STACK.finditer(ctx.doc.text):
+            yield _issue(
+                ctx,
+                "NB520",
+                "ai-hedge-stack",
+                f"AI tell: stacked hedge '{m.group(0)}' — pick one, the pair asserts nothing",
+                m.start(),
+                m.end(),
+                m.group(0),
+            )
 
 
 class AdjectiveTriadRule(Rule):

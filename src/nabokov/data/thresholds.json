@@ -19,15 +19,31 @@
       "tooFewWordCount": 14,
       "hardReadabilityLevel": 14,
       "veryHardReadabilityLevel": 18
+    },
+    "SOCIAL": {
+      "tooFewWordCount": 8,
+      "hardReadabilityLevel": 8,
+      "veryHardReadabilityLevel": 12
+    },
+    "EMAIL": {
+      "tooFewWordCount": 8,
+      "hardReadabilityLevel": 10,
+      "veryHardReadabilityLevel": 14
     }
   },
   "default_target": "NORMAL",
+  "target_rules": {
+    "_note": "Per-target genre suppression: codes listed under 'off' are not tells in that register (staccato fragments and repeated openers ARE the social-post genre). Pick another target to get them back.",
+    "SOCIAL": {"off": ["NB203", "NB507", "NB509", "NB512"]}
+  },
   "style_budgets": {
     "_note": "per-1000-word budgets for the style checks; within budget the findings are info, over it they are warnings. ESSAY is calibrated so the Paul Graham corpus stays advisory.",
     "ACCESSIBLE": {"NB301": 10, "NB302": 5, "NB303": 8, "NB304": 2, "NB305": 2, "NB401": 2},
     "NORMAL": {"NB301": 15, "NB302": 8, "NB303": 10, "NB304": 2, "NB305": 5, "NB401": 3},
     "TECHNICAL": {"NB301": 10, "NB302": 15, "NB303": 8, "NB304": 3, "NB305": 4, "NB401": 3},
-    "ESSAY": {"NB301": 25, "NB302": 15, "NB303": 15, "NB304": 3, "NB305": 6, "NB401": 6}
+    "ESSAY": {"NB301": 25, "NB302": 15, "NB303": 15, "NB304": 3, "NB305": 6, "NB401": 6},
+    "SOCIAL": {"NB301": 15, "NB302": 5, "NB303": 10, "NB304": 2, "NB305": 4, "NB401": 3},
+    "EMAIL": {"NB301": 10, "NB302": 5, "NB303": 8, "NB304": 2, "NB305": 3, "NB401": 2}
   },
   "ari": {
     "coef_letters_per_word": 4.71,

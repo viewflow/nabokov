@@ -194,6 +194,7 @@ class Engine:
                 if issue.code in enabled:
                     issues.append(issue)
 
+        issues = _apply_target_rules(issues, self.config)
         issues = _apply_noqa(issues, source)
         issues = _drop_quoted(issues, source)
         issues = _dedup_adverbs(issues)
@@ -309,9 +310,23 @@ def _drop_quoted(issues: list[Issue], source: SourceFile) -> list[Issue]:
     return kept
 
 
-# NB301 defers to a qualifier/intensifier finding on the same words: "probably" is a
-# hedge, not a manner adverb, and one finding per span is enough.
-_DEDUP_WINNERS = {"NB303", "NB510"}
+def _apply_target_rules(issues: list[Issue], config: Config) -> list[Issue]:
+    """Genre suppression: some codes are not tells in some registers.
+
+    Staccato fragments and repeated openers ARE the social-post genre, so the
+    SOCIAL target switches those rules off entirely (see ``target_rules`` in
+    thresholds.json). Picking another target brings them back.
+    """
+    table = thresholds().get("target_rules", {})
+    off = set(table.get(config.target, {}).get("off", ()))
+    if not off:
+        return issues
+    return [issue for issue in issues if issue.code not in off]
+
+
+# NB301 defers to a qualifier/intensifier/hedge-stack finding on the same words:
+# "probably" is a hedge, not a manner adverb, and one finding per span is enough.
+_DEDUP_WINNERS = {"NB303", "NB510", "NB520"}
 
 
 def _dedup_adverbs(issues: list[Issue]) -> list[Issue]:

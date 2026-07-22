@@ -139,6 +139,97 @@ def test_intersection_cliche_flagged(analyze):
     assert _found(result, "NB503")
 
 
+# --- NB519 AI artifacts ------------------------------------------------------
+
+
+def test_citation_markup_flagged(analyze):
+    result = analyze("The results were strong citeturn0search0 across all runs.", config=AI)
+    issue = _found(result, "NB519")[0]
+    assert issue.severity == "warning"
+    assert "citeturn0search0" in issue.text
+
+
+def test_ai_utm_parameter_flagged(analyze):
+    result = analyze(
+        "See https://example.com/post?utm_source=chatgpt.com for details.",
+        config=AI,
+        is_markdown=True,
+    )
+    assert _found(result, "NB519")
+
+
+def test_placeholder_flagged(analyze):
+    result = analyze("Best regards, [Your Name Here] and the whole team.", config=AI)
+    assert _found(result, "NB519")
+
+
+def test_cutoff_disclaimer_flagged(analyze):
+    result = analyze("As of my last update, the library supported three backends.", config=AI)
+    assert _found(result, "NB519")
+
+
+def test_ordinary_brackets_not_flagged(analyze):
+    result = analyze("The results [see Table 2] were consistent with the model.", config=AI)
+    assert not _found(result, "NB519")
+
+
+# --- NB520 hedge stacks ------------------------------------------------------
+
+
+def test_hedge_stack_flagged(analyze):
+    result = analyze("The change could potentially create a new failure mode.", config=AI)
+    issue = _found(result, "NB520")[0]
+    assert "could potentially" in issue.text
+
+
+def test_single_modal_not_flagged(analyze):
+    result = analyze("The change could create a new failure mode.", config=AI)
+    assert not _found(result, "NB520")
+
+
+# --- NB501 split-sentence contrast -------------------------------------------
+
+
+def test_split_sentence_negation_flagged(analyze):
+    result = analyze("The headline isn't the speed. The real story is the price.", config=AI)
+    assert _found(result, "NB501")
+
+
+def test_multi_negation_countdown_flagged(analyze):
+    result = analyze("It's not the price. It's not the features. It's the trust.", config=AI)
+    assert _found(result, "NB501")
+
+
+# --- NB516 label-period ------------------------------------------------------
+
+
+def test_bold_label_period_flagged(analyze):
+    md = "- **Intros.** Years of conferences and operator network.\n"
+    result = analyze(md, is_markdown=True, config=AI)
+    assert _found(result, "NB516")
+
+
+def test_bold_label_colon_not_flagged(analyze):
+    md = "- **Intros:** years of conferences and operator network.\n"
+    result = analyze(md, is_markdown=True, config=AI)
+    assert not _found(result, "NB516")
+
+
+# --- SOCIAL / EMAIL targets --------------------------------------------------
+
+
+def test_social_target_drops_staccato_tell(analyze):
+    text = "The jokes. The wins. The team."
+    normal = analyze(text, config=Config(extend_select=("NB5",)))
+    social = analyze(text, config=Config(target="SOCIAL", extend_select=("NB5",)))
+    assert any(i.code == "NB507" for i in normal.issues)
+    assert not any(i.code == "NB507" for i in social.issues)
+
+
+def test_email_target_accepted():
+    assert Config(target="EMAIL").target == "EMAIL"
+
+
 # --- NB601 low concreteness --------------------------------------------------
 
 SLOP = (

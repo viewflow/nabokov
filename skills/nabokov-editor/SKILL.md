@@ -35,7 +35,10 @@ nabokov --format=flake8 --ai <file>   # add the AI-writing / de-slop checks (NB5
 
 For essays, blog posts, and opinion pieces add `--target essay` — it tolerates the
 longer sentences literary prose sustains deliberately and carries the loosest style
-budgets.
+budgets. For social posts use `--target social` (staccato fragments and repeated
+openers are the genre there, so those tells are off); for business email,
+`--target email` (tightest budgets — a high-trust audience is where puffery costs
+the most).
 
 Loop on the `flake8` output. What the static layer covers:
 
@@ -88,6 +91,13 @@ the core of every humanizer skill, and the part a linter cannot do:
 - **Catalogue instead of integration** — elements that constrain and produce each
   other presented as a flat list. Ask what each item does to the others, what
   breaks if one is removed — then write the relationships, not the inventory.
+- **Self-labeling significance** — "that last move is the contrarian one", "here's
+  where it gets clever". The label does the work the content was supposed to do;
+  cut it and restructure so the right item carries the weight itself.
+- **Treadmill prose** — per paragraph, ask "what's actually new here?" If 40–60%
+  could be cut with no information lost, the text restates its premise in fresh
+  words instead of advancing it. Name each paragraph's one contribution; cut the
+  ones without one.
 - **Signposting out of scale** — "let us explore three ways…" narrates the move
   instead of making it. Judge density against document scale: ten orientation
   moments serve a hundred-page layered argument; three per page in a short flat
@@ -132,6 +142,10 @@ Harvard/Purdue writing guides:
    arguments, run the macro pass (thesis, reverse outline, stitching, conclusion).
 3. **Fix, preserving meaning** — statement by statement (playbooks below). Keep the
    author's intent, facts, links, code, and structure. Never invent content.
+   **Patch vs. rebuild**: when the static pass returns heavy vocabulary hits
+   across 3+ categories *plus* flat rhythm (NB509), patching phrases won't fix
+   it — the structure itself is generated. Propose a rebuild from the piece's
+   one-sentence core instead (approval gate; this is a big change).
 4. **Approval gate**: if a fix needs a *big change* (below), collect it and ask first.
 5. **Re-lint**: run nabokov again; fix anything new. Tokenization estimates are
    imperfect, so expect a couple of passes.

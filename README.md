@@ -100,6 +100,10 @@ to (case-insensitive):
 - **technical** — docs for expert readers; hard from grade 14, very hard from 18.
 - **essay** — essays, blog posts, opinion pieces. The TECHNICAL thresholds, plus the
   loosest style budgets for a writer's voice.
+- **social** — short-form posts. Plain-language thresholds, and the genre's own
+  devices (staccato fragments, repeated openers) stop counting as AI tells.
+- **email** — business email. A high-trust audience, so the tightest style budgets
+  of any target.
 
 ```sh
 nabokov --target technical api-guide.md
@@ -155,7 +159,7 @@ nabokov walks up from the current directory to find one. CLI flags win.
 
 ```toml
 [tool.nabokov]
-target = "NORMAL"       # ACCESSIBLE | NORMAL | TECHNICAL | ESSAY
+target = "NORMAL"       # ACCESSIBLE | NORMAL | TECHNICAL | ESSAY | SOCIAL | EMAIL
 ignore = ["NB301"]      # e.g. stop flagging adverbs
 
 [tool.nabokov.budgets]  # optional: per-1000-word style budgets (see docs/RULES.md)

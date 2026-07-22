@@ -18,9 +18,13 @@ Run `nabokov --list-rules` to print this catalog from the tool itself.
 
 Readability uses the Automated Readability Index (ARI):
 `grade = round(letters/words × 4.71 + words/sentences × 0.5 − 21.43)`. Thresholds come
-from the reading-level target (`--target`): NORMAL (default), ACCESSIBLE, TECHNICAL, or
+from the reading-level target (`--target`): NORMAL (default), ACCESSIBLE, TECHNICAL,
 ESSAY (voice-friendly: tolerates the longer sentences literary prose sustains
-deliberately, and carries the loosest style budgets — see below).
+deliberately, and carries the loosest style budgets — see below), SOCIAL (short-form
+posts: plain-language thresholds, and the genre's own devices — staccato fragments,
+repeated openers, flat-rhythm and periodic-sentence checks — are switched off, since
+they are the register, not tells), or EMAIL (business email: a high-trust audience,
+so the tightest style budgets of any target).
 
 | Code | Name | Color | Flags |
 |------|------|-------|-------|
@@ -77,6 +81,8 @@ Default budgets per 1000 words, by target:
 | NORMAL | 15 | 8 | 10 | 2 | 5 | 3 |
 | TECHNICAL | 10 | 15 | 8 | 3 | 4 | 3 |
 | ESSAY | 25 | 15 | 15 | 3 | 6 | 6 |
+| SOCIAL | 15 | 5 | 10 | 2 | 4 | 3 |
+| EMAIL | 10 | 5 | 8 | 2 | 3 | 2 |
 
 ESSAY is calibrated against a corpus of Paul Graham essays: strong essayistic prose
 produces no style-layer warnings there. Override any budget in config:
@@ -142,6 +148,8 @@ leaves those for the LLM to decide). Severity shows in the `json` reporter.
 | `NB516` | ai-bold-listicle | info | A stack (≥ 3) of `**Label:**` bold-header bullets. | "- **First:** … - **Second:** …" |
 | `NB517` | ai-vocab-cluster | info | Tier-2 vocabulary: words that are normal alone ("significant", "effective") but that LLMs sprinkle in clusters. Flagged only when 2+ *distinct* list words land in one paragraph. | "our **significant** and **innovative** platform" |
 | `NB518` | ai-adjective-triad | info | The symmetry attractor: every enumeration pressed into a balanced adjective triple. A *density* tell — the tricolon is 2,000 years of rhetoric and essayists measure under 0.5 triads per 1000 words, so only 1.5+/1000 (min 2) shows the reflex. | "**innovative, transformative, and groundbreaking**" |
+| `NB519` | ai-artifact | warning | Fingerprints, not tells: chat-UI citation tokens, AI-tool URL parameters, unfilled template placeholders, knowledge-cutoff disclaimers. Near-proof of an unedited paste — no density gating. | "**citeturn0search0**", "**utm_source=chatgpt.com**", "**[Your Name]**", "**as of my last update**" |
+| `NB520` | ai-hedge-stack | warning | A modal stacked with a hedge adverb — each cancels the other, asserting nothing while sounding cautious. Pick one. | "**could potentially** create", "**may eventually** unlock" |
 
 ```
 essay.md:3:1: NB502 AI tell: puffery 'delve'

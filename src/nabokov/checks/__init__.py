@@ -10,12 +10,14 @@ from __future__ import annotations
 from .adverbs import AdverbRule
 from .ai_writing import (
     AdjectiveTriadRule,
+    AiArtifactRule,
     BoldListicleRule,
     CurlyQuoteRule,
     EditorializingRule,
     EmDashRule,
     EmojiRule,
     FillerRule,
+    HedgeStackRule,
     IntensifierRule,
     MonotonousRhythmRule,
     NegationContrastRule,
@@ -65,6 +67,8 @@ ALL_RULES: list[Rule] = [
     BoldListicleRule(),
     VocabClusterRule(),
     AdjectiveTriadRule(),
+    AiArtifactRule(),
+    HedgeStackRule(),
 ]
 
 # code -> (name, human description)
@@ -97,6 +101,8 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB516": ("ai-bold-listicle", "AI tell: bold-label listicle formatting"),
     "NB517": ("ai-vocab-cluster", "AI tell: clustered generic-praise vocabulary"),
     "NB518": ("ai-adjective-triad", "AI tell: repeated coordinated adjective triads"),
+    "NB519": ("ai-artifact", "AI artifact: citation markup, tool URLs, placeholders (near-proof)"),
+    "NB520": ("ai-hedge-stack", "AI tell: modal stacked with hedge adverb ('could potentially')"),
     "NB601": ("low-concreteness", "Abstract paragraph — no lived detail (advisory)"),
 }
 

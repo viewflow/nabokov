@@ -15,7 +15,7 @@ from typing import Any
 
 from .checks import ALL_CODES, DEFAULT_CODES
 
-VALID_TARGETS = {"ACCESSIBLE", "NORMAL", "TECHNICAL", "ESSAY"}
+VALID_TARGETS = {"ACCESSIBLE", "NORMAL", "TECHNICAL", "ESSAY", "SOCIAL", "EMAIL"}
 BUDGET_CODES = {"NB301", "NB302", "NB303", "NB304", "NB305", "NB401"}
 VALID_FORMATS = {"auto", "color", "flake8", "json", "github"}
 VALID_COLORS = {"auto", "always", "never"}

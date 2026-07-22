@@ -2,6 +2,7 @@
   "_source": "https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing (retrieved 2026-07-21)",
   "_note": "Signal lists for the NB5xx 'signs of AI writing' rules. Curated to favor precision; these are tells, not proof.",
   "_updated": "2026-07-22 — tells migrate with each model generation; a frozen list scans for last season's patterns. Refresh against the detection literature (and re-run the corpus calibration) every release or two.",
+  "_credits": "Several entries adapted from conorbronsdon/avoid-ai-writing (MIT), which in turn credits blader/humanizer, Aboudjem/humanizer-skill, brandonwise/humanizer, and tropes.fyi.",
   "puffery": [
     "delve", "tapestry", "testament", "realm", "landscape", "boast", "showcase",
     "underscore", "garner", "foster", "cultivate", "leverage", "robust", "vibrant",
@@ -13,7 +14,8 @@
     "symphony", "keen", "pesky", "unleash", "unlock", "navigate",
     "synergy", "paradigm", "unprecedented", "unparalleled", "transformative",
     "innovative", "empower", "streamline", "optimize", "supercharge", "turbocharge",
-    "interplay", "breathtaking", "stunning", "must-visit"
+    "interplay", "breathtaking", "stunning", "must-visit",
+    "watershed", "learnings", "deep dive", "thought leader", "thought leadership"
   ],
   "intensifiers": [
     "very", "really", "quite", "extremely", "incredibly", "truly", "highly",
@@ -43,7 +45,9 @@
     "this paper proceeds", "this article proceeds", "this essay proceeds",
     "only time will tell", "the future looks bright", "the future is bright",
     "at the end of the day", "when all is said and done", "exciting times ahead",
-    "the possibilities are endless"
+    "the possibilities are endless",
+    "studies show", "research suggests", "industry leaders agree",
+    "one thing is certain", "as we move forward", "whether you're a"
   ],
   "vocab_tier2": [
     "significant", "innovative", "effective", "dynamic", "scalable",
@@ -62,7 +66,11 @@
     "let me walk you through", "full stop", "let's dive in", "let's explore",
     "let's break this down", "without further ado", "here's what you need to know",
     "the real question is", "what really matters", "the heart of the matter",
-    "real talk", "let's be honest"
+    "real talk", "let's be honest",
+    "let me think step by step", "here's my thought process",
+    "to approach this systematically", "working through this logically",
+    "the catch?", "the kicker?",
+    "i recently had the pleasure of"
   ],
   "transitions": [
     "moreover", "furthermore", "additionally", "notably", "importantly",
