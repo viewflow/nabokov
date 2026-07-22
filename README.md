@@ -1,17 +1,18 @@
 # nabokov
 
-A console linter for English prose. Hard sentences, adverbs, passive voice: one
-warning per line.
+A console linter for English prose: readability, and the tells of AI writing.
+One warning per line, toggled like `flake8`.
 
 ![Python](https://img.shields.io/badge/python-3.12+-blue)
 ![Built with spaCy](https://img.shields.io/badge/nlp-spaCy-09a3d5)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
 Code gets review. Prose gets a shrug. nabokov catches hard sentences, adverbs,
-passive voice, wordy phrases, and qualifiers. Opt-in checks spot the tells of AI
-writing. A readability grade comes with the report. Findings print as warnings you can
-pipe into an editor or CI. Each check is a rule with its own code, so you switch checks
-on and off the way you do with `flake8`.
+passive voice, wordy phrases, and qualifiers. Every report carries a readability
+grade. Opt-in checks catch the tells of AI writing: puffery like `delve`, chatbot
+filler, em-dash pileups, flat robotic rhythm. Findings print as warnings you pipe
+into an editor or CI. Each check is a rule with its own code, so you toggle them
+like `flake8`.
 
 ## Try it
 
@@ -19,14 +20,25 @@ on and off the way you do with `flake8`.
 uvx nabokov draft.md          # one command, no setup; fetches the model on first run
 ```
 
+Point it at a paragraph of AI slop and it answers:
+
+```
+$ nabokov --ai release-notes.md
+release-notes.md:1:14: NB502 AI tell: puffery 'leverages'
+release-notes.md:1:51: NB502 AI tell: puffery 'transformative'
+release-notes.md:1:75: NB501 AI tell: negation-contrast 'It's not just an update, it's'
+release-notes.md:1:107: NB502 AI tell: puffery 'paradigm'
+release-notes.md:1:127: NB302 passive voice: 'was celebrated by the whole team'
+
+5 issues in 1 file
+```
+
+**[Or try it in your browser →](https://nabokov.viewflow.io)** (no install).
+
 ## Why
 
 Code has linters, but prose rarely does. Style guides live in people's heads. nabokov
 moves them into your terminal. It points at the sentence that reads hard and says why.
-
-The [Hemingway Editor](https://hemingwayapp.com/) inspired the rule set.
-Detection runs on spaCy. Passive voice comes from a dependency parse, not a
-fragile regex.
 
 ## Install
 
@@ -59,8 +71,8 @@ nabokov --list-rules             # print every code
 ```
 
 `--stats` prints one metrics line per file (also in `--format json` as `summary`).
-Burstiness is the sentence-length coefficient of variation — high means varied,
-human rhythm; low means flat and machine-uniform. Diff it between two drafts to
+Burstiness is the sentence-length coefficient of variation. High means varied,
+human rhythm. Low means flat and machine-uniform. Diff it between two drafts to
 catch a rewrite that got polished flat.
 
 nabokov reads plain text, Markdown, and HTML. For `.md` and `.html` it blanks the
@@ -84,33 +96,34 @@ Choose one with `--format`:
 Run `nabokov --list-rules` to see them all. The full reference lives in
 [docs/RULES.md](docs/RULES.md).
 
-- **NB201 / NB202**: the `very hard` and `hard` reading levels.
-- **NB203**: a main clause buried after 20+ words of build-up (advisory).
-- **NB301**: adverbs.
-- **NB302**: passive voice.
-- **NB303**: qualifiers and hedges.
-- **NB304**: nominalizations behind light verbs — "came to an agreement" → *agreed*.
-- **NB305**: dummy subjects — "There are many resorts in Colorado" → "Colorado has…".
-- **NB306**: repeated words — "Paris in the the spring".
-- **NB307**: uncomparables — "very unique", "most perfect".
-- **NB401**: wordy phrases, with a simpler suggestion.
-- **NB601**: abstract, "empty prose" paragraphs, scored against the Brysbaert
-  concreteness norms (advisory).
-- **NB101**: the document grade, reported with `--max-grade`.
+| Code | What it flags |
+|------|---------------|
+| `NB201` / `NB202` | The `very hard` and `hard` reading levels. |
+| `NB203` | A main clause buried after 20+ words of build-up (advisory). |
+| `NB301` | Adverbs. |
+| `NB302` | Passive voice. |
+| `NB303` | Qualifiers and hedges. |
+| `NB304` | Nominalizations behind light verbs: "came to an agreement" → *agreed*. |
+| `NB305` | Dummy subjects: "There are many resorts in Colorado" → "Colorado has…". |
+| `NB306` | Repeated words: "Paris in the the spring". |
+| `NB307` | Uncomparables: "very unique", "most perfect". |
+| `NB401` | Wordy phrases, with a simpler suggestion. |
+| `NB601` | Abstract, "empty prose" paragraphs, scored against the Brysbaert concreteness norms (advisory). |
+| `NB101` | The document grade, reported with `--max-grade`. |
 
 ## Reading-level targets
 
 One bar does not fit every text. `--target` sets the level nabokov holds a sentence
 to (case-insensitive):
 
-- **accessible** — plain language; sentences count as `hard` from grade 8, `very hard` from 12.
-- **normal** — the default; `hard` from grade 10, `very hard` from 14.
-- **technical** — docs for expert readers; `hard` from grade 14, `very hard` from 18.
-- **essay** — essays, blog posts, opinion pieces. The TECHNICAL thresholds, plus the
+- `accessible`: plain language; sentences count as `hard` from grade 8, `very hard` from 12.
+- `normal`: the default; `hard` from grade 10, `very hard` from 14.
+- `technical`: docs for expert readers; `hard` from grade 14, `very hard` from 18.
+- `essay`: essays, blog posts, opinion pieces. The TECHNICAL thresholds, plus the
   loosest style budgets for a writer's voice.
-- **social** — short-form posts. Plain-language thresholds. Staccato fragments
+- `social`: short-form posts. Plain-language thresholds. Staccato fragments
   and repeated openers are the genre's voice, not AI tells.
-- **email** — business email. A high-trust audience, so the tightest style budgets
+- `email`: business email. A high-trust audience, so the tightest style budgets
   of any target.
 
 ```sh
@@ -129,7 +142,9 @@ nabokov also spots common LLM tells (`NB5xx`). The lists come from the Wikipedia
 and community threads. It catches the `it's not X, it's Y` construction and puffery like
 `delve` or `tapestry`. Promotional phrases, chatbot filler like `Great question!`, and
 overused transitions all trip it. It also flags em-dash and emoji overuse. Rule-of-three
-fragments, flat sentence rhythm, and repeated openers round it out.
+fragments, flat sentence rhythm, and repeated openers round it out. It even puts a
+number on the flat rhythm: `--stats` prints the burstiness, a measure of
+sentence-length variation. Watch it to catch a rewrite going machine-even.
 
 These checks stay off by default, because they often flag a writer's own voice. Turn
 them on with a flag:
@@ -150,7 +165,7 @@ sentences, invented detail, hollow closers. Fixes keep your meaning. Big edits w
 for your approval.
 
 **`nabokov-copywriter`** does the opposite move. A clean draft can still be flat, so
-this skill *adds*. You pick a goal — sell, reach, provoke, or build trust — and it
+this skill *adds*. You pick a goal (sell, reach, provoke, or build trust), and it
 rebuilds the draft toward it: rhythm, a concrete scene, a proven structure, a call to
 action. It works from your real facts and asks when a scene needs a detail it doesn't
 have, then re-lints so the polish never slides back into slop.
