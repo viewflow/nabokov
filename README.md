@@ -135,12 +135,19 @@ nabokov --ai-only essay.md    # only the AI-writing checks
 
 `--ai` is shorthand for `--extend-select NB5`, and `--ai-only` for `--select NB5`.
 
-## Pair it with the agent skill
+## Pair it with the agent skills
 
-The linter catches the mechanical part. Add the `nabokov-editor` skill to your coding
-agent and it also fixes the findings. Then it reads for what rules miss: empty
-sentences, invented detail, hollow closers. Fixes keep your meaning. Big edits wait for your
-approval.
+The linter catches the mechanical part. Two sibling skills teach an agent to act on it.
+
+**`nabokov-editor`** fixes the findings, then reads for what rules miss: empty
+sentences, invented detail, hollow closers. Fixes keep your meaning. Big edits wait
+for your approval.
+
+**`nabokov-copywriter`** does the opposite move. A clean draft can still be flat, so
+this skill *adds*. You pick a goal — sell, reach, provoke, or build trust — and it
+rebuilds the draft toward it: rhythm, a concrete scene, a proven structure, a call to
+action. It works from your real facts and asks when a scene needs a detail it doesn't
+have, then re-lints so the polish never slides back into slop.
 
 ```sh
 # Claude Code
@@ -151,8 +158,9 @@ approval.
 npx skills add viewflow/nabokov
 ```
 
-Then ask your agent to lint or de-slop a file. Skill details live in
-[skills/nabokov-editor/SKILL.md](skills/nabokov-editor/SKILL.md).
+Then ask your agent to de-slop a file, or to make copy land. Skill details live in
+[skills/nabokov-editor/SKILL.md](skills/nabokov-editor/SKILL.md) and
+[skills/nabokov-copywriter/SKILL.md](skills/nabokov-copywriter/SKILL.md).
 
 ## Configuration
 

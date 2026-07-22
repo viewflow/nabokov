@@ -1,7 +1,7 @@
 {
   "name": "nabokov",
   "version": "26.7.4",
-  "description": "Prose linter with a de-slop editing skill: lint drafts for readability and AI tells, rewrite preserving meaning.",
+  "description": "Prose linter with de-slop editing and copywriting skills: lint drafts for readability and AI tells, rewrite preserving meaning, or rebuild copy toward a goal.",
   "author": {
     "name": "Mikhail Podgurskiy",
     "email": "mikhail@viewflow.io"
@@ -9,5 +9,5 @@
   "homepage": "https://nabokov.viewflow.io",
   "repository": "https://github.com/viewflow/nabokov",
   "license": "MIT",
-  "keywords": ["prose", "linter", "readability", "de-slop", "humanizer"]
+  "keywords": ["prose", "linter", "readability", "de-slop", "humanizer", "copywriting"]
 }

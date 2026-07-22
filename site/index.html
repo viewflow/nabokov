@@ -184,6 +184,12 @@
     font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
     margin-bottom: 1.2rem;
   }
+  h3 {
+    font-size: 0.9rem; font-weight: 500;
+    letter-spacing: 0.03em;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    margin: 1.8rem 0 0.7rem;
+  }
   section p + p { margin-top: 0.7rem; }
   section a { color: inherit; text-underline-offset: 2px; text-decoration-color: #b0ab9d; }
   section a:hover { text-decoration-color: currentColor; }
@@ -274,7 +280,7 @@
   <a href="#ai">ai</a>
   <a href="#live">try it</a>
   <a href="#try">install</a>
-  <a href="#skill">the skill</a>
+  <a href="#skill">skills</a>
 </nav>
 <div class="col">
 
@@ -370,7 +376,8 @@ $ nabokov draft.md</code></pre>
 </section>
 
 <section id="skill">
-  <h2>nabokov-editor, the skill</h2>
+  <h2>the skills</h2>
+  <h3>nabokov-editor</h3>
   <p>Static rules see form, not meaning. The repo ships <code>nabokov-editor</code>, a skill that teaches AI agents to edit prose. It replaces the scattered humanizer, unslop, and anti-slop prompts. Your agent runs the linter, fixes the findings, then reads for what rules miss:</p>
   <ul class="rules plain">
     <li><span class="rname">empty prose</span> <span class="desc">Grammatical sentences that say nothing.</span></li>
@@ -381,13 +388,18 @@ $ nabokov draft.md</code></pre>
     <li><span class="rname">hollow closers</span> <span class="desc">The future looks bright.</span></li> <!-- nabokov: ignore -->
   </ul>
   <p>Fixes keep the meaning. Big edits wait for your approval.</p>
+
+  <h3>nabokov-copywriter</h3>
+  <p>Editing cleans a draft. Sometimes a clean draft is still flat. The repo also ships <code>nabokov-copywriter</code>, the sibling skill that does the opposite move: it adds. Pick a goal — sell, reach, provoke, or build trust — and it rebuilds the draft toward it. Rhythm, a scene the reader can see, a proven structure, a call to action that grows out of the copy.</p>
+  <p>It works from your real facts, never invented ones. When a scene needs a detail it doesn't have, it asks. Then it re-lints, so the polish never slides back into slop.</p>
+
   <pre><code># Claude Code <!-- nabokov: ignore -->
 /plugin marketplace add viewflow/nabokov
 /plugin install nabokov@viewflow
 
 # Cursor, Codex, Gemini CLI, and other agents <!-- nabokov: ignore -->
 $ npx skills add viewflow/nabokov</code></pre>
-  <p class="sub mono">Then ask your agent to de-slop a file.</p>
+  <p class="sub mono">Then ask your agent to de-slop a file, or to make copy land.</p>
 </section>
 
 <footer>
