@@ -85,6 +85,13 @@ the core of every humanizer skill, and the part a linter cannot do:
 - **Manufactured aphorisms** — "X is the language of Y", tidy fake wisdom.
 - **Synonym cycling / elegant variation** — the same thing renamed each mention
   (protagonist → main character → hero).
+- **Catalogue instead of integration** — elements that constrain and produce each
+  other presented as a flat list. Ask what each item does to the others, what
+  breaks if one is removed — then write the relationships, not the inventory.
+- **Signposting out of scale** — "let us explore three ways…" narrates the move
+  instead of making it. Judge density against document scale: ten orientation
+  moments serve a hundred-page layered argument; three per page in a short flat
+  text is a tic. Cut the tics, keep the load-bearing ones.
 - **Speculative gap-filling** — inventing facts or biography with stock phrases when
   the source doesn't say ("is believed to", "likely", "keeps a low profile").
 - **Diff-anchored writing** — narrating the change ("was added to replace") instead of
@@ -148,6 +155,8 @@ Harvard/Purdue writing guides:
 | NB303 / NB510 | Thin, don't eradicate: cut at most about a third — the ones doing no work. In first-person prose a hedge is epistemic honesty; deleting it changes the claim's strength (approval gate). |
 | NB401 | Use the simpler suggestion in the message. |
 | NB501–NB508 | Recast the tell: drop the antithesis, cut puffery, trim em-dashes/emoji, break the triad. |
+| NB502 / NB503 | Inflation: deleting the amplifier treats the symptom. **Ground before generalize** — lay the concrete case first, then let the claim arrive plain; the reader already knows its weight. |
+| NB518 | Vary enumeration size: two items for contrast, three for closure, four-plus for abundance. If every list is a triple, break some. |
 | NB509 | Vary sentence length — mix short and long — to raise burstiness. |
 | NB511 | Replace the ", -ing …" significance tail with a plain clause or cut it. |
 | NB512 | Vary the sentence openers. |
@@ -155,7 +164,7 @@ Harvard/Purdue writing guides:
 | NB304 | Use the verb from the message: "came to an agreement" → *agreed*. Almost always safe and meaning-preserving. |
 | NB305 | Name the real subject: "There are many resorts in Colorado" → "Colorado has many resorts". Keep "there is no X" when existence itself is the point. |
 | NB517 | Thin the cluster: keep the one generic-praise word doing work, replace the rest with specifics. |
-| NB601 | The paragraph is grammatical but names nothing concrete. NEVER invent detail — ask the user for a real example, number, or image (approval gate). If the abstraction is the honest register (philosophy, math), leave it. |
+| NB601 | The paragraph is grammatical but names nothing concrete. NEVER invent detail — ask the user for a real example, number, or image (approval gate). Once the case is laid, let the general claim arrive plain (ground before generalize). If the abstraction is the honest register (philosophy, math), leave it. |
 
 ## Fix playbook — judgment
 
@@ -200,7 +209,9 @@ Batch these so the user approves several at once.
 - **Preserve markup** — nabokov ignores URLs, code, and headings; so must you.
 - **Respect voice.** The `--ai` checks flag emoji, em-dashes, and punchy phrasing that
   are often the author's deliberate style. Turn them on when de-slopping is the goal;
-  don't strip voice by default.
+  don't strip voice by default. If other writing by the same author is available,
+  read some first — what looks like a tell in general may be the author's
+  fingerprint in particular.
 - Use inline `<!-- nabokov: ignore NBxxx -->` only for a finding the user agrees is a
   deliberate exception — don't silence findings to "win".
 

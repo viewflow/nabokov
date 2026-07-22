@@ -92,6 +92,53 @@ def test_single_generic_word_not_flagged(analyze):
     assert not _found(result, "NB517")
 
 
+# --- NB518 adjective triads --------------------------------------------------
+
+
+def test_repeated_adjective_triads_flagged(analyze):
+    text = (
+        "The plan was innovative, transformative, and groundbreaking. "
+        "The team felt confident, prepared, and unstoppable after the launch."
+    )
+    result = analyze(text, config=AI)
+    found = _found(result, "NB518")
+    assert len(found) == 2
+    assert all(i.severity == "info" for i in found)
+
+
+def test_single_adjective_triad_not_flagged(analyze):
+    result = analyze(
+        "The plan was clear, focused, and practical. Everyone approved it quickly.",
+        config=AI,
+    )
+    assert not _found(result, "NB518")
+
+
+def test_adjective_pair_not_flagged(analyze):
+    result = analyze(
+        "The plan was clear and practical. The team was calm and ready. "
+        "The launch was quick and clean.",
+        config=AI,
+    )
+    assert not _found(result, "NB518")
+
+
+# --- article-era hedges and clichés ------------------------------------------
+
+
+def test_impersonal_hedge_flagged(analyze):
+    result = analyze("It could be argued that the plan needs far more time.")
+    assert _found(result, "NB303")
+
+
+def test_intersection_cliche_flagged(analyze):
+    result = analyze(
+        "The framework sits at the intersection of design and complexity science.",
+        config=AI,
+    )
+    assert _found(result, "NB503")
+
+
 # --- NB601 low concreteness --------------------------------------------------
 
 SLOP = (

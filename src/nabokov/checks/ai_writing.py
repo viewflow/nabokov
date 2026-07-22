@@ -693,6 +693,93 @@ class TransitionRule(_ListRule):
         return f"AI tell: overused transition '{text}'"
 
 
+class AdjectiveTriadRule(Rule):
+    """NB518 — the symmetry attractor: coordinated adjective triads.
+
+    "innovative, transformative, and groundbreaking" — the LLM reflex of pressing
+    every enumeration into a balanced triple. The tricolon is also 2,000 years of
+    legitimate rhetoric and factual three-item lists are normal, so this is a
+    *density* tell: essayists run well under 0.5 triads per 1000 words (measured
+    on the corpus); the reflex shows at 1.5+/1000. Advisory even then.
+    Human prose varies enumeration size — two for contrast, four for abundance.
+    """
+
+    code = "NB518"
+    name = "ai-adjective-triad"
+    category = "ai"
+    codes = ("NB518",)
+    default_on = False
+    severity = Severity.INFO
+
+    _MIN_TRIADS = 2
+    _RATE = 1.5  # triads per 1000 words
+
+    _CONTENT = ("ADJ", "NOUN", "VERB")
+
+    def _triads(self, ctx: CheckContext):
+        # Surface scan — the sm model's parse of "X, Y, and Z" adjective chains
+        # is unstable (amod/attr/conj vary with context), so match the token
+        # shape directly: ADJ , content-word [,] and/or content-word. The first
+        # element must be a confirmed ADJ (an appositive comma after a noun is a
+        # clause boundary, not a list); the later two tolerate the model's
+        # mis-tags ("transformative" as NOUN). All within one sentence.
+        doc = ctx.doc
+        toks = [t for t in doc if not t.is_space]
+        triads = []
+        for idx in range(len(toks) - 4):
+            window = toks[idx : idx + 6]
+            a, comma = window[0], window[1]
+            if a.pos_ != "ADJ" or comma.text != ",":
+                continue
+            b = window[2]
+            if b.pos_ not in self._CONTENT:
+                continue
+            rest = window[3:]
+            if rest[0].text == ",":
+                rest = rest[1:]
+            if len(rest) < 2 or rest[0].pos_ != "CCONJ" or rest[1].pos_ not in self._CONTENT:
+                continue
+            c = rest[1]
+            group = (a, b, c)
+            if a.sent != c.sent:
+                continue
+            # exclude longer enumerations: a comma/conjunction right before or
+            # a continuing list right after means this is not a triple
+            prev = doc[a.i - 1] if a.i else None
+            if prev is not None and (prev.text == "," or prev.pos_ == "CCONJ"):
+                continue
+            nxt = doc[c.i + 1] if c.i + 1 < len(doc) else None
+            if nxt is not None and nxt.text == ",":
+                continue
+            triads.append(group)
+        return triads
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        triads = self._triads(ctx)
+        words = sum(1 for t in ctx.doc if not (t.is_punct or t.is_space))
+        if len(triads) < self._MIN_TRIADS or not words:
+            return
+        if len(triads) / words * 1000 < self._RATE:
+            return
+        for group in triads:
+            start = group[0].idx
+            end = group[-1].idx + len(group[-1].text)
+            snippet = " ".join(ctx.doc.text[start:end].split())
+            yield _issue(
+                ctx,
+                self.code,
+                self.name,
+                (
+                    f"AI tell: adjective triad '{snippet}' — vary enumeration size "
+                    "(two for contrast, four for abundance)"
+                ),
+                start,
+                end,
+                ctx.doc.text[start:end],
+                severity=self.severity,
+            )
+
+
 class VocabClusterRule(_ListRule):
     """NB517 — clustered generic-praise vocabulary.
 

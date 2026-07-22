@@ -112,6 +112,12 @@ Tells drawn from the [Wikipedia "Signs of AI writing"](https://en.wikipedia.org/
 reference plus community lists (Reddit / OpenAI forum threads). These are **tells, not
 proof** — enable them deliberately.
 
+**Tells migrate.** Each model generation retires last season's vocabulary and grows
+new structural habits, so a frozen list gradually scans for patterns no current model
+produces. The signal lists carry an `_updated` date in `ai_writing.json`; refresh them
+against the detection literature — and re-run the corpus calibration — every release
+or two.
+
 Each row has a **severity**: `warning` = a confident tell to fix; `info` = an advisory
 "hard part" static isn't sure about (the [nabokov-editor skill](../skills/nabokov-editor/SKILL.md)
 leaves those for the LLM to decide). Severity shows in the `json` reporter.
@@ -135,6 +141,7 @@ leaves those for the LLM to decide). Severity shows in the `json` reporter.
 | `NB515` | ai-predicate-hyphen | info | A hyphenated compound used predicatively should drop the hyphen. | "the team is **cross-functional**" |
 | `NB516` | ai-bold-listicle | info | A stack (≥ 3) of `**Label:**` bold-header bullets. | "- **First:** … - **Second:** …" |
 | `NB517` | ai-vocab-cluster | info | Tier-2 vocabulary: words that are normal alone ("significant", "effective") but that LLMs sprinkle in clusters. Flagged only when 2+ *distinct* list words land in one paragraph. | "our **significant** and **innovative** platform" |
+| `NB518` | ai-adjective-triad | info | The symmetry attractor: every enumeration pressed into a balanced adjective triple. A *density* tell — the tricolon is 2,000 years of rhetoric and essayists measure under 0.5 triads per 1000 words, so only 1.5+/1000 (min 2) shows the reflex. | "**innovative, transformative, and groundbreaking**" |
 
 ```
 essay.md:3:1: NB502 AI tell: puffery 'delve'
