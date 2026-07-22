@@ -80,7 +80,9 @@ _AI_ARTIFACTS = [
     (
         "chat citation markup",
         re.compile(
-            r"citeturn\d\w*|oai_?cit\w*|contentReference\[oaicite:\d+\]\{index=\d+\}|grok_card|\[attached_file:\d+\]"
+            r"citeturn\d\w*|oai_?cit\w*|contentReference\[oaicite:\d+\]\{index=\d+\}"
+            r"|grok_card|grok_render_citation_card_json|\[attached_file:\d+\]"
+            r"|ppl-ai-file-upload|\[span_\d+\]|\[(?:start|end)_span\]"
         ),
     ),
     (

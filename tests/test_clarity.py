@@ -173,6 +173,41 @@ def test_ordinary_brackets_not_flagged(analyze):
     assert not _found(result, "NB519")
 
 
+def test_gemini_span_markers_flagged(analyze):
+    result = analyze(
+        "The market grew by 40% last year [span_1][start_span] according to reports.",
+        config=AI,
+    )
+    assert len(_found(result, "NB519")) >= 2
+
+
+def test_perplexity_upload_marker_flagged(analyze):
+    result = analyze("The chart (ppl-ai-file-upload) shows the trend clearly.", config=AI)
+    assert _found(result, "NB519")
+
+
+# --- chat-residue filler --------------------------------------------------
+
+
+def test_certainly_exclamation_flagged(analyze):
+    result = analyze("Certainly! Here is the revised paragraph you asked about.", config=AI)
+    assert _found(result, "NB504")
+
+
+def test_plain_certainly_not_flagged(analyze):
+    result = analyze("The plan will certainly need another month of work.", config=AI)
+    assert not _found(result, "NB504")
+
+
+# --- circumlocution harvest ---------------------------------------------
+
+
+def test_despite_the_fact_that_flagged(analyze):
+    result = analyze("Despite the fact that sales fell, the team stayed calm.")
+    issue = _found(result, "NB401")[0]
+    assert "although" in issue.message
+
+
 # --- NB520 hedge stacks ------------------------------------------------------
 
 

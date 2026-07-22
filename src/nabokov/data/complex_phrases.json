@@ -188,6 +188,9 @@
     "about",
     "on"
   ],
+  "concerning the matter of": [
+    "about"
+  ],
   "conduct an investigation": [
     "investigate"
   ],
@@ -214,6 +217,9 @@
   "designate": [
     "choose",
     "name"
+  ],
+  "despite the fact that": [
+    "although"
   ],
   "discontinue": [
     "drop",
@@ -303,6 +309,9 @@
     "consider"
   ],
   "has the ability to": [
+    "can"
+  ],
+  "has the capacity to": [
     "can"
   ],
   "honest truth": [
@@ -421,6 +430,9 @@
   ],
   "is authorized to": [
     "may"
+  ],
+  "is in a position to": [
+    "can"
   ],
   "is responsible for": [
     "handles"
@@ -629,6 +641,9 @@
     "of",
     "on"
   ],
+  "regardless of the fact that": [
+    "although"
+  ],
   "relocate": [
     "move"
   ],
@@ -726,6 +741,9 @@
   ],
   "transpire": [
     "happen"
+  ],
+  "under circumstances in which": [
+    "when"
   ],
   "until such time as": [
     "until"
