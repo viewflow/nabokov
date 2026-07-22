@@ -50,7 +50,8 @@ never saw the polishing history.
 
 ## The workflow, ready to run (Claude Code only)
 
-Optional. Trigger it yourself when a piece is worth several shots. Pass the source
+Optional. When a piece is worth several shots, offer it to the user — and run it
+only when they opt in (same rule as above: never fire it unasked). Pass the source
 draft, the real facts, the goal, the linter target, and the source's burstiness as
 `args` — get that last number once with `nabokov --stats <sourcefile>`. Each judge
 runs blind, lints the variant with the real tool (`nabokov --stats --ai`), and

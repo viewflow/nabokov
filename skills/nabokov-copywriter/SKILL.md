@@ -55,9 +55,11 @@ Run in order. Each pass hands a better draft to the next.
 
 1. **De-slop** — clear the machine tells first, so you enliven signal, not noise.
    This is the nabokov-editor job; run it, or run the linter directly:
-   `uvx nabokov --ai <file>`. Cut puffery, triads, negation-contrast, em-dash
-   pileups, hollow closers. A draft full of slop can't be made to flow — the flat
-   rhythm *is* the slop.
+   `uvx nabokov --ai <file>`. Cut the confident tells — puffery,
+   negation-contrast, hollow closers; thin em-dash pileups and triads under the
+   editor's triage (triads are NB507, advisory on purpose: human staccato looks
+   the same, so judge each, don't eradicate). A draft full of slop can't be made
+   to flow — the flat rhythm *is* the slop.
 
 2. **Enliven** — the cinematic pass. Turn labels into scenes, weak verbs into
    strong ones, abstractions into something the reader can see — **all from the
