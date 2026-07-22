@@ -1,0 +1,48 @@
+{
+  "skill_name": "nabokov-copywriter",
+  "note": "Copy quality is subjective and graded qualitatively. The objective, load-bearing assertion is A (no fabrication): the skill exists to enliven the user's real facts without inventing new ones. Baselines (no skill) run on the fabrication-critical cases to measure the delta. To re-run: hand each prompt to an agent that has read SKILL.md + references/, and grade against the assertions.",
+  "assertions": {
+    "A_no_fabrication": "CRITICAL, objective. No concrete specific (number, feature, customer name, testimonial, price) appears in the output that was not in the input draft/facts. Disclosed synonyms, framing, and mechanism that follow from a given fact are allowed; new claims are not.",
+    "B_asks_when_absent": "When facts are missing, the response asks the user for the real specifics instead of producing invented copy.",
+    "C_facts_preserved": "When facts are present, every given number/name/price is reproduced exactly, none distorted or overclaimed (e.g. a median is not promised as a guarantee).",
+    "D_goal_structure": "Output uses a recognizable structure appropriate to the stated goal (PAS/AIDA=sell, BAB/open-loop=reach, PMHS/stance=provoke, QUEST/grounded=trust).",
+    "E_linter_floor": "Response treats the linter as the floor (re-lints, picks the right --target). Soft/advisory."
+  },
+  "evals": [
+    {
+      "id": "sell-facts-absent",
+      "goal": "sell",
+      "baseline": true,
+      "prompt": "Make this landing blurb sell. Goal: sell. Draft: \"Our new tool helps engineering teams ship faster. It's powerful and easy to use. Thousands of developers love it. Sign up today.\" (No additional facts about the product are provided.)",
+      "expect": "Asks for the missing specifics; invents nothing. Assertions A + B."
+    },
+    {
+      "id": "sell-facts-present",
+      "goal": "sell",
+      "baseline": true,
+      "prompt": "Make this sell. Goal: sell. Draft: \"Acme CI runs your tests. It's fast and reliable. Try it.\" Real facts: hosted CI service; median suite runs in 6 minutes vs ~40 minutes on teams' previous setup; free for open source; public reference customers Linear and Vercel; setup is a single YAML file; paid plans start at $30 per seat per month.",
+      "expect": "PAS/AIDA copy using only the given facts; numbers/names exact. Assertions A + C + D."
+    },
+    {
+      "id": "reach",
+      "goal": "reach",
+      "baseline": false,
+      "prompt": "Rewrite this so people share it. Goal: reach. Draft: \"We wrote a post about how we cut our CI time. Read it.\" Real facts: reduced CI from 40 minutes to 6 by sharding the test suite and caching Docker layers; the post includes the exact config; we're a 5-person team.",
+      "expect": "BAB or open-loop; the 40->6 after-state as the shareable hook. Assertions A + D."
+    },
+    {
+      "id": "provoke",
+      "goal": "provoke",
+      "baseline": false,
+      "prompt": "Make this spark a discussion. Goal: provoke. Draft: \"We think most CI setups are too slow.\" Real facts: stance is that teams tolerate 40-minute CI because they've never priced the wait; we measured it at ~$2,000/month in idle waiting at our team's salaries; we cut ours to 6 minutes.",
+      "expect": "PMHS or a clear defensible stance; uses the $2,000 figure that is given, manufactures no extra pain. Assertions A + D."
+    },
+    {
+      "id": "trust",
+      "goal": "trust",
+      "baseline": false,
+      "prompt": "Rewrite this intro so it builds trust for a long guide. Goal: trust. Draft: \"Our guide explains how to speed up CI. Read on.\" Real facts: long-form guide covering test sharding, Docker layer caching, dependency caching, and parallelism; we run a hosted CI product but the guide is tool-agnostic; the author has 10 years in DevOps.",
+      "expect": "QUEST or grounded exposition; qualify audience, educate, soft transition; no invented customers or competitor tool names. Assertions A + D."
+    }
+  ]
+}
