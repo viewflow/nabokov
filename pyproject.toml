@@ -102,6 +102,6 @@ addopts = "-q"
 
 [tool.nabokov]
 # Default configuration (also read from a project's own pyproject.toml / .nabokov.toml).
-# target = "NORMAL"        # ACCESSIBLE | NORMAL | TECHNICAL
+target = "TECHNICAL"       # ACCESSIBLE | NORMAL | TECHNICAL
 # select = ["NB"]
 # ignore = []
