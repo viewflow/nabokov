@@ -71,12 +71,31 @@ _NEGATION_PATTERNS = [
 # reporting and does not fire. First person is excluded — "I'm no longer at
 # Google. I'm at a startup" is ordinary autobiography. Advisory: the shape is
 # also legitimate human rhetoric, so the judgment layer decides.
+#
+# The "doesn't mean" reframe is the same move on a definition: "Market research
+# doesn't have to mean spreadsheets. Sometimes it means listening." Both halves
+# are required — negate the expected meaning, then reveal the real one with a
+# repeated "mean(s)". The bare negation is ordinary human prose (PG: "Writing
+# essays doesn't have to mean publishing them.") and never fires; the completed
+# couplet has zero occurrences across the 125k-word calibration corpus.
 _NEGATION_PATTERNS_INFO = [
-    re.compile(
-        r"\b(they|it|that|this|he|she|these|those)(?:['’](?:re|s))?"
-        r"(?:\s+(?:is|are|was|were))?\s+no longer\b[^.?!\n]{1,60}[.!]\s+"
-        r"\1(?:['’](?:re|s)|\s+(?:is|are|was|were))\b",
-        re.IGNORECASE,
+    (
+        "'no longer' reframe",
+        re.compile(
+            r"\b(they|it|that|this|he|she|these|those)(?:['’](?:re|s))?"
+            r"(?:\s+(?:is|are|was|were))?\s+no longer\b[^.?!\n]{1,60}[.!]\s+"
+            r"\1(?:['’](?:re|s)|\s+(?:is|are|was|were))\b",
+            re.IGNORECASE,
+        ),
+    ),
+    (
+        "'doesn't mean' reframe",
+        re.compile(
+            r"\b(?:doesn'?t|does not|don'?t|do not)\s+(?:have to\s+)?mean\b"
+            r"[^.?!\n]{1,60}[.!]\s+"
+            r"(?:sometimes\s+)?(?:it|that|this)\s+(?:can\s+|often\s+|sometimes\s+)?means?\b",
+            re.IGNORECASE,
+        ),
     ),
 ]
 
@@ -240,7 +259,7 @@ class NegationContrastRule(Rule):
                     m.end(),
                     phrase.strip(),
                 )
-        for pattern in _NEGATION_PATTERNS_INFO:
+        for label, pattern in _NEGATION_PATTERNS_INFO:
             for m in pattern.finditer(text):
                 if m.start() in seen:
                     continue
@@ -250,7 +269,7 @@ class NegationContrastRule(Rule):
                     ctx,
                     "NB501",
                     "ai-negation-contrast",
-                    f"AI tell: 'no longer' reframe '{phrase.strip()}'",
+                    f"AI tell: {label} '{phrase.strip()}'",
                     m.start(),
                     m.end(),
                     phrase.strip(),

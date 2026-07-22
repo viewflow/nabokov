@@ -402,6 +402,23 @@ def test_no_longer_without_copula_ok(analyze):
     assert "NB501" not in _codes(analyze, text)
 
 
+def test_doesnt_mean_reframe(analyze):
+    text = (
+        "Market research doesn't have to mean spreadsheets and surveys.\n\n"
+        "Sometimes it means putting in your earbuds and listening."
+    )
+    issues = [i for i in analyze(text, config=AI).issues if i.code == "NB501"]
+    assert issues and issues[0].severity.value == "info"
+    assert "'doesn't mean' reframe" in issues[0].message
+
+
+def test_doesnt_mean_without_reveal_ok(analyze):
+    # PG, "How to Do What You Love" register: the bare negation with no
+    # "it means Y" reveal is ordinary human prose
+    text = "Writing essays doesn't have to mean publishing them. That may seem strange now."
+    assert "NB501" not in _codes(analyze, text)
+
+
 def test_colon_reveal_triad_fires_alone(analyze):
     # a single triad normally needs the density gate, but copula-colon bypasses it
     text = "That's where the real signal is: spontaneous, unfiltered, and impossible to fake."
