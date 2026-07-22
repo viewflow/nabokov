@@ -1,0 +1,31 @@
+{# Caddy on jack.lan receives plain HTTP through the cloud→jack reverse tunnel
+   (viewflow.io:9000 → jack:80) and routes by Host header. TLS terminates at
+   viewflow.io's nginx, so X-Forwarded-Proto is hardcoded to https. #}
+nabokov.viewflow.io:80, nabokov.lan:80 {
+  encode gzip
+
+  handle /health {
+    respond "OK" 200
+  }
+
+  handle /api/* {
+    request_body {
+      max_size 64KB
+    }
+    reverse_proxy 127.0.0.1:{{ gunicorn_port }} {
+      header_up X-Forwarded-Proto https
+      header_up X-Real-IP {remote_host}
+    }
+  }
+
+  # The landing page is a static file — Django never sees it.
+  handle {
+    root * {{ project_dir }}/site
+    file_server
+  }
+
+  log {
+    output stdout
+    format console
+  }
+}

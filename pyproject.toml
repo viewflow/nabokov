@@ -49,6 +49,13 @@ Issues = "https://github.com/viewflow/nabokov/issues"
 nabokov = "nabokov.cli:main"
 
 [dependency-groups]
+# Extras for the live demo backend (web/). The server installs this group only:
+#     uv sync --no-default-groups --group web
+web = [
+    "django>=5.2,<6",
+    "gunicorn>=23",
+    "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl",
+]
 dev = [
     # the model lives here (not in [project]) so `uv sync` gets it for local dev
     # and tests, while the published package stays free of direct-URL deps.
@@ -56,6 +63,8 @@ dev = [
     "pyright>=1.1.409",
     "pytest>=8.0",
     "ruff>=0.15",
+    # so `uv sync` alone gives a dev env that can run the web tests too
+    {include-group = "web"},
 ]
 
 [build-system]
@@ -83,6 +92,9 @@ ignore = ["E501", "S101", "RUF012"]
 "src/nabokov/checks/ai_writing.py" = ["RUF001"]
 # curly quotes/apostrophes in quoted-material fixtures are the point of the tests
 "tests/test_budgets.py" = ["RUF001", "RUF003"]
+# Django's wsgi/manage boilerplate sets DJANGO_SETTINGS_MODULE before importing
+"web/**" = ["E402"]
+"tests/test_web.py" = ["E402"]
 
 [tool.ruff.format]
 quote-style = "double"

@@ -1,14 +1,141 @@
 ---
-- name: Deploy nabokov static site to nabokov.viewflow.io
-  hosts: web
+# Deploy nabokov.viewflow.io.
+#
+# The site + demo API run on jack.lan (home server): gunicorn serves
+# POST /api/lint, Caddy serves the static landing page and routes by Host
+# header. viewflow.io is the TLS edge: nginx terminates HTTPS and proxies
+# everything through the persistent reverse SSH tunnel (cloud:9000 → jack:80).
+#
+# Usage:
+#     ansible-playbook -i ansible/inventory.ini ansible/deploy.yml
+# App-only refresh (skip the edge):
+#     ansible-playbook -i ansible/inventory.ini ansible/deploy.yml --limit app
+
+- name: Deploy nabokov demo app to jack.lan
+  hosts: app
+  become: true
+  vars:
+    project_name: nabokov
+    project_user: nabokov
+    project_group: caddy
+    project_dir: /srv/nabokov
+    venv_path: /srv/nabokov/.venv
+    gunicorn_port: 8006
+
+  handlers:
+    - name: Reload caddy
+      ansible.builtin.service:
+        name: caddy
+        state: reloaded
+
+    - name: Restart web
+      ansible.builtin.systemd:
+        name: nabokov-web
+        state: restarted
+        daemon_reload: true
+
+  tasks:
+    - name: Create system user
+      ansible.builtin.user:
+        name: "{{ project_user }}"
+        group: "{{ project_group }}"
+        system: true
+        create_home: false
+
+    - name: Create project directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ project_user }}"
+        group: "{{ project_group }}"
+        mode: "0755"
+      loop:
+        - "{{ project_dir }}"
+        - "{{ project_dir }}/.cache/uv"
+
+    - name: Synchronize source code
+      ansible.posix.synchronize:
+        src: "{{ playbook_dir }}/../"
+        dest: "{{ project_dir }}/"
+        delete: true
+        use_ssh_args: true
+        rsync_opts:
+          - "--exclude='.*'"
+          - "--exclude='*.pyc'"
+          - "--exclude='__pycache__'"
+          - "--exclude='/ansible/'"
+          - "--exclude='/dist/'"
+          - "--exclude='/.venv/'"
+      register: source
+      notify: Restart web
+
+    - name: Fix ownership
+      ansible.builtin.file:
+        path: "{{ project_dir }}"
+        owner: "{{ project_user }}"
+        group: "{{ project_group }}"
+        recurse: true
+      when: source.changed
+
+    - name: Install python dependencies (web group only)
+      ansible.builtin.command:
+        cmd: uv sync --no-default-groups --group web
+        chdir: "{{ project_dir }}"
+      environment:
+        UV_CACHE_DIR: "{{ project_dir }}/.cache/uv"
+      become_user: "{{ project_user }}"
+      register: uv_sync
+      # uv prints "Installed/Uninstalled N packages" to stderr only on change
+      changed_when: "'stalled' in uv_sync.stderr"
+
+    - name: Setup gunicorn service
+      ansible.builtin.template:
+        src: templates/nabokov-web.service.j2
+        dest: /etc/systemd/system/nabokov-web.service
+        mode: "0644"
+      notify: Restart web
+
+    - name: Setup caddy vhost
+      ansible.builtin.template:
+        src: templates/nabokov.caddy.j2
+        dest: /etc/caddy/nabokov.caddy
+        mode: "0644"
+      notify: Reload caddy
+
+    - name: Enable and start the web service
+      ansible.builtin.systemd:
+        name: nabokov-web
+        enabled: true
+        state: started
+        daemon_reload: true
+
+    - name: Flush handlers so the service is up before smoke testing
+      ansible.builtin.meta: flush_handlers
+
+    - name: Smoke test the lint API through Caddy
+      ansible.builtin.uri:
+        url: "http://127.0.0.1/api/health"
+        headers:
+          Host: nabokov.viewflow.io
+      register: smoke
+      retries: 12
+      delay: 5
+      until: smoke.status == 200
+
+- name: Configure viewflow.io TLS edge
+  hosts: edge
   become: true
   vars:
     domain: nabokov.viewflow.io
     srv_dir: /srv/nabokov-viewflow-io
     conf_name: nabokov-viewflow-io.conf
 
+  handlers:
+    - name: Reload nginx
+      ansible.builtin.shell: nginx -t && systemctl reload nginx
+
   tasks:
-    - name: Create site and letsencrypt webroot directories
+    - name: Create letsencrypt webroot directory
       ansible.builtin.file:
         path: "{{ item }}"
         state: directory
@@ -18,14 +145,6 @@
       loop:
         - "{{ srv_dir }}"
         - "{{ srv_dir }}/.letsencrypt"
-
-    - name: Copy static site content
-      ansible.builtin.copy:
-        src: ../site/index.html
-        dest: "{{ srv_dir }}/index.html"
-        owner: root
-        group: root
-        mode: "0644"
 
     - name: Check whether TLS certificate already exists
       ansible.builtin.stat:
@@ -76,6 +195,18 @@
       when: certbot_result is changed
       notify: Reload nginx
 
-  handlers:
-    - name: Reload nginx
-      ansible.builtin.shell: nginx -t && systemctl reload nginx
+    - name: Remove the old statically-served index.html (site moved to jack.lan)
+      ansible.builtin.file:
+        path: "{{ srv_dir }}/index.html"
+        state: absent
+
+    - name: Flush handlers before the end-to-end smoke test
+      ansible.builtin.meta: flush_handlers
+
+    - name: Smoke test the site and API end to end
+      ansible.builtin.uri:
+        url: "https://{{ domain }}/api/health"
+      register: edge_smoke
+      retries: 6
+      delay: 5
+      until: edge_smoke.status == 200

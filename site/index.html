@@ -116,6 +116,64 @@
   pre .pas { color: var(--pas-t); }
   pre .wrd { color: var(--wrd-t); }
   pre .ok  { color: #9ad17b; }
+  pre .hrd { color: #e2707a; }
+  pre .qua { color: #d9b96a; }
+  pre .ai  { color: #6ec3cf; }
+  pre .err { color: #e2707a; }
+
+  /* — live demo — */
+  .card textarea {
+    display: block;
+    width: 100%;
+    min-height: calc(1.75rem * 5);
+    background: transparent;
+    border: 0;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+    font-style: italic;
+    font-size: 1.25rem;
+    line-height: 1.75rem; /* matches the ruling */
+    color: inherit;
+  }
+  .card textarea::placeholder { color: var(--muted); opacity: 0.7; }
+  .demo-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    margin-top: 1rem;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+  }
+  .demo-bar button, .demo-bar select { font: inherit; }
+  #demo-lint {
+    background: var(--ink);
+    color: var(--paper);
+    border: 0;
+    border-radius: 4px;
+    padding: 0.45rem 1.1rem;
+    cursor: pointer;
+  }
+  #demo-lint:hover:not(:disabled) { opacity: 0.85; }
+  #demo-lint:disabled { opacity: 0.5; cursor: wait; }
+  #demo-target {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    padding: 0.4rem 0.5rem;
+  }
+  #demo-sample {
+    background: none;
+    border: 0;
+    color: var(--muted);
+    text-decoration: underline;
+    text-decoration-style: dashed;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  #demo-sample:hover { color: var(--ink); }
 
   section { padding: 2.6rem 0; border-top: 1px solid var(--hairline); }
   .hero + section { border-top: 0; }
@@ -214,7 +272,8 @@
   <a href="#checks">what it flags</a>
   <a href="#target">target</a>
   <a href="#ai">ai</a>
-  <a href="#try">try it</a>
+  <a href="#live">try it</a>
+  <a href="#try">install</a>
   <a href="#skill">the skill</a>
 </nav>
 <div class="col">
@@ -273,8 +332,32 @@
   <p>The list of signs comes from Wikipedia's <a href="https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing">guide to spotting AI writing</a>.</p>
 </section>
 
+<section id="live">
+  <h2>try it here</h2>
+  <div class="card" role="group" aria-label="Live demo: paste text and lint it">
+    <span class="tab mono">yours.md</span>
+    <textarea id="demo-text" rows="5" maxlength="20000" spellcheck="false"
+      placeholder="Paste a paragraph. Or borrow the sample below."></textarea>
+  </div>
+  <div class="demo-bar">
+    <button id="demo-lint" type="button">lint it</button>
+    <select id="demo-target" aria-label="Target audience">
+      <option value="ACCESSIBLE">--target accessible</option>
+      <option value="NORMAL" selected>--target normal</option>
+      <option value="TECHNICAL">--target technical</option>
+      <option value="ESSAY">--target essay</option>
+      <option value="SOCIAL">--target social</option>
+      <option value="EMAIL">--target email</option>
+    </select>
+    <button id="demo-sample" type="button">paste a slop sample</button>
+  </div>
+  <pre id="demo-out" hidden><code></code></pre>
+  <p class="sub mono">The real linter, AI checks on. We keep nothing.</p>
+</section>
+
 <section id="try">
-  <h2>try it</h2>
+  <h2>install</h2>
+
   <pre><code>$ uvx nabokov draft.md</code></pre>
   <p class="sub mono">One command, no setup: uvx fetches nabokov and the language model on first run.</p>
   <details>
@@ -295,7 +378,7 @@ $ nabokov draft.md</code></pre>
     <li><span class="rname">false ranges</span> <span class="desc">From X to Y on no real scale.</span></li>
     <li><span class="rname">synonym cycling</span> <span class="desc">The hero, the protagonist, the main character.</span></li>
     <li><span class="rname">gap-filling</span> <span class="desc">Stock phrases where the source says nothing.</span></li>
-    <li><span class="rname">hollow closers</span> <span class="desc">The future looks bright.</span></li>
+    <li><span class="rname">hollow closers</span> <span class="desc">The future looks bright.</span></li> <!-- nabokov: ignore -->
   </ul>
   <p>Fixes keep the meaning. Big edits wait for your approval.</p>
   <pre><code># Claude Code <!-- nabokov: ignore -->
@@ -337,6 +420,105 @@ $ npx skills add viewflow/nabokov</code></pre>
   }, { passive: true });
   addEventListener("resize", update);
   update();
+
+  // — live demo — (script content is invisible to the linter: blank_html drops it)
+  const demoText = document.getElementById("demo-text");
+  const demoTarget = document.getElementById("demo-target");
+  const demoLint = document.getElementById("demo-lint");
+  const demoSample = document.getElementById("demo-sample");
+  const demoOut = document.getElementById("demo-out");
+  const demoCode = demoOut.querySelector("code");
+
+  const SAMPLE =
+    "In today's fast-paced digital landscape, it's important to note that content " +
+    "is not just written — it is carefully crafted. Our comprehensive platform " +
+    "seamlessly leverages cutting-edge insights to empower teams and unlock their " +
+    "full potential. The rollout was quietly delayed by the team in order to fully " +
+    "polish the onboarding experience. Ultimately, this transformative journey " +
+    "stands as a testament to the power of innovation, paving the way for a " +
+    "brighter future.";
+
+  function codeClass(code) {
+    if (code.startsWith("NB2")) return "hrd";
+    if (code === "NB301") return "adv";
+    if (code === "NB302") return "pas";
+    if (code === "NB303") return "qua";
+    if (code.startsWith("NB4")) return "wrd";
+    if (code.startsWith("NB5")) return "ai";
+    return "p";
+  }
+
+  function span(cls, text) {
+    const s = document.createElement("span");
+    if (cls) s.className = cls;
+    s.textContent = text;
+    return s;
+  }
+
+  function showTerminal(nodes) {
+    demoCode.replaceChildren(...nodes);
+    demoOut.hidden = false;
+  }
+
+  function cmdLine(target) {
+    return "$ nabokov --ai --target " + target.toLowerCase() + " yours.md\n";
+  }
+
+  function renderResult(target, data) {
+    const nodes = [span("", cmdLine(target))];
+    for (const d of data.diagnostics) {
+      nodes.push(span("p", "yours.md:" + d.line + ":" + d.col + ": "));
+      nodes.push(span(codeClass(d.code), d.code));
+      let message = " " + d.message;
+      if (d.suggestion) message += " → " + d.suggestion;
+      nodes.push(span("", message + "\n"));
+    }
+    const s = data.summary;
+    const tally = data.diagnostics.length === 1 ? "1 issue" : data.diagnostics.length + " issues";
+    const secs = Math.max(1, Math.round(s.reading_time_secs));
+    nodes.push(span(data.diagnostics.length ? "" : "ok",
+      "\n" + tally + " · grade " + s.grade + " · " + s.words + " words · " +
+      s.sentences + " sentences · " + secs + "s to read\n"));
+    showTerminal(nodes);
+  }
+
+  async function runLint() {
+    const text = demoText.value.trim();
+    if (!text) { demoText.focus(); return; }
+    const target = demoTarget.value;
+    demoLint.disabled = true;
+    showTerminal([span("", cmdLine(target)), span("p", "linting…")]);
+    try {
+      const resp = await fetch("/api/lint", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text, target: target }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        showTerminal([span("", cmdLine(target)), span("err", "error: " + (data.error || resp.status) + "\n")]);
+      } else {
+        renderResult(target, data);
+      }
+    } catch (e) {
+      showTerminal([
+        span("", cmdLine(target)),
+        span("err", "error: the demo backend is unreachable"),
+        span("p", " — run `uvx nabokov` locally instead\n"),
+      ]);
+    } finally {
+      demoLint.disabled = false;
+    }
+  }
+
+  demoLint.addEventListener("click", runLint);
+  demoSample.addEventListener("click", () => {
+    demoText.value = SAMPLE;
+    demoText.focus();
+  });
+  demoText.addEventListener("keydown", (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "Enter") runLint();
+  });
 </script>
 </body>
 </html>

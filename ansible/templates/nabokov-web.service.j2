@@ -1,0 +1,35 @@
+[Unit]
+Description=nabokov live demo (Gunicorn)
+After=network.target
+
+[Service]
+Type=simple
+User={{ project_user }}
+Group={{ project_group }}
+WorkingDirectory={{ project_dir }}/web
+Environment="PATH={{ venv_path }}/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="DJANGO_SETTINGS_MODULE=nabokov_web.settings"
+
+# --preload: the spaCy model loads once in the master (wsgi.py warms it) and
+# forked workers share it copy-on-write. Workers are sync — spaCy is CPU-bound.
+ExecStart={{ venv_path }}/bin/gunicorn nabokov_web.wsgi:application \
+    --preload \
+    --workers=2 --bind=127.0.0.1:{{ gunicorn_port }} \
+    --timeout=30 --graceful-timeout=10 \
+    --max-requests=500 --max-requests-jitter=50 \
+    --access-logfile - --error-logfile -
+
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStartSec=180
+TimeoutStopSec=15
+PrivateTmp=true
+
+# Two workers × one small spaCy model, mostly shared with the master.
+MemoryMax=768M
+
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
