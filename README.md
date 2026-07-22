@@ -50,10 +50,11 @@ nabokov download-model        # one-time: fetch the spaCy model (en_core_web_sm)
 nabokov draft.md
 ```
 
-The model is a separate download because PyPI does not allow the direct-URL
-dependency it ships as. `nabokov` fetches it on first run; the explicit
-`nabokov download-model` (or `python -m spacy download en_core_web_sm`) does it up
-front. For local development, `uv sync` installs everything, including the model.
+That spaCy model is why nabokov is accurate. It reads grammar, not patterns: it
+tells a verb from a noun and follows sentence structure, so it raises far fewer
+false alarms than a regex linter. nabokov fetches it on the first run, and
+`nabokov download-model` does it up front. For local development, `uv sync` pulls
+everything.
 
 ## Usage
 
