@@ -7,8 +7,8 @@ warning per line.
 ![Built with spaCy](https://img.shields.io/badge/nlp-spaCy-09a3d5)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 
-Code gets review. Prose gets a shrug. nabokov catches hard-to-read sentences, adverbs,
-passive voice, wordy phrases, and qualifiers, plus opt-in checks for the tells of AI
+Code gets review. Prose gets a shrug. nabokov catches hard sentences, adverbs,
+passive voice, wordy phrases, and qualifiers. Opt-in checks spot the tells of AI
 writing. A readability grade comes with the report. Findings print as warnings you can
 pipe into an editor or CI. Each check is a rule with its own code, so you switch checks
 on and off the way you do with `flake8`.
@@ -24,7 +24,7 @@ uvx nabokov draft.md          # one command, no setup; fetches the model on firs
 Code has linters, but prose rarely does. Style guides live in people's heads. nabokov
 moves them into your terminal. It points at the sentence that reads hard and says why.
 
-The rule set is inspired by the [Hemingway Editor](https://hemingwayapp.com/).
+The [Hemingway Editor](https://hemingwayapp.com/) inspired the rule set.
 Detection runs on spaCy. Passive voice comes from a dependency parse, not a
 fragile regex.
 
@@ -61,7 +61,7 @@ nabokov reads plain text, Markdown, and HTML. For `.md` and `.html` it blanks th
 markup: code, tags, and link URLs. It then checks only the visible prose, so findings
 point at real writing. For stdin, `--stdin-display-name draft.md` sets the type.
 
-Exit codes follow `flake8`: `0` when clean, `1` when there are findings, `2` on a usage
+Exit codes follow `flake8`: `0` when clean, `1` on findings, `2` on a usage
 error.
 
 ## Output formats
@@ -95,13 +95,13 @@ Run `nabokov --list-rules` to see them all. The full reference lives in
 One bar does not fit every text. `--target` sets the level nabokov holds a sentence
 to (case-insensitive):
 
-- **accessible** — plain language; sentences count as hard from grade 8, very hard from 12.
-- **normal** — the default; hard from grade 10, very hard from 14.
-- **technical** — docs for expert readers; hard from grade 14, very hard from 18.
+- **accessible** — plain language; sentences count as `hard` from grade 8, `very hard` from 12.
+- **normal** — the default; `hard` from grade 10, `very hard` from 14.
+- **technical** — docs for expert readers; `hard` from grade 14, `very hard` from 18.
 - **essay** — essays, blog posts, opinion pieces. The TECHNICAL thresholds, plus the
   loosest style budgets for a writer's voice.
-- **social** — short-form posts. Plain-language thresholds, and the genre's own
-  devices (staccato fragments, repeated openers) stop counting as AI tells.
+- **social** — short-form posts. Plain-language thresholds. Staccato fragments
+  and repeated openers are the genre's voice, not AI tells.
 - **email** — business email. A high-trust audience, so the tightest style budgets
   of any target.
 
@@ -136,8 +136,8 @@ nabokov --ai-only essay.md    # only the AI-writing checks
 ## Pair it with the agent skill
 
 The linter catches the mechanical part. Add the `nabokov-editor` skill to your coding
-agent and it also fixes the findings, then reads for what rules miss: empty sentences,
-invented detail, hollow closers. Fixes keep your meaning. Big edits wait for your
+agent and it also fixes the findings. Then it reads for what rules miss: empty
+sentences, invented detail, hollow closers. Fixes keep your meaning. Big edits wait for your
 approval.
 
 ```sh
@@ -177,9 +177,9 @@ This sentence is fine.  <!-- nabokov: ignore NB302 -->
 nabokov scores readability with the Automated Readability Index (ARI). Word
 characters drive the grade, so nabokov counts no syllables.
 
-The adverb list, phrase dictionary, and reading-level thresholds combine classic
-plain-language word lists with our own additions: extra hedges, more phrase
-alternatives, and a fuller set of irregular participles.
+The adverb list and the phrase dictionary began as classic lists for plain
+language. We added extra hedges and more phrase alternatives. A fuller set of
+irregular participles feeds the passive check.
 
 spaCy handles the parsing. Passive voice reads the `auxpass` dependency. Adverbs read
 the part-of-speech tag plus the `-ly` suffix. The pipeline loads once and runs on every
