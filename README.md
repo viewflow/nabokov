@@ -33,7 +33,7 @@ release-notes.md:1:127: NB302 passive voice: 'was celebrated by the whole team'
 5 issues in 1 file
 ```
 
-**[Or try it in your browser →](https://nabokov.viewflow.io)** (no install).
+<strong><a href="https://nabokov.viewflow.io/#live" target="_blank" rel="noopener">Or try it in your browser →</a></strong> (no install).
 
 ## Why
 
