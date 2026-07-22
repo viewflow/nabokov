@@ -382,3 +382,58 @@ def test_severity_split(analyze):
     issues = {i.code: i.severity.value for i in analyze(text, config=AI).issues}
     assert issues.get("NB502") == "warning"
     assert issues.get("NB511") == "info"
+
+
+def test_no_longer_reframe(analyze):
+    text = "They're no longer entertainment or background noise. They're part of my market research."
+    issues = [i for i in analyze(text, config=AI).issues if i.code == "NB501"]
+    assert issues and issues[0].severity.value == "info"  # advisory — human rhetoric too
+
+
+def test_no_longer_first_person_ok(analyze):
+    # "I'm no longer X. I'm Y" is ordinary autobiography, not the reframe tell
+    text = "I'm no longer working at the bank. I'm building a startup in Berlin now."
+    assert "NB501" not in _codes(analyze, text)
+
+
+def test_no_longer_without_copula_ok(analyze):
+    # plain reporting: the second sentence doesn't rename the subject
+    text = "It's no longer maintained by the original author. It gets no updates at all."
+    assert "NB501" not in _codes(analyze, text)
+
+
+def test_colon_reveal_triad_fires_alone(analyze):
+    # a single triad normally needs the density gate, but copula-colon bypasses it
+    text = "That's where the real signal is: spontaneous, unfiltered, and impossible to fake."
+    issues = [i for i in analyze(text, config=AI).issues if i.code == "NB518"]
+    assert issues and "colon-reveal" in issues[0].message
+
+
+def test_colon_reveal_needs_copula(analyze):
+    # the human colon-list rides behind a noun ("three things:"), not a copula — no bypass
+    text = "Everyone wants the same three things: respect, autonomy, and control over their time."
+    assert "NB518" not in _codes(analyze, text)
+
+
+def test_engagement_bait_closer(analyze):
+    text = (
+        "Podcasts turned into my market research this year.\n\n"
+        "What's the most unexpected place you've found genuine customer insight?"
+    )
+    issues = [i for i in analyze(text, config=AI).issues if i.code == "NB522"]
+    assert issues and issues[0].severity.value == "info"
+
+
+def test_engagement_bait_needs_verb_after_you(analyze):
+    # an ordinary sign-off question is not bait — no verb follows "you"
+    text = "Thanks for reading the notes.\n\nWhat's the best way to reach you?"
+    assert "NB522" not in _codes(analyze, text)
+
+
+def test_engagement_bait_only_at_document_end(analyze):
+    # the same question mid-document is a real question, not a closer
+    text = (
+        "What's the most unexpected place you've found genuine customer insight?\n\n"
+        "For me it was a podcast about logistics, of all things."
+    )
+    assert "NB522" not in _codes(analyze, text)

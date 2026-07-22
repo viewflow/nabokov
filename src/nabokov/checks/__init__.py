@@ -16,6 +16,7 @@ from .ai_writing import (
     EditorializingRule,
     EmDashRule,
     EmojiRule,
+    EngagementBaitRule,
     FillerRule,
     HedgeStackRule,
     IntensifierRule,
@@ -74,6 +75,7 @@ ALL_RULES: list[Rule] = [
     AiArtifactRule(),
     HedgeStackRule(),
     ParagraphOpenerRule(),
+    EngagementBaitRule(),
 ]
 
 # code -> (name, human description)
@@ -111,6 +113,7 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB519": ("ai-artifact", "AI artifact: citation markup, tool URLs, placeholders (near-proof)"),
     "NB520": ("ai-hedge-stack", "AI tell: modal stacked with hedge adverb ('could potentially')"),
     "NB521": ("ai-paragraph-opener", "AI tell: same conjunction opens 3+ paragraphs"),
+    "NB522": ("ai-engagement-bait", "AI tell: engagement-bait closer question"),
     "NB601": ("low-concreteness", "Abstract paragraph — no lived detail (advisory)"),
 }
 

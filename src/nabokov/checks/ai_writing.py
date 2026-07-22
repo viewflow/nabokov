@@ -12,7 +12,7 @@ Rules (all off by default, all category "ai"):
   NB507 rule-of-three (info)  NB508 emoji overuse  NB509 monotonous rhythm (info)
   NB510 intensifiers (info) NB511 participial closer (info)  NB512 repeated opener (info)
   NB513 curly quotes (info) NB514 title-case heading (info)  NB515 predicate hyphen (info)
-  NB516 bold-label listicle (info)
+  NB516 bold-label listicle (info)  NB522 engagement-bait closer (info)
 """
 
 from __future__ import annotations
@@ -60,6 +60,22 @@ _NEGATION_PATTERNS = [
         r"\b(?:it|that)(?:'?s| is) not\b[^.?!\n]{1,40}\.\s+"
         r"(?:it|that)(?:'?s| is) not\b[^.?!\n]{1,40}\.\s+"
         r"(?:it|that)(?:'?s| is)\b",
+        re.IGNORECASE,
+    ),
+]
+
+# The "no longer" reframe: the same third-person subject renamed across two
+# sentences — "They're no longer entertainment. They're market research." The
+# second sentence must reopen with the SAME subject + a copula (the predicate
+# swap is the tell); "It's no longer maintained. It gets no updates." is plain
+# reporting and does not fire. First person is excluded — "I'm no longer at
+# Google. I'm at a startup" is ordinary autobiography. Advisory: the shape is
+# also legitimate human rhetoric, so the judgment layer decides.
+_NEGATION_PATTERNS_INFO = [
+    re.compile(
+        r"\b(they|it|that|this|he|she|these|those)(?:['’](?:re|s))?"
+        r"(?:\s+(?:is|are|was|were))?\s+no longer\b[^.?!\n]{1,60}[.!]\s+"
+        r"\1(?:['’](?:re|s)|\s+(?:is|are|was|were))\b",
         re.IGNORECASE,
     ),
 ]
@@ -223,6 +239,22 @@ class NegationContrastRule(Rule):
                     m.start(),
                     m.end(),
                     phrase.strip(),
+                )
+        for pattern in _NEGATION_PATTERNS_INFO:
+            for m in pattern.finditer(text):
+                if m.start() in seen:
+                    continue
+                seen.add(m.start())
+                phrase = m.group(0)
+                yield _issue(
+                    ctx,
+                    "NB501",
+                    "ai-negation-contrast",
+                    f"AI tell: 'no longer' reframe '{phrase.strip()}'",
+                    m.start(),
+                    m.end(),
+                    phrase.strip(),
+                    severity=Severity.INFO,
                 )
 
 
@@ -956,6 +988,13 @@ class AdjectiveTriadRule(Rule):
     _MIN_TRIADS = 2
     _RATE = 1.5  # triads per 1000 words
 
+    # A triad launched by a copula-colon ("…the real signal is: spontaneous,
+    # unfiltered, and impossible to fake") bypasses the density gate: humans
+    # write colon-reveal lists behind a noun ("three things: X, Y, and Z") but
+    # style guides bar a colon straight after "is" — zero occurrences across
+    # the calibration corpus — while LLM broetry leans on exactly that shape.
+    _COPULA_COLON = re.compile(r"\b(?:is|are|was|were)\s*:\s*$")
+
     _CONTENT = ("ADJ", "NOUN", "VERB")
 
     def _triads(self, ctx: CheckContext):
@@ -999,25 +1038,34 @@ class AdjectiveTriadRule(Rule):
     def check(self, ctx: CheckContext) -> Iterable[Issue]:
         triads = self._triads(ctx)
         words = sum(1 for t in ctx.doc if not (t.is_punct or t.is_space))
-        if len(triads) < self._MIN_TRIADS or not words:
-            return
-        if len(triads) / words * 1000 < self._RATE:
-            return
+        text = ctx.doc.text
+        dense = (
+            len(triads) >= self._MIN_TRIADS
+            and words
+            and len(triads) / words * 1000 >= self._RATE
+        )
         for group in triads:
             start = group[0].idx
+            reveal = bool(self._COPULA_COLON.search(text, 0, start))
+            if not (dense or reveal):
+                continue
             end = group[-1].idx + len(group[-1].text)
-            snippet = " ".join(ctx.doc.text[start:end].split())
+            snippet = " ".join(text[start:end].split())
+            message = (
+                f"AI tell: colon-reveal triad '{snippet}' — a colon straight "
+                "after a copula launching a balanced triple"
+                if reveal
+                else f"AI tell: adjective triad '{snippet}' — vary enumeration size "
+                "(two for contrast, four for abundance)"
+            )
             yield _issue(
                 ctx,
                 self.code,
                 self.name,
-                (
-                    f"AI tell: adjective triad '{snippet}' — vary enumeration size "
-                    "(two for contrast, four for abundance)"
-                ),
+                message,
                 start,
                 end,
-                ctx.doc.text[start:end],
+                text[start:end],
                 severity=self.severity,
             )
 
@@ -1119,3 +1167,54 @@ class IntensifierRule(_ListRule):
         return [
             span for span in super()._spans(ctx) if not (len(span) == 1 and self._skip(span[0]))
         ]
+
+
+class EngagementBaitRule(Rule):
+    """NB522 — engagement-bait closer: the document signs off with a broad
+    second-person superlative question ("What's the most unexpected place
+    you've found genuine customer insight?").
+
+    The algorithmic-reach CTA that closes LLM-drafted social posts. Humans
+    growth-hack with the same shape, so this flags *engagement bait*, not AI —
+    advisory for the judgment layer (NB507's logic). The pattern needs a
+    superlative (or "your favorite"), a "you" + verb clause, and a question
+    mark ending the final paragraph — "What's the best way to reach you?" has
+    no verb after "you" and stays clean. Zero hits across the calibration
+    corpus.
+    """
+
+    code = "NB522"
+    name = "ai-engagement-bait"
+    category = "ai"
+    codes = ("NB522",)
+    default_on = False
+    severity = Severity.INFO
+
+    _CLOSER = re.compile(
+        r"(?:^|[.!?]\s+)(what(?:['’]s| is| was)\s+"
+        r"(?:the\s+(?:most|best|biggest|worst)|your\s+favou?rite)\b"
+        r"[^?\n]{0,80}\byou(?:['’](?:ve|re|d))?\s+[a-z][^?\n]{0,60}\?)\s*$",
+        re.IGNORECASE,
+    )
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        text = ctx.doc.text.rstrip()
+        if not text:
+            return
+        cut = text.rfind("\n\n")
+        para_start = cut + 2 if cut != -1 else 0
+        m = self._CLOSER.search(text[para_start:])
+        if not m:  # the regex is $-anchored, so a hit is the document's last word
+            return
+        phrase = m.group(1)
+        yield _issue(
+            ctx,
+            "NB522",
+            "ai-engagement-bait",
+            f"AI tell: engagement-bait closer '{phrase}' — the algorithmic-reach "
+            "CTA question; end on your point instead",
+            para_start + m.start(1),
+            para_start + m.end(1),
+            phrase,
+            severity=self.severity,
+        )
