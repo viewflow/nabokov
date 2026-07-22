@@ -48,6 +48,13 @@ hedged claim into an absolute one — that's a meaning change, approval gate.
 
 Read the prose yourself and flag:
 
+- **Topic jumps (missing connective tissue)** — the most common LLM coherence
+  failure. Read each sentence and paragraph opening and ask *how did we get here
+  from the last one?* If you can't answer, the logical link is missing. The fix is
+  a real bridge: a clause that carries the prior point into this one, or an opener
+  that echoes the previous unit's key idea. A bolted-on *Moreover / Additionally*
+  is not a bridge — it labels a transition without making one. No linter catches
+  this; judging whether B follows from A needs meaning, so it is yours to read.
 - **Vapidity** — grammatical sentences that say nothing. The strongest tell.
 - **Interchangeability** — swap in a competitor's name; if the sentence still
   works, it says nothing about *this* subject.

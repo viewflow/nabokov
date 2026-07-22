@@ -71,7 +71,10 @@ Run in order. Each pass hands a better draft to the next.
    sentence hits; a long one carries the reader on a current. A run of same-length
    sentences drones, however good each one is. Read it aloud in your head; where
    it plods, split one sentence short and let the next run long. nabokov's NB509
-   flags the flat stretches.
+   flags the flat stretches. Flow is also *logical*, not just rhythmic: read each
+   paragraph opening and ask *how did we get here from the last one?* If a reader
+   would stumble, the copy jumped a topic — bridge it with an echo of the prior
+   point, not a bolted-on connector.
 
 4. **Assemble for the goal** — reorder the enlivened material into the chosen
    formula, open a loop early and pay it off late, and land the CTA so it grows
