@@ -85,6 +85,8 @@ Run `nabokov --list-rules` to see them all. The full reference lives in
 - **NB303**: qualifiers and hedges.
 - **NB304**: nominalizations behind light verbs — "came to an agreement" → *agreed*.
 - **NB305**: dummy subjects — "There are many resorts in Colorado" → "Colorado has…".
+- **NB306**: repeated words — "Paris in the the spring".
+- **NB307**: uncomparables — "very unique", "most perfect".
 - **NB401**: wordy phrases, with a simpler suggestion.
 - **NB601**: abstract, "empty prose" paragraphs, scored against the Brysbaert
   concreteness norms (advisory).

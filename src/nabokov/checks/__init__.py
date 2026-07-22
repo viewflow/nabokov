@@ -37,6 +37,7 @@ from .concreteness import ConcretenessRule
 from .passive import PassiveRule
 from .phrases import ComplexPhraseRule, QualifierRule
 from .sentences import PeriodicSentenceRule, SentenceRule
+from .usage import RepeatedWordRule, UncomparableRule
 
 ALL_RULES: list[Rule] = [
     SentenceRule(),
@@ -47,6 +48,8 @@ ALL_RULES: list[Rule] = [
     QualifierRule(),
     NominalizationRule(),
     DummySubjectRule(),
+    RepeatedWordRule(),
+    UncomparableRule(),
     ConcretenessRule(),
     # NB5xx — signs of AI writing (off by default; enable with --select/--extend-select NB5)
     NegationContrastRule(),
@@ -84,6 +87,8 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB303": ("qualifier", "Qualifier / weakening phrase"),
     "NB304": ("nominalization", "Action hidden in a noun behind a light verb"),
     "NB305": ("dummy-subject", "Dummy subject 'there is/are'"),
+    "NB306": ("repeated-word", "The same word twice in a row ('the the')"),
+    "NB307": ("uncomparable", "Degree word on an absolute adjective ('very unique')"),
     "NB401": ("complex-phrase", "Complex / wordy phrase with a simpler alternative"),
     "NB501": ("ai-negation-contrast", "AI tell: 'it's not X, it's Y' negation-contrast"),
     "NB502": ("ai-puffery", "AI tell: puffery / buzzword vocabulary"),

@@ -14,7 +14,15 @@ def test_default_enabled_codes():
 
 def test_select_prefix():
     cfg = Config(select=("NB3",))
-    assert cfg.enabled_codes() == {"NB301", "NB302", "NB303", "NB304", "NB305"}
+    assert cfg.enabled_codes() == {
+        "NB301",
+        "NB302",
+        "NB303",
+        "NB304",
+        "NB305",
+        "NB306",
+        "NB307",
+    }
 
 
 def test_select_exact_code():

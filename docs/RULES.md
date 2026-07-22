@@ -5,7 +5,7 @@ like flake8: enable/disable by exact code or prefix with `--select` / `--ignore`
 `--extend-select` / `--extend-ignore`, in `[tool.nabokov]` config, or inline with
 `nabokov: ignore NBxxx`.
 
-- **Default run** (`nabokov file`) enables the core checks: `NB201 NB202 NB203 NB301 NB302 NB303 NB304 NB305 NB401 NB601`.
+- **Default run** (`nabokov file`) enables the core checks: `NB201 NB202 NB203 NB301 NB302 NB303 NB304 NB305 NB306 NB307 NB401 NB601`.
 - **`NB101`** (readability grade) is emitted only with `--max-grade N`.
 - **`NB5xx`** (signs of AI writing) is **off by default**: enable with `--select NB5`
   (AI checks only) or `--extend-select NB5` (alongside the core checks).
@@ -63,6 +63,8 @@ report.md:12:1: NB201 very hard to read (grade 17)
 | `NB303` | qualifier | blue | A weakening/hedging phrase from the qualifier list. "just" is only flagged in hedge positions ("it's **just** a way to…") — restrictive "just one", the imperative opener "Just tell me…", and temporal "I'd just read" are precision devices and skipped. | "**I think** we should wait." |
 | `NB304` | nominalization | blue | The action hidden in a noun behind a light verb (dependency-matched, so articles/adjectives/inflection don't matter; the noun alone is never flagged). The message suggests the verb. | "**came to an agreement**" → agreed |
 | `NB305` | dummy-subject | blue | An expletive subject burying the real one (spaCy `expl`). Locative "there" is untouched. | "**There are** many resorts in Colorado." → "Colorado has…" |
+| `NB306` | repeated-word | blue | The same word twice in a row — the lexical illusion that hides on a line wrap. Grammatical doubles ("had had", "that that"), proper-noun pairs ("Pago Pago"), and emphasis runs of 3+ ("no no no") are skipped. | "Paris in **the the** spring" |
+| `NB307` | uncomparable | blue | A degree word on an absolute adjective — the quality either holds or it doesn't. Approximators stay legal ("almost impossible"), and soft absolutes (essential, universal, ideal, ultimate, absolute) accept comparison — "the most essential feature" is ordinary prose; only intensifiers fire on them ("really essential"). | "**very unique**", "**most perfect**" |
 | `NB401` | complex-phrase | magenta | A wordy phrase with a simpler alternative (the message shows the suggestion). | "**in order to**" → "to" |
 
 ```
