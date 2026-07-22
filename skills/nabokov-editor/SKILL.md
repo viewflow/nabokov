@@ -85,7 +85,9 @@ READMEs and reference docs.
 
 ## Workflow
 
-1. **Static pass**: `nabokov --format=flake8 --ai <file>`.
+1. **Static pass**: `nabokov --format=flake8 <file>`; add `--ai` when
+   de-slopping / humanizing is the goal (usually it is when this skill is
+   invoked), not when the user asked for a plain readability lint.
 2. **Judgment pass** (+ macro pass for essays).
 3. **Fix, preserving meaning** — playbooks below. Keep the author's intent,
    facts, links, code, structure. Never invent content. **Patch vs. rebuild**:
@@ -144,14 +146,16 @@ NB401 the simpler phrase).
 - Synonym cycling → pick one name and repeat it.
 - Gap-filling → state only what the source supports.
 - Diff-anchored → describe the current state.
-- Hollow conclusion / both-sides mush → take a stance or cut.
+- Hollow conclusion / both-sides mush → take a stance or cut (both alter
+  meaning — approval gate; the stance must be the author's, so ask which).
 
 ## STOP and ask before any BIG change
 
 Small edits (word swaps, sentence splits, active voice) proceed automatically.
 Ask first — batched — before a change that:
 
-- alters meaning or a factual claim (including deleting a hedge);
+- alters meaning or a factual claim (including deleting a hedge that guards a
+  claim; thinning surplus qualifiers that do no work is a small edit);
 - removes or merges content, an example, or a section;
 - restructures significantly or rewrites the author's voice/tone;
 - substantially re-authors a passage rather than lightly editing it;
