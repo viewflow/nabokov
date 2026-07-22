@@ -1,6 +1,6 @@
 {
   "name": "nabokov",
-  "version": "26.7.1",
+  "version": "26.7.4",
   "description": "Prose linter with a de-slop editing skill: lint drafts for readability and AI tells, rewrite preserving meaning.",
   "author": {
     "name": "Mikhail Podgurskiy",
