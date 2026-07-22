@@ -20,3 +20,6 @@ dist/
 
 # local calibration corpus (copyrighted essays — never commit)
 .corpus/
+
+# local-only working directory
+docs/marketer/

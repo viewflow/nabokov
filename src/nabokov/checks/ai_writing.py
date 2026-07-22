@@ -687,16 +687,25 @@ class ParagraphOpenerRule(Rule):
 
 
 class _ListRule(Rule):
-    """A rule backed by a list of terms (single words matched by lemma, phrases exact)."""
+    """A rule backed by a list of terms (single words matched by lemma, phrases exact).
+
+    A term caught inside one of ``_exception_terms()`` is dropped: fixed
+    expressions where the word loses its tell-sense ("quite a few",
+    "test harness", "a great question" in reported speech).
+    """
 
     default_on = False
 
     def __init__(self) -> None:
         self._phrase_matcher: Any = None
         self._word_matcher: Any = None
+        self._exception_matcher: Any = None
 
     def _terms(self) -> list[str]:  # pragma: no cover - overridden
         raise NotImplementedError
+
+    def _exception_terms(self) -> list[str]:
+        return []
 
     def _message(self, text: str) -> str:  # pragma: no cover - overridden
         raise NotImplementedError
@@ -713,17 +722,30 @@ class _ListRule(Rule):
         wm = Matcher(nlp.vocab)
         for word in singles:
             wm.add(self.code, [[{"LEMMA": word.lower()}], [{"LOWER": word.lower()}]])
-        return pm, wm
+        em = PhraseMatcher(nlp.vocab, attr="LOWER")
+        exceptions = self._exception_terms()
+        if exceptions:
+            em.add(self.code, [nlp.make_doc(p) for p in exceptions])
+        return pm, wm, em
 
     def _spans(self, ctx: CheckContext):
         if self._phrase_matcher is None:
-            self._phrase_matcher, self._word_matcher = self._build(ctx.nlp)
+            self._phrase_matcher, self._word_matcher, self._exception_matcher = self._build(
+                ctx.nlp
+            )
         raw: list[tuple[int, int]] = []
         if len(self._phrase_matcher):
             raw += [(s, e) for _mid, s, e in self._phrase_matcher(ctx.doc)]
         if len(self._word_matcher):
             raw += [(s, e) for _mid, s, e in self._word_matcher(ctx.doc)]
-        return [ctx.doc[start:end] for start, end in _resolve_overlaps(raw)]
+        excluded: list[tuple[int, int]] = []
+        if len(self._exception_matcher):
+            excluded = [(s, e) for _mid, s, e in self._exception_matcher(ctx.doc)]
+        return [
+            ctx.doc[start:end]
+            for start, end in _resolve_overlaps(raw)
+            if not any(s <= start and end <= e for s, e in excluded)
+        ]
 
     def check(self, ctx: CheckContext) -> Iterable[Issue]:
         for span in self._spans(ctx):
@@ -752,11 +774,36 @@ class PufferyRule(_ListRule):
     _TOPICAL_USES = 3
     _SHORT_DOC_WORDS = 1000
 
+    # Lemmas whose tell-sense is the verb only: "harness the power" vs "test
+    # harness", "foster innovation" vs "foster child" — the noun/adjective
+    # readings are ordinary English, not decoration.
+    _VERB_ONLY = frozenset({"harness", "foster"})
+
     def _terms(self) -> list[str]:
         return ai_writing()["puffery"]
 
+    def _exception_terms(self) -> list[str]:
+        return ai_writing()["puffery_exceptions"]
+
     def _message(self, text: str) -> str:
         return f"AI tell: puffery '{text}'"
+
+    @classmethod
+    def _noun_sense(cls, tok) -> bool:
+        if tok.lemma_.lower() not in cls._VERB_ONLY:
+            return False
+        # Sentence-initial imperatives ("Harness the power…") mis-tag NOUN or
+        # PROPN, but they still carry a direct object — a real noun never does.
+        if any(child.dep_ in ("dobj", "obj") for child in tok.children):
+            return False
+        return tok.pos_ != "VERB"
+
+    def _spans(self, ctx: CheckContext):
+        return [
+            span
+            for span in super()._spans(ctx)
+            if not (len(span) == 1 and self._noun_sense(span[0]))
+        ]
 
     def check(self, ctx: CheckContext) -> Iterable[Issue]:
         spans = self._spans(ctx)
@@ -807,6 +854,12 @@ class FillerRule(_ListRule):
 
     def _terms(self) -> list[str]:
         return ai_writing()["filler"]
+
+    def _exception_terms(self) -> list[str]:
+        # An article in front turns the chatbot opener into reported speech
+        # ("she asked a great question") and "full stop" into the British
+        # punctuation mark ("end with a full stop").
+        return ai_writing()["filler_exceptions"]
 
     def _message(self, text: str) -> str:
         return f"AI tell: conversational filler '{text}'"
@@ -1035,8 +1088,38 @@ class IntensifierRule(_ListRule):
     codes = ("NB510",)
     severity = Severity.INFO
 
+    # Emphatic "very" heads that never take the degree reading: superlatives
+    # carry tag JJS ("the very best/least/most"), and these ordinal-like
+    # adjectives tag plain JJ ("the very first time", "the very same bug").
+    _EMPHATIC_HEAD_LEMMAS = frozenset({"first", "last", "next", "same"})
+
     def _terms(self) -> list[str]:
         return ai_writing()["intensifiers"]
 
+    def _exception_terms(self) -> list[str]:
+        # Fixed expressions where the word is not a degree intensifier:
+        # "quite a few" is a quantity idiom, "simply put" a discourse marker.
+        return ai_writing()["intensifier_exceptions"]
+
     def _message(self, text: str) -> str:
         return f"AI tell: weak intensifier '{text}' — cut it or be specific"
+
+    def _skip(self, tok) -> bool:
+        # "Very" the emphatic adjective (= "exact") is not a degree word.
+        # spaCy tags the noun-modifying reading ADJ ("the very beginning");
+        # before a superlative or ordinal it tags ADV but the degree reading
+        # is ungrammatical there ("*very biggest"), so those are idioms too.
+        if tok.lower_ != "very":
+            return False
+        return (
+            tok.pos_ == "ADJ"
+            or tok.head.tag_ == "JJS"
+            or tok.head.lemma_.lower() in self._EMPHATIC_HEAD_LEMMAS
+        )
+
+    def _spans(self, ctx: CheckContext):
+        return [
+            span
+            for span in super()._spans(ctx)
+            if not (len(span) == 1 and self._skip(span[0]))
+        ]

@@ -3,6 +3,7 @@
   "_note": "Signal lists for the NB5xx 'signs of AI writing' rules. Curated to favor precision; these are tells, not proof.",
   "_updated": "2026-07-22 — tells migrate with each model generation; a frozen list scans for last season's patterns. Refresh against the detection literature (and re-run the corpus calibration) every release or two.",
   "_credits": "Several entries adapted from conorbronsdon/avoid-ai-writing (MIT), which in turn credits blader/humanizer, Aboudjem/humanizer-skill, brandonwise/humanizer, and tropes.fyi.",
+  "_exceptions": "The *_exceptions lists suppress matches inside fixed expressions ('quite a few', 'test harness'). When adding a new term to a list, check its idioms and literal senses — add them to the matching *_exceptions list and cover both directions in tests/test_ai_writing.py (see test_puffery_still_flags_verb_sense).",
   "puffery": [
     "delve", "tapestry", "testament", "realm", "landscape", "boast", "showcase",
     "underscore", "garner", "foster", "cultivate", "leverage", "robust", "vibrant",
@@ -17,11 +18,20 @@
     "interplay", "breathtaking", "stunning", "must-visit",
     "watershed", "learnings", "deep dive", "thought leader", "thought leadership"
   ],
+  "puffery_exceptions": [
+    "test harness", "leverage ratio", "keen eye",
+    "landscape orientation", "landscape mode",
+    "navigate to", "navigates to", "navigated to", "navigating to"
+  ],
   "intensifiers": [
     "very", "really", "quite", "extremely", "incredibly", "truly", "highly",
     "actually", "basically", "literally", "simply", "absolutely", "utterly",
     "totally", "completely", "genuinely", "remarkably", "undeniably", "undoubtedly",
     "clearly", "obviously"
+  ],
+  "intensifier_exceptions": [
+    "quite a few", "quite a bit", "quite a while", "quite some time",
+    "simply put"
   ],
   "editorializing": [
     "plays a crucial role", "plays a vital role", "plays a significant role",
@@ -71,6 +81,11 @@
     "to approach this systematically", "working through this logically",
     "the catch?", "the kicker?",
     "i recently had the pleasure of"
+  ],
+  "filler_exceptions": [
+    "a great question", "a good question", "an excellent question",
+    "the great question", "the good question",
+    "a full stop", "the full stop"
   ],
   "transitions": [
     "moreover", "furthermore", "additionally", "notably", "importantly",

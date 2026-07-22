@@ -115,6 +115,75 @@ def test_intensifier(analyze):
     assert any(i.code == "NB510" for i in r.issues)
 
 
+def test_intensifier_skips_adjectival_very(analyze):
+    # "very" modifying a noun is the idiom (= "exact"), not a degree word
+    text = (
+        "From the very beginning, I knew who I wanted my co-founder to be. "
+        "His very existence proves the point. It happened at that very moment."
+    )
+    r = analyze(text, config=Config(select=("NB510",)))
+    assert not r.issues
+
+
+def test_intensifier_skips_very_before_superlative_or_ordinal(analyze):
+    # degree "very" is ungrammatical before superlatives/ordinals ("*very
+    # biggest"), so these are always the emphatic idiom
+    text = (
+        "At the very least, we should test it. The very same bug came back. "
+        "It was the very first time. The very next day she left. "
+        "That is the very last thing I need. He is the very best."
+    )
+    r = analyze(text, config=Config(select=("NB510",)))
+    assert not r.issues
+
+
+def test_intensifier_skips_quantity_idioms(analyze):
+    text = "Quite a few users waited quite a while. Simply put, it works."
+    r = analyze(text, config=Config(select=("NB510",)))
+    assert not r.issues
+
+
+def test_puffery_skips_noun_sense_and_fixed_phrases(analyze):
+    text = (
+        "The test harness runs every check. Foster carers get an allowance. "
+        "Navigate to the Settings page. The leverage ratio doubled. "
+        "Print in landscape orientation. She has a keen eye for detail."
+    )
+    r = analyze(text, config=Config(select=("NB502",)))
+    assert not r.issues
+
+
+def test_puffery_still_flags_verb_sense(analyze):
+    # the imperative tags PROPN in context — must still be caught
+    text = "Great tool. Harness the power of AI to foster innovation."
+    r = analyze(text, config=Config(select=("NB502",)))
+    assert len([i for i in r.issues if i.code == "NB502"]) == 2
+
+
+def test_filler_skips_reported_speech_and_punctuation(analyze):
+    text = (
+        "She asked a great question during the seminar. "
+        "End every sentence with a full stop."
+    )
+    r = analyze(text, config=Config(select=("NB504",)))
+    assert not r.issues
+
+
+def test_filler_still_flags_chatbot_openers(analyze):
+    text = "Great question! Let me explain. Full stop."
+    r = analyze(text, config=Config(select=("NB504",)))
+    codes = [i.code for i in r.issues]
+    assert codes.count("NB504") == 3
+
+
+def test_intensifier_still_flags_degree_very(analyze):
+    # the exception must not gut the rule: adverbial "very" stays a tell,
+    # including before -est-shaped plain adjectives ("honest" is JJ, not JJS)
+    text = "From the very beginning it was very important, very clear, and very honest."
+    r = analyze(text, config=Config(select=("NB510",)))
+    assert len([i for i in r.issues if i.code == "NB510"]) == 3
+
+
 def test_participial_significance_closer(analyze):
     r = analyze(
         "The city grew fast, highlighting its importance to the region.",
