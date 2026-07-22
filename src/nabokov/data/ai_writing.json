@@ -37,7 +37,14 @@
     "stands as", "leaves an indelible mark", "marks a pivotal moment",
     "a leading expert in", "active social media presence", "experts argue",
     "observers note", "industry reports", "evolving landscape", "key turning point",
-    "represents a shift"
+    "represents a shift",
+    "only time will tell", "the future looks bright", "the future is bright",
+    "at the end of the day", "when all is said and done", "exciting times ahead",
+    "the possibilities are endless"
+  ],
+  "vocab_tier2": [
+    "significant", "innovative", "effective", "dynamic", "scalable",
+    "compelling", "strategic", "versatile", "impactful", "streamlined"
   ],
   "filler": [
     "i hope this helps", "let me know if", "would you like me to",

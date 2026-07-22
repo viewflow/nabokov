@@ -693,6 +693,63 @@ class TransitionRule(_ListRule):
         return f"AI tell: overused transition '{text}'"
 
 
+class VocabClusterRule(_ListRule):
+    """NB517 — clustered generic-praise vocabulary.
+
+    Tier-2 of the AI-vocabulary taxonomy: words that are perfectly normal alone
+    ("significant", "effective") but that LLMs sprinkle in clusters. A single
+    use is never flagged; two or more *distinct* words from the list inside one
+    paragraph is the tell. Advisory — dense human academic prose clusters too.
+    """
+
+    code = "NB517"
+    name = "ai-vocab-cluster"
+    category = "ai"
+    codes = ("NB517",)
+    severity = Severity.INFO
+
+    _MIN_DISTINCT = 2
+
+    def _terms(self) -> list[str]:
+        return ai_writing()["vocab_tier2"]
+
+    def _message(self, text: str) -> str:
+        return f"AI tell: generic-praise cluster '{text}' (2+ in this paragraph)"
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        from .base import paragraph_ranges
+
+        spans = self._spans(ctx)
+        if not spans:
+            return
+        paragraphs = paragraph_ranges(ctx.doc.text)
+
+        def para_of(span) -> int:
+            for idx, (start, end) in enumerate(paragraphs):
+                if start <= span.start_char < end:
+                    return idx
+            return -1
+
+        by_para: dict[int, list] = {}
+        for span in spans:
+            by_para.setdefault(para_of(span), []).append(span)
+        for group in by_para.values():
+            distinct = {span.lemma_.lower() for span in group}
+            if len(distinct) < self._MIN_DISTINCT:
+                continue
+            for span in group:
+                yield _issue(
+                    ctx,
+                    self.code,
+                    self.name,
+                    self._message(span.text),
+                    span.start_char,
+                    span.end_char,
+                    span.text,
+                    severity=self.severity,
+                )
+
+
 class IntensifierRule(_ListRule):
     code = "NB510"
     name = "ai-intensifier"

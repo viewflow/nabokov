@@ -39,8 +39,14 @@ budgets.
 
 Loop on the `flake8` output. What the static layer covers:
 
-- **Readability**: hard / very-hard sentences, a document grade (`--max-grade`).
-- **Word/phrase**: adverbs, passive voice, qualifiers, wordy phrases (with a fix).
+- **Readability**: hard / very-hard sentences, a document grade (`--max-grade`),
+  buried main clauses (NB203 — where a hard sentence can be split).
+- **Word/phrase**: adverbs, passive voice, qualifiers, wordy phrases (with a fix),
+  nominalizations behind light verbs (NB304, with the verb to use), dummy
+  subjects (NB305).
+- **Semantic density**: abstract "empty prose" paragraphs (NB601), scored against
+  the Brysbaert concreteness norms — the linter now *detects* the strongest
+  Layer-2 tell; the fix stays with you (below).
 - **AI tells (`--ai`)**: `it's not X, it's Y` negation-contrast; puffery vocabulary
   (`delve`, `tapestry`, `embark`); editorializing and significance inflation; chatbot
   filler and signposting; overused transitions; em-dash and emoji overuse; rule-of-three
@@ -88,10 +94,35 @@ the core of every humanizer skill, and the part a linter cannot do:
 - **Dead / nonsensical metaphor** — imagery that adds nothing or doesn't parse.
 - **Press-release / sycophantic tone** — throat-clearing, over-politeness, hype.
 
+## Macro pass — essays and arguments only
+
+For an essay, opinion piece, or academic text (not READMEs or reference docs), add a
+structural read after Layer 2. These come from Williams (*Style*), Zinsser, and the
+Harvard/Purdue writing guides:
+
+- **Thesis**: is the central claim *arguable* (answers how/why), or merely
+  descriptive (answers who/what/when)? A descriptive thesis turns the essay into a
+  report — flag it and propose a sharper claim for the user to approve.
+- **Reverse outline**: write down each paragraph's one main point. The list should
+  form a chain with no repeats and no dropped threads; a paragraph with two points
+  wants splitting, two paragraphs with one point want merging (approval gate).
+- **Stitching over signposting**: paragraph openers like *Moreover / Furthermore /
+  Additionally* are mechanical connectors. The fix is not deleting the word — it's
+  opening with a semantic echo of the previous paragraph's key concept, so the
+  logic carries the transition.
+- **Old-to-new flow** (cohesion): sentences should open with information the reader
+  already has and end with the new. This is also the legitimate use of passive
+  voice — keep a passive that fronts the known topic.
+- **Conclusion**: synthesize, don't summarize. No new evidence, no apologies
+  ("this is just one approach…"), no hollow closers. If the conclusion restates
+  the intro, propose one of: zoom out to the bigger picture, name a consequence
+  for the future, or end on the strongest concrete image.
+
 ## Workflow (the loop)
 
 1. **Static pass**: `nabokov --format=flake8 --ai <file>`.
-2. **Judgment pass**: read the text; note the Layer-2 issues.
+2. **Judgment pass**: read the text; note the Layer-2 issues. For essays and
+   arguments, run the macro pass (thesis, reverse outline, stitching, conclusion).
 3. **Fix, preserving meaning** — statement by statement (playbooks below). Keep the
    author's intent, facts, links, code, and structure. Never invent content.
 4. **Approval gate**: if a fix needs a *big change* (below), collect it and ask first.
@@ -120,6 +151,11 @@ the core of every humanizer skill, and the part a linter cannot do:
 | NB509 | Vary sentence length — mix short and long — to raise burstiness. |
 | NB511 | Replace the ", -ing …" significance tail with a plain clause or cut it. |
 | NB512 | Vary the sentence openers. |
+| NB203 | Advisory: the main clause is buried. If the sentence also reads hard, split right before the pile-up or front-load the point; deliberate suspense stays. |
+| NB304 | Use the verb from the message: "came to an agreement" → *agreed*. Almost always safe and meaning-preserving. |
+| NB305 | Name the real subject: "There are many resorts in Colorado" → "Colorado has many resorts". Keep "there is no X" when existence itself is the point. |
+| NB517 | Thin the cluster: keep the one generic-praise word doing work, replace the rest with specifics. |
+| NB601 | The paragraph is grammatical but names nothing concrete. NEVER invent detail — ask the user for a real example, number, or image (approval gate). If the abstraction is the honest register (philosophy, math), leave it. |
 
 ## Fix playbook — judgment
 

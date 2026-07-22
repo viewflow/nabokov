@@ -79,10 +79,15 @@ Run `nabokov --list-rules` to see them all. The full reference lives in
 [docs/RULES.md](docs/RULES.md).
 
 - **NB201 / NB202**: the `very hard` and `hard` reading levels.
+- **NB203**: a main clause buried after 20+ words of build-up (advisory).
 - **NB301**: adverbs.
 - **NB302**: passive voice.
 - **NB303**: qualifiers and hedges.
+- **NB304**: nominalizations behind light verbs — "came to an agreement" → *agreed*.
+- **NB305**: dummy subjects — "There are many resorts in Colorado" → "Colorado has…".
 - **NB401**: wordy phrases, with a simpler suggestion.
+- **NB601**: abstract, "empty prose" paragraphs, scored against the Brysbaert
+  concreteness norms (advisory).
 - **NB101**: the document grade, reported with `--max-grade`.
 
 ## Reading-level targets

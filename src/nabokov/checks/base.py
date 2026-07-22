@@ -8,11 +8,28 @@ issues down to the enabled set.
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from ..issue import Severity
+
+_PARA_BREAK = re.compile(r"\n[ \t]*\n\s*")
+
+
+def paragraph_ranges(text: str) -> list[tuple[int, int]]:
+    """0-based [start, end) char ranges of blank-line-separated paragraphs."""
+    ranges: list[tuple[int, int]] = []
+    start = 0
+    for match in _PARA_BREAK.finditer(text):
+        if match.start() > start:
+            ranges.append((start, match.start()))
+        start = match.end()
+    if start < len(text):
+        ranges.append((start, len(text)))
+    return ranges
+
 
 if TYPE_CHECKING:
     from spacy.language import Language

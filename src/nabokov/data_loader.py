@@ -52,3 +52,17 @@ def ai_writing() -> dict[str, list[str]]:
     """Signal lists for the NB5xx 'signs of AI writing' rules (from Wikipedia)."""
     data = _load("ai_writing.json")
     return {k: v for k, v in data.items() if not k.startswith("_")}
+
+
+@lru_cache(maxsize=1)
+def concreteness() -> dict[str, float]:
+    """Brysbaert et al. (2014) concreteness ratings, lemma -> 1.0 (abstract) .. 5.0."""
+    data = _load("concreteness.json")
+    return {k: v for k, v in data.items() if not k.startswith("_")}
+
+
+@lru_cache(maxsize=1)
+def nominalizations() -> dict[str, Any]:
+    """NB304 data: 'light_verbs' lemma list + 'nouns' nominalization -> verb map."""
+    data = _load("nominalizations.json")
+    return {k: v for k, v in data.items() if not k.startswith("_")}

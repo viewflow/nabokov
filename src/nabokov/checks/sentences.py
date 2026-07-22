@@ -1,4 +1,4 @@
-"""NB201 / NB202 — hard and very-hard-to-read sentences (per-sentence ARI)."""
+"""NB201 / NB202 — hard and very-hard sentences (ARI); NB203 — buried main clause."""
 
 from __future__ import annotations
 
@@ -52,5 +52,50 @@ class SentenceRule(Rule):
                 end_line=end_line,
                 end_col=end_col,
                 severity=severity,
+                text=sent.text.strip(),
+            )
+
+
+class PeriodicSentenceRule(Rule):
+    """NB203 — the main clause arrives only after a long periodic build-up.
+
+    A cumulative sentence fronts its point and trails detail; a periodic one
+    makes the reader hold every subordinate clause in working memory until the
+    root verb finally lands. Advisory: periodicity is a legitimate suspense
+    device — the finding tells the editor *where* a hard sentence can be split.
+    """
+
+    code = "NB203"
+    name = "periodic-sentence"
+    category = "readability"
+    codes = ("NB203",)
+    severity = Severity.INFO
+
+    _MAX_LEAD = 20  # words allowed before the root verb
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        for sent in ctx.doc.sents:
+            root = sent.root
+            if root.pos_ not in ("VERB", "AUX"):
+                continue
+            lead = sum(1 for t in sent if t.i < root.i and not (t.is_punct or t.is_space))
+            if lead <= self._MAX_LEAD:
+                continue
+            start = sent.start_char
+            end = start + len(sent.text.rstrip())
+            line, col = ctx.source.linecol(start)
+            end_line, end_col = ctx.source.linecol(end)
+            yield Issue(
+                code="NB203",
+                name="periodic-sentence",
+                message=(
+                    f"main clause arrives after {lead} words — "
+                    "front-load the point or split before the pile-up"
+                ),
+                line=line,
+                col=col,
+                end_line=end_line,
+                end_col=end_col,
+                severity=self.severity,
                 text=sent.text.strip(),
             )

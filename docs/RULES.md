@@ -5,7 +5,7 @@ like flake8: enable/disable by exact code or prefix with `--select` / `--ignore`
 `--extend-select` / `--extend-ignore`, in `[tool.nabokov]` config, or inline with
 `nabokov: ignore NBxxx`.
 
-- **Default run** (`nabokov file`) enables the core checks: `NB201 NB202 NB301 NB302 NB303 NB401`.
+- **Default run** (`nabokov file`) enables the core checks: `NB201 NB202 NB203 NB301 NB302 NB303 NB304 NB305 NB401 NB601`.
 - **`NB101`** (readability grade) is emitted only with `--max-grade N`.
 - **`NB5xx`** (signs of AI writing) is **off by default** — enable with `--select NB5`
   (AI checks only) or `--extend-select NB5` (alongside the core checks).
@@ -27,6 +27,7 @@ deliberately, and carries the loosest style budgets — see below).
 | `NB101` | readability | red | The whole-document grade. Emitted as a finding only when it exceeds `--max-grade`. |
 | `NB201` | very-hard-sentence | red | A sentence whose reading level is very high (NORMAL: grade ≥ 14, ≥ 14 words). |
 | `NB202` | hard-sentence | yellow | A sentence whose reading level is high (NORMAL: grade 10–13, ≥ 14 words). |
+| `NB203` | periodic-sentence | yellow | Advisory (info): the main clause lands only after 20+ words of build-up — a periodic pile-up. Tells the editor *where* a hard sentence can be split; periodicity as deliberate suspense is the author's call. |
 
 Sentence boundaries: a blank line always ends a sentence, and in *line-oriented*
 documents (one thought per line — almost every non-blank line ends in terminal
@@ -51,6 +52,8 @@ report.md:12:1: NB201 very hard to read (grade 17)
 | `NB301` | adverb | blue | An `-ly` adverb spaCy confirms (POS = ADV), minus the exception list. | "He ran **quickly**." |
 | `NB302` | passive-voice | green | A passive construction, via spaCy dependency parse (`auxpass`), incl. the "by …" agent. | "The report **was written by the team**." |
 | `NB303` | qualifier | blue | A weakening/hedging phrase from the qualifier list. "just" is only flagged in hedge positions ("it's **just** a way to…") — restrictive "just one", the imperative opener "Just tell me…", and temporal "I'd just read" are precision devices and skipped. | "**I think** we should wait." |
+| `NB304` | nominalization | blue | The action hidden in a noun behind a light verb (dependency-matched, so articles/adjectives/inflection don't matter; the noun alone is never flagged). The message suggests the verb. | "**came to an agreement**" → agreed |
+| `NB305` | dummy-subject | blue | An expletive subject burying the real one (spaCy `expl`). Locative "there" is untouched. | "**There are** many resorts in Colorado." → "Colorado has…" |
 | `NB401` | complex-phrase | magenta | A wordy phrase with a simpler alternative (the message shows the suggestion). | "**in order to**" → "to" |
 
 ```
@@ -68,12 +71,12 @@ flat grace of 2 occurrences.
 
 Default budgets per 1000 words, by target:
 
-| Target | NB301 adverbs | NB302 passive | NB303 qualifiers | NB401 wordy |
-|--------|---------------|---------------|------------------|-------------|
-| ACCESSIBLE | 10 | 5 | 8 | 2 |
-| NORMAL | 15 | 8 | 10 | 3 |
-| TECHNICAL | 10 | 15 | 8 | 3 |
-| ESSAY | 25 | 15 | 15 | 6 |
+| Target | NB301 adverbs | NB302 passive | NB303 qualifiers | NB304 nominalizations | NB305 dummy subjects | NB401 wordy |
+|--------|---------------|---------------|------------------|-----------------------|----------------------|-------------|
+| ACCESSIBLE | 10 | 5 | 8 | 2 | 2 | 2 |
+| NORMAL | 15 | 8 | 10 | 2 | 5 | 3 |
+| TECHNICAL | 10 | 15 | 8 | 3 | 4 | 3 |
+| ESSAY | 25 | 15 | 15 | 3 | 6 | 6 |
 
 ESSAY is calibrated against a corpus of Paul Graham essays: strong essayistic prose
 produces no style-layer warnings there. Override any budget in config:
@@ -131,6 +134,7 @@ leaves those for the LLM to decide). Severity shows in the `json` reporter.
 | `NB514` | ai-title-case-heading | info | Title Case headings (a capitalized function word gives it away). | "## Getting Started **With** Django" |
 | `NB515` | ai-predicate-hyphen | info | A hyphenated compound used predicatively should drop the hyphen. | "the team is **cross-functional**" |
 | `NB516` | ai-bold-listicle | info | A stack (≥ 3) of `**Label:**` bold-header bullets. | "- **First:** … - **Second:** …" |
+| `NB517` | ai-vocab-cluster | info | Tier-2 vocabulary: words that are normal alone ("significant", "effective") but that LLMs sprinkle in clusters. Flagged only when 2+ *distinct* list words land in one paragraph. | "our **significant** and **innovative** platform" |
 
 ```
 essay.md:3:1: NB502 AI tell: puffery 'delve'
@@ -150,6 +154,16 @@ nabokov --ai-only essay.md   # only the AI-writing checks
 [tool.nabokov]
 extend_select = ["NB5"]
 ```
+
+## Semantic density (NB6) — empty prose
+
+| Code | Name | Sev | Flags | Example |
+|------|------|-----|-------|---------|
+| `NB601` | low-concreteness | info | A paragraph whose nouns and verbs average far toward the abstract end of the Brysbaert et al. (2014) concreteness norms (~37k lemmas, rated 1 = abstract … 5 = concrete by thousands of raters). Grammatical prose that names nothing you can see or touch — corporate mush and LLM filler score here. Calibrated on the essayist corpus: all 810 paragraphs of PG, Orwell, Housel, Sivers, SSC, V. Nabokov, and patio11 score above the threshold. Needs ≥ 12 rated words to judge. | "The strategic integration of innovative paradigms requires the optimization of dynamic synergies…" (2.1/5) |
+
+The fix is never mechanical: add a concrete example, number, or image — or ask the
+author for one. The [nabokov-editor skill](../skills/nabokov-editor/SKILL.md) treats
+this as an approval-gated change, since inventing detail is worse than abstraction.
 
 ---
 

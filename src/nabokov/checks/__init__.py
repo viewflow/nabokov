@@ -25,18 +25,25 @@ from .ai_writing import (
     RuleOfThreeRule,
     TitleCaseHeadingRule,
     TransitionRule,
+    VocabClusterRule,
 )
 from .base import CheckContext, Rule
+from .clarity import DummySubjectRule, NominalizationRule
+from .concreteness import ConcretenessRule
 from .passive import PassiveRule
 from .phrases import ComplexPhraseRule, QualifierRule
-from .sentences import SentenceRule
+from .sentences import PeriodicSentenceRule, SentenceRule
 
 ALL_RULES: list[Rule] = [
     SentenceRule(),
+    PeriodicSentenceRule(),
     AdverbRule(),
     PassiveRule(),
     ComplexPhraseRule(),
     QualifierRule(),
+    NominalizationRule(),
+    DummySubjectRule(),
+    ConcretenessRule(),
     # NB5xx — signs of AI writing (off by default; enable with --select/--extend-select NB5)
     NegationContrastRule(),
     PufferyRule(),
@@ -55,6 +62,7 @@ ALL_RULES: list[Rule] = [
     TitleCaseHeadingRule(),
     PredicateHyphenRule(),
     BoldListicleRule(),
+    VocabClusterRule(),
 ]
 
 # code -> (name, human description)
@@ -62,9 +70,12 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB101": ("readability", "Document readability grade (emitted with --max-grade)"),
     "NB201": ("very-hard-sentence", "Very hard to read sentence"),
     "NB202": ("hard-sentence", "Hard to read sentence"),
+    "NB203": ("periodic-sentence", "Main clause buried after a long build-up (advisory)"),
     "NB301": ("adverb", "Adverb"),
     "NB302": ("passive-voice", "Passive voice"),
     "NB303": ("qualifier", "Qualifier / weakening phrase"),
+    "NB304": ("nominalization", "Action hidden in a noun behind a light verb"),
+    "NB305": ("dummy-subject", "Dummy subject 'there is/are'"),
     "NB401": ("complex-phrase", "Complex / wordy phrase with a simpler alternative"),
     "NB501": ("ai-negation-contrast", "AI tell: 'it's not X, it's Y' negation-contrast"),
     "NB502": ("ai-puffery", "AI tell: puffery / buzzword vocabulary"),
@@ -82,6 +93,8 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB514": ("ai-title-case-heading", "AI tell: Title Case heading"),
     "NB515": ("ai-predicate-hyphen", "AI tell: hyphen in predicate position"),
     "NB516": ("ai-bold-listicle", "AI tell: bold-label listicle formatting"),
+    "NB517": ("ai-vocab-cluster", "AI tell: clustered generic-praise vocabulary"),
+    "NB601": ("low-concreteness", "Abstract paragraph — no lived detail (advisory)"),
 }
 
 ALL_CODES: tuple[str, ...] = tuple(RULE_META)
