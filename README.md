@@ -140,12 +140,12 @@ config instead of passing the flag each run (see below).
 ## Signs of AI writing (opt-in)
 
 nabokov also spots common LLM tells (`NB5xx`). The lists come from the Wikipedia guide
+[Signs of AI writing](https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing)
 and community threads. It catches the `it's not X, it's Y` construction and puffery like
 `delve` or `tapestry`. Promotional phrases, chatbot filler like `Great question!`, and
 overused transitions all trip it. It also flags em-dash and emoji overuse. Rule-of-three
 fragments, flat sentence rhythm, and repeated openers round it out. It even puts a
-number on the flat rhythm: `--stats` prints the burstiness, a measure of
-sentence-length variation. Watch it to catch a rewrite going machine-even.
+number on the flat rhythm: the burstiness metric from `--stats` (see Usage).
 
 These checks stay off by default, because they often flag a writer's own voice. Turn
 them on with a flag:
@@ -226,8 +226,7 @@ uv run ruff format .        # format
 uv run pyright              # type-check
 ```
 
-The [nabokov-editor skill](skills/nabokov-editor/SKILL.md) drives the linter inside an agent loop. It
-detects issues, rewrites while preserving meaning, and asks before any large change.
+The [nabokov-editor skill](skills/nabokov-editor/SKILL.md) drives the linter inside an agent loop.
 
 ## License
 
