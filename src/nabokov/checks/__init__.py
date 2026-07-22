@@ -21,6 +21,7 @@ from .ai_writing import (
     IntensifierRule,
     MonotonousRhythmRule,
     NegationContrastRule,
+    ParagraphOpenerRule,
     ParticipialCloserRule,
     PredicateHyphenRule,
     PufferyRule,
@@ -69,6 +70,7 @@ ALL_RULES: list[Rule] = [
     AdjectiveTriadRule(),
     AiArtifactRule(),
     HedgeStackRule(),
+    ParagraphOpenerRule(),
 ]
 
 # code -> (name, human description)
@@ -103,6 +105,7 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB518": ("ai-adjective-triad", "AI tell: repeated coordinated adjective triads"),
     "NB519": ("ai-artifact", "AI artifact: citation markup, tool URLs, placeholders (near-proof)"),
     "NB520": ("ai-hedge-stack", "AI tell: modal stacked with hedge adverb ('could potentially')"),
+    "NB521": ("ai-paragraph-opener", "AI tell: same conjunction opens 3+ paragraphs"),
     "NB601": ("low-concreteness", "Abstract paragraph — no lived detail (advisory)"),
 }
 

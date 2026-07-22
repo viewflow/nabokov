@@ -164,6 +164,11 @@ Harvard/Purdue writing guides:
      concrete and takes a position. If de-slopping produced no new concrete fact
      and no stance, the slop was paraphrased, not fixed: go back to the vapidity
      playbook.
+   - *Monotone* — your own splits and simplifications tend to open every sentence
+     with the same subject ("We… We… We…") and every other paragraph with "And".
+     NB512/NB521 catch the worst runs; below their thresholds, still read the
+     openers down the page and vary them. (First-person company prose lives on
+     "We" — thin the chains, don't purge the pronoun.)
 7. **Stop** when warnings and errors are resolved and the judgment issues are
    handled (minus anything the user declined). Remaining `info` findings are fine —
    they are the author's call, not defects.
@@ -174,7 +179,7 @@ Harvard/Purdue writing guides:
 
 | Code | Fix |
 |------|-----|
-| NB201 / NB202 | Split into shorter sentences (nabokov never flags one under the target's minimum — 14 words for the default NORMAL, 8 for ACCESSIBLE), but keep it natural. Long sentences are half of burstiness — never split them all. |
+| NB201 / NB202 | Split into shorter sentences (nabokov never flags one under the target's minimum — 14 words for the default NORMAL, 8 for ACCESSIBLE), but keep it natural. Long sentences are half of burstiness — never split them all. Splitting spawns subject-initial chains ("We did X. We did Y. And we…") — vary the new openers: front a time phrase, an object, or a subordinate clause, or merge two of the pieces back together. |
 | NB301 | Only when escalated to warning: thin the adverbs out — fold the weakest into stronger verbs, keep the ones doing work. As `info`, leave unless one clearly adds nothing. |
 | NB302 | Only when escalated to warning: rewrite the weakest in active voice. Passive that puts the right thing first is fine. |
 | NB303 / NB510 | Thin, don't eradicate: cut at most about a third — the ones doing no work. In first-person prose a hedge is epistemic honesty; deleting it changes the claim's strength (approval gate). |
@@ -184,7 +189,8 @@ Harvard/Purdue writing guides:
 | NB518 | Vary enumeration size: two items for contrast, three for closure, four-plus for abundance. If every list is a triple, break some. |
 | NB509 | Vary sentence length — mix short and long — to raise burstiness. |
 | NB511 | Replace the ", -ing …" significance tail with a plain clause or cut it. |
-| NB512 | Vary the sentence openers. |
+| NB512 | Vary the sentence openers: reorder (front an adverbial or the object), merge two sentences, or cut the opener word. |
+| NB521 | The same "And/But/So" opens 3+ paragraphs. Keep the one or two doing rhetorical work; for the rest, drop the conjunction (the paragraph break already carries the transition) or merge the paragraph into the previous one. |
 | NB203 | Advisory: the main clause is buried. If the sentence also reads hard, split right before the pile-up or front-load the point; deliberate suspense stays. |
 | NB304 | Use the verb from the message: "came to an agreement" → *agreed*. Almost always safe and meaning-preserving. |
 | NB305 | Name the real subject: "There are many resorts in Colorado" → "Colorado has many resorts". Keep "there is no X" when existence itself is the point. |

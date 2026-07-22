@@ -155,6 +155,7 @@ leaves those for the LLM to decide). Severity shows in the `json` reporter.
 | `NB518` | ai-adjective-triad | info | The symmetry attractor: every enumeration pressed into a balanced adjective triple. A *density* tell: the tricolon is 2,000 years of rhetoric. Essayists measure under 0.5 triads per 1000 words, so only 1.5+/1000 (min 2) shows the reflex. | "**innovative, transformative, and groundbreaking**" |
 | `NB519` | ai-artifact | warning | Fingerprints, not tells: chat-UI citation tokens, AI-tool URL parameters, unfilled template placeholders, knowledge-cutoff disclaimers. Near-proof of an unedited paste — no density gating. | "**citeturn0search0**", "**utm_source=chatgpt.com**", "**[Your Name]**", "**as of my last update**" |
 | `NB520` | ai-hedge-stack | warning | A modal stacked with a hedge adverb — each cancels the other, asserting nothing while sounding cautious. Pick one. | "**could potentially** create", "**may eventually** unlock" |
+| `NB521` | ai-paragraph-opener | warning | The same coordinating conjunction opening 3+ paragraphs (and ≥ 10% of them). Humans use "And…" as a paragraph opener sparingly and vary the word — across the calibration corpus no document repeats one more than twice; AI drafts ride a single "And" into every other paragraph. | "**And** all that time… ¶ **And** it feels… ¶ **And** we have…" |
 
 ```
 essay.md:3:1: NB502 AI tell: puffery 'delve'

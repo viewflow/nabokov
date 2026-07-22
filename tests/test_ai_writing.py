@@ -129,6 +129,42 @@ def test_repeated_opener(analyze):
     assert any(i.code == "NB512" for i in r.issues)
 
 
+def test_paragraph_opener_flags_repeated_and(analyze):
+    text = (
+        "We shipped the beta in March after two rounds of testing.\n\n"
+        "And all that time the team kept talking to early users.\n\n"
+        "And it feels especially meaningful now that adoption doubled.\n\n"
+        "And we have already tested the flow with real customers.\n\n"
+        "The next milestone is the public launch in June."
+    )
+    r = analyze(text, config=Config(select=("NB521",)))
+    hits = [i for i in r.issues if i.code == "NB521"]
+    assert len(hits) == 3  # one per offending "And" paragraph
+    assert "'And'" in hits[0].message
+
+
+def test_paragraph_opener_tolerates_varied_coordinators(analyze):
+    # DHH-style: coordinators open paragraphs, but different ones each time
+    text = (
+        "Workaholism trickles down from the top of the org chart.\n\n"
+        "And the leaders rarely notice what their hours signal.\n\n"
+        "But the team notices every late-night commit and reply.\n\n"
+        "So the calendar becomes the culture, whatever the handbook says."
+    )
+    r = analyze(text, config=Config(select=("NB521",)))
+    assert not any(i.code == "NB521" for i in r.issues)
+
+
+def test_paragraph_opener_ignores_mid_paragraph_and(analyze):
+    text = (
+        "We shipped the beta and kept iterating. And then we rested.\n\n"
+        "The users liked it and said so. And they told their friends.\n\n"
+        "The launch went well and the numbers held. And we celebrated."
+    )
+    r = analyze(text, config=Config(select=("NB521",)))
+    assert not any(i.code == "NB521" for i in r.issues)
+
+
 def test_monotonous_rhythm_flags_uniform(analyze):
     text = (
         "The red car drove down the road. The blue bike rode up the hill. "

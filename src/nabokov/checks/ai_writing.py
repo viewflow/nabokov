@@ -632,6 +632,60 @@ class RepeatedOpenerRule(Rule):
             i = j
 
 
+class ParagraphOpenerRule(Rule):
+    """NB521 — the same coordinating conjunction opens 3+ paragraphs.
+
+    "And" (or But/So/Yet/Or) opening a paragraph is a deliberate rhetorical move —
+    humans use it sparingly and vary the word: across the calibration corpus
+    (Stripe, Linear, 37signals, Vercel, PG, Orwell, Housel …) no document opens
+    more than 2 paragraphs with the same coordinator, even where DHH opens 29% of
+    paragraphs with *mixed* ones. AI drafts ride a single "And…" into every other
+    paragraph. Flag when one coordinator opens >= 3 paragraphs and >= 10% of them.
+    """
+
+    code = "NB521"
+    name = "ai-paragraph-opener"
+    category = "ai"
+    codes = ("NB521",)
+    default_on = False
+    severity = Severity.WARNING
+
+    _COORD = {"and", "but", "so", "yet", "or"}
+    _MIN_COUNT = 3
+    _MIN_SHARE = 0.10
+    _PARA = re.compile(r"(?:^|\n)[ \t]*\n[ \t]*(?=\S)|^\s*(?=\S)")
+    _WORD = re.compile(r"[A-Za-z']+")
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        text = ctx.doc.text
+        paragraphs: list[tuple[int, str]] = []  # (offset of first word, lowered word)
+        for m in self._PARA.finditer(text):
+            word = self._WORD.match(text, m.end())
+            if word:
+                paragraphs.append((word.start(), word.group().lower()))
+        if not paragraphs:
+            return
+        counts = Counter(w for _, w in paragraphs if w in self._COORD)
+        for opener, count in counts.items():
+            if count < self._MIN_COUNT or count / len(paragraphs) < self._MIN_SHARE:
+                continue
+            for start, word in paragraphs:
+                if word != opener:
+                    continue
+                end = start + len(word)
+                yield _issue(
+                    ctx,
+                    "NB521",
+                    "ai-paragraph-opener",
+                    f"AI tell: {count} paragraphs open with '{text[start:end]}' — "
+                    "vary or merge into the previous paragraph",
+                    start,
+                    end,
+                    text[start:end],
+                    severity=self.severity,
+                )
+
+
 class _ListRule(Rule):
     """A rule backed by a list of terms (single words matched by lemma, phrases exact)."""
 
