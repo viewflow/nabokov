@@ -14,6 +14,11 @@ from collections.abc import Iterable
 from ..issue import Issue, Severity
 from .base import CheckContext, Rule
 
+# get + participle idioms that parse as get-passives but mean "begin"/enter a
+# state, not passive voice: "get started", "get going", "got married",
+# "got stuck", "get dressed". Flagging these reads as a linter bug.
+_GET_IDIOM_LEMMAS = {"start", "go", "marry", "stick", "dress"}
+
 
 class PassiveRule(Rule):
     code = "NB302"
@@ -26,6 +31,12 @@ class PassiveRule(Rule):
         for verb in doc:
             aux = [c for c in verb.children if c.dep_ == "auxpass"]
             if not aux:
+                continue
+            if (
+                all(a.lemma_ == "get" for a in aux)
+                and verb.lemma_ in _GET_IDIOM_LEMMAS
+                and not any(c.dep_ == "agent" for c in verb.children)
+            ):
                 continue
             parts = [*aux, verb]
             # include the "by <agent>" phrase if spaCy attached one

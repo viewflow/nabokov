@@ -26,6 +26,20 @@ def test_passive_span_includes_participle(analyze):
     assert "built" in issue.text
 
 
+def test_get_idioms_not_flagged(codes):
+    # get-passives that are really inchoative/state idioms, not passive voice
+    assert "NB302" not in codes("New users can get started without guesswork.")
+    assert "NB302" not in codes("Let's get going before the rain.")
+    assert "NB302" not in codes("They got married in June.")
+    assert "NB302" not in codes("I got stuck on the last step.")
+
+
+def test_true_get_passive_still_flagged(codes):
+    assert "NB302" in codes("He got promoted by the new manager.")
+    # an explicit agent turns the idiom back into a passive
+    assert "NB302" in codes("The wedding got started by the priest.")
+
+
 # --- adverbs (NB301) ---------------------------------------------------------
 
 

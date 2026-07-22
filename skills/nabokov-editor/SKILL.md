@@ -82,6 +82,10 @@ Static rules see form, not meaning. After the linter, read the prose and flag th
 the core of every humanizer skill, and the part a linter cannot do:
 
 - **Vapidity** — sentences that are grammatical but say nothing. The strongest tell.
+- **Interchangeability** — swap in a competitor's name (or any product, any team):
+  if the sentence still works unchanged, it says nothing about *this* subject.
+  "Our platform gives teams the insights they need" fits every B2B site on earth —
+  clean grammar, zero content.
 - **No lived detail** — confident and generic, with no concrete example, number, or
   first-hand specific ("this broke in production" energy).
 - **False ranges** — "from X to Y" where X and Y aren't on a real scale.
@@ -149,10 +153,17 @@ Harvard/Purdue writing guides:
 4. **Approval gate**: if a fix needs a *big change* (below), collect it and ask first.
 5. **Re-lint**: run nabokov again; fix anything new. Tokenization estimates are
    imperfect, so expect a couple of passes.
-6. **Dryness check**: zero style findings is NOT the goal. If the rewrite lowered
-   burstiness (NB509 appears or worsens), stripped every hedge and adverb, or reads
-   flatter than the original, the text got drier — not better. Restore texture:
-   put back the hedges and rhythm that carried the author's voice.
+6. **Dryness & blandness check**: zero style findings is NOT the goal. Two ways a
+   rewrite passes the linter and still fails:
+   - *Drier* — burstiness dropped (NB509 appears or worsens), every hedge and
+     adverb stripped, flatter than the original. Restore texture: put back the
+     hedges and rhythm that carried the author's voice.
+   - *Blander* — the slop became clean generic claims that could ship on any
+     product's site (the interchangeability test). The strong writing this skill
+     aims at (Stripe, Linear, 37signals) is not merely shorter — it is more
+     concrete and takes a position. If de-slopping produced no new concrete fact
+     and no stance, the slop was paraphrased, not fixed: go back to the vapidity
+     playbook.
 7. **Stop** when warnings and errors are resolved and the judgment issues are
    handled (minus anything the user declined). Remaining `info` findings are fine —
    they are the author's call, not defects.
@@ -182,7 +193,16 @@ Harvard/Purdue writing guides:
 
 ## Fix playbook — judgment
 
-- Vapidity / hollow → cut it, or replace with one concrete, specific claim.
+- Vapidity / hollow / interchangeable → **never paraphrase it**. A neutral rewrite of
+  an empty sentence is still empty — linted slop is still slop. Puffery usually
+  buries a real event: someone decided, delayed, shipped, broke, or traded
+  something off. Dig it out and write *who did what, and why*:
+  - slop: "this transformative journey stands as a testament to the power of innovation"
+  - paraphrase trap: "the result is a better product that is easier to adopt"
+  - fix: "we delayed the rollout because onboarding wasn't good enough"
+  If the source doesn't contain the event, compress to the one honest short claim —
+  or cut the sentence and ask the user for the missing fact. De-slopping *shrinks*
+  text; a rewrite that keeps the original length without gaining a fact is the trap.
 - No lived detail → add a real example, number, or first-hand specific (ask the user if you don't have it).
 - False range / dead metaphor / manufactured aphorism → delete; say the plain thing.
 - Synonym cycling → pick one name and repeat it.
@@ -219,6 +239,9 @@ Batch these so the user approves several at once.
 - **Don't dry the text out.** A rewrite that strips every hedge, adverb, and long
   sentence "passes the linter" and reads like cardboard. Zero `info` findings is an
   anti-goal; measure success by warnings resolved with voice intact.
+- **Linted slop is still slop.** The linter can't tell "clean and concrete" from
+  "clean and interchangeable" — that judgment is yours alone. Passing text that
+  says nothing is a failure even at zero warnings.
 - **Never fabricate** facts, examples, or numbers to satisfy a check.
 - **Preserve markup** — nabokov ignores URLs, code, and headings; so must you.
 - **Respect voice.** The `--ai` checks flag emoji, em-dashes, and punchy phrasing that
