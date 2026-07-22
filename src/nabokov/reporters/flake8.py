@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, TextIO
 
-from .common import format_statistics, total_issues
+from .common import format_document_stats, format_statistics, total_issues
 
 if TYPE_CHECKING:
     from ..analyzer import AnalysisResult
@@ -19,6 +19,8 @@ def report(results: list[AnalysisResult], config: Config, out: TextIO) -> None:
             out.write(f"{name}:{issue.line}:{issue.col}: {issue.code} {message}\n")
     if config.statistics:
         out.write(format_statistics(results))
+    if config.doc_stats:
+        out.write(format_document_stats(results))
     total = total_issues(results)
     files = len(results)
     out.write(

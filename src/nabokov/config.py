@@ -41,6 +41,7 @@ class Config:
     fmt: str = "auto"  # auto | color | flake8 | json | github
     color: str = "auto"  # auto | always | never
     statistics: bool = False
+    doc_stats: bool = False
     adverbs_all_pos: bool = False
     stdin_display_name: str = "-"
     # Per-1000-word style budgets (code -> rate), overriding the target's defaults.
@@ -68,6 +69,7 @@ _SCALAR_KEYS = {
     "fmt",
     "color",
     "statistics",
+    "doc_stats",
     "adverbs_all_pos",
 }
 

@@ -19,13 +19,13 @@ from __future__ import annotations
 
 import bisect
 import re
-import statistics
 from collections import Counter
 from collections.abc import Iterable
 from typing import Any
 
 from ..data_loader import ai_writing
 from ..issue import Issue, Severity
+from ..readability import burstiness, burstiness_thresholds, sentence_lengths
 from .base import CheckContext, Rule
 from .phrases import _resolve_overlaps
 
@@ -516,6 +516,10 @@ class MonotonousRhythmRule(Rule):
     Humans vary sentence length; AI prose tends to be uniform. Measures the
     coefficient of variation (stdev / mean) of sentence word-counts. A low value on a
     long-enough document reads as machine-flat. Document-level, so it has no span.
+
+    The threshold is per target (short-form registers tolerate flatter rhythm), and
+    a genuinely robotic rhythm (below the ``flat`` cutoff) escalates from advisory to
+    a warning — badly-flat is the equivalent of a very-hard sentence.
     """
 
     code = "NB509"
@@ -526,34 +530,29 @@ class MonotonousRhythmRule(Rule):
     severity = Severity.INFO
 
     _MIN_SENTENCES = 6
-    _MIN_CV = 0.40
 
     def check(self, ctx: CheckContext) -> Iterable[Issue]:
-        lengths = []
-        for sent in ctx.doc.sents:
-            words = [t for t in sent if not (t.is_punct or t.is_space)]
-            if words:
-                lengths.append(len(words))
+        lengths = sentence_lengths(ctx.doc)
         if len(lengths) < self._MIN_SENTENCES:
             return
-        mean = sum(lengths) / len(lengths)
-        if mean == 0:
+        cv = burstiness(lengths)
+        min_cv, flat_cv = burstiness_thresholds(ctx.config.target)
+        if cv >= min_cv:
             return
-        cv = statistics.pstdev(lengths) / mean
-        if cv < self._MIN_CV:
-            yield Issue(
-                code="NB509",
-                name="ai-monotonous-rhythm",
-                message=(
-                    f"AI tell: monotonous sentence rhythm "
-                    f"(burstiness {cv:.2f}, aim for >= {self._MIN_CV:.2f} by varying length)"
-                ),
-                line=1,
-                col=1,
-                end_line=1,
-                end_col=1,
-                severity=self.severity,
-            )
+        severity = Severity.WARNING if cv < flat_cv else Severity.INFO
+        yield Issue(
+            code="NB509",
+            name="ai-monotonous-rhythm",
+            message=(
+                f"AI tell: monotonous sentence rhythm "
+                f"(burstiness {cv:.2f}, aim for >= {min_cv:.2f} by varying length)"
+            ),
+            line=1,
+            col=1,
+            end_line=1,
+            end_col=1,
+            severity=severity,
+        )
 
 
 class ParticipialCloserRule(Rule):

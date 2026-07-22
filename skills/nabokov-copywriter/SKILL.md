@@ -78,6 +78,11 @@ Run in order. Each pass hands a better draft to the next.
    out of the copy instead of bolting on. Reordering the whole piece and adding a
    CTA are **big changes** — batch them and get approval before restructuring.
 
+When a piece is worth more than one shot, don't keep polishing the same draft —
+polishing drifts it flat. Diverge into a few variants from different angles and
+judge them cold instead. [references/variants.md](references/variants.md) has the
+method, and a ready Claude Code workflow you can trigger for it.
+
 ## The linter is the floor, not the ceiling
 
 After enlivening, re-lint: `uvx nabokov --ai <file>`. Pick the target for the

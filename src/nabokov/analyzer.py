@@ -12,7 +12,7 @@ from .checks import ALL_RULES, CheckContext
 from .config import BUDGET_CODES, Config
 from .data_loader import thresholds
 from .issue import DocumentStats, Issue, Severity
-from .readability import classify, letters_in, reading_level
+from .readability import burstiness, classify, letters_in, reading_level, sentence_lengths
 from .source import SourceFile
 
 _NOQA = re.compile(
@@ -408,6 +408,7 @@ def _document_stats(doc, target: str, issues: list[Issue]) -> DocumentStats:
     letters = sum(letters_in(t.text) for t in words)
     grade = reading_level(letters, n_words, n_sentences)
     bucket = classify(grade, n_words, target)
+    cv = burstiness(sentence_lengths(doc))
 
     counts = dict.fromkeys(
         [
@@ -432,5 +433,6 @@ def _document_stats(doc, target: str, issues: list[Issue]) -> DocumentStats:
         sentences=n_sentences,
         letters=letters,
         reading_time_secs=n_words / 250 * 60,
+        burstiness=round(cv, 2),
         counts=counts,
     )

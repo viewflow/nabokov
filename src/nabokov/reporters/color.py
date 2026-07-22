@@ -162,6 +162,7 @@ def _print_summary(console, Text, result) -> None:
     parts.append(f"grade {stats.grade}", style=f"bold {grade_style}")
     parts.append(
         f"  ·  {stats.words} words · {stats.sentences} sentences · "
+        f"burstiness {stats.burstiness:.2f} · "
         f"~{round(stats.reading_time_secs)}s read",
         style="dim",
     )

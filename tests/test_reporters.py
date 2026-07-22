@@ -52,6 +52,22 @@ def test_statistics(analyze):
     assert "Statistics" in text
 
 
+def test_doc_stats_flag(analyze):
+    result = analyze("He quickly ran to the store. Then he walked home.", name="a.txt")
+    text = _render("flake8", result, Config(doc_stats=True))
+    assert "Document stats" in text
+    assert "burstiness=" in text
+    # off by default
+    assert "Document stats" not in _render("flake8", result)
+
+
+def test_json_summary_has_burstiness(analyze):
+    result = analyze("He quickly ran to the store. Then he walked home slowly.", name="a.txt")
+    entry = json.loads(_render("json", result))[0]
+    assert "burstiness" in entry["summary"]
+    assert isinstance(entry["summary"]["burstiness"], (int, float))
+
+
 def test_color_uses_inline_highlight_not_carets(analyze):
     result = analyze("He quickly ran to the corner store today.", name="a.txt")
     text = _render("color", result, Config(color="never"))

@@ -19,6 +19,7 @@ def result_payload(result: AnalysisResult) -> dict:
             "readability": result.stats.readability,
             "words": result.stats.words,
             "sentences": result.stats.sentences,
+            "burstiness": result.stats.burstiness,
             "reading_time_secs": round(result.stats.reading_time_secs, 1),
             "counts": result.stats.counts,
         },

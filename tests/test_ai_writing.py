@@ -285,6 +285,40 @@ def test_monotonous_rhythm_ok_when_varied(analyze):
     assert not any(i.code == "NB509" for i in r.issues)
 
 
+# A near-perfectly uniform passage (every sentence six words): CV well below the
+# 'flat' cutoff, so it escalates from advisory to a warning.
+_ROBOTIC = (
+    "The system processes the data. The system stores the data. "
+    "The system returns the data. The team maintains the system. "
+    "The team updates the system. The team monitors the system. "
+    "Managers review the weekly reports. Managers approve the annual budgets."
+)
+
+
+def test_monotonous_rhythm_warns_when_robotic(analyze):
+    from nabokov.issue import Severity
+
+    issues = [i for i in analyze(_ROBOTIC, config=Config(select=("NB509",))).issues if i.code == "NB509"]
+    assert issues and issues[0].severity is Severity.WARNING
+
+
+def test_monotonous_rhythm_threshold_is_per_target(analyze):
+    # post_final-style rhythm (CV ~0.35): flagged under NORMAL, tolerated under SOCIAL,
+    # where flatter rhythm is native to the register.
+    text = (
+        "The first time I asked, he said no. I knew who I wanted from the start. "
+        "So I looked at other people and weighed the options for a while. "
+        "But I never let the idea go completely. We kept trading ideas as before. "
+        "We had been friends for three years by then. Our first project was a small one. "
+        "It showed me what the two of us could build together if we tried. "
+        "Then, after all of that back and forth, he finally said yes to me."
+    )
+    normal = analyze(text, config=Config(select=("NB509",), target="NORMAL"))
+    social = analyze(text, config=Config(select=("NB509",), target="SOCIAL"))
+    assert any(i.code == "NB509" for i in normal.issues)
+    assert not any(i.code == "NB509" for i in social.issues)
+
+
 def test_curly_quote_inconsistency_flagged(analyze):
     # mostly straight quotes with an intruding curly pair (pasted-AI signal)
     text = 'She said "hi" and "bye" and "ok", then wrote “oops” once.'

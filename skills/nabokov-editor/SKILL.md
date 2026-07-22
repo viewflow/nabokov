@@ -90,7 +90,9 @@ READMEs and reference docs.
 6. **Dryness & blandness check** — zero findings is NOT the goal. Three ways a
    rewrite passes the linter and still fails:
    - *Drier* — burstiness dropped, every hedge stripped: restore the texture
-     that carried the voice.
+     that carried the voice. Measure it — `nabokov --stats` prints burstiness per
+     file; run it on the draft before and after, and if your rewrite dropped the
+     number, it went flatter than the original.
    - *Blander* — slop became clean generic claims (fails the
      interchangeability test): if the rewrite gained no concrete fact and no
      stance, the slop was paraphrased, not fixed.

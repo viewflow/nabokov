@@ -54,8 +54,14 @@ nabokov --max-grade 9 x.md       # exit non-zero if the grade goes over 9
 nabokov --target essay draft.md  # judge against the ESSAY reading level
 nabokov --select NB302 x.md      # run one rule
 nabokov --ignore NB301 x.md      # skip a rule
+nabokov --stats x.md             # document metrics: grade, sentence length, burstiness
 nabokov --list-rules             # print every code
 ```
+
+`--stats` prints one metrics line per file (also in `--format json` as `summary`).
+Burstiness is the sentence-length coefficient of variation — high means varied,
+human rhythm; low means flat and machine-uniform. Diff it between two drafts to
+catch a rewrite that got polished flat.
 
 nabokov reads plain text, Markdown, and HTML. For `.md` and `.html` it blanks the
 markup: code, tags, and link URLs. It then checks only the visible prose, so findings

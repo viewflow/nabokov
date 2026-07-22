@@ -86,6 +86,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--statistics", action="store_true", default=None, help="print per-code counts"
     )
     parser.add_argument(
+        "--stats",
+        dest="doc_stats",
+        action="store_true",
+        default=None,
+        help="print document metrics (grade, sentence length, burstiness) per file",
+    )
+    parser.add_argument(
         "--all-adverbs",
         dest="adverbs_all_pos",
         action="store_true",
@@ -163,6 +170,7 @@ def main(argv: list[str] | None = None) -> int:
         "exit_zero": args.exit_zero,
         "color": args.color,
         "statistics": args.statistics,
+        "doc_stats": args.doc_stats,
         "adverbs_all_pos": args.adverbs_all_pos,
         "stdin_display_name": args.stdin_display_name,
     }

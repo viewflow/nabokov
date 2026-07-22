@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import math
 import re
+import statistics
 
 from .data_loader import thresholds
 
@@ -42,9 +43,48 @@ def reading_level(letters: int, words: int, sentences: int) -> int:
     return max(_js_round(ari), 0)
 
 
+def sentence_lengths(doc) -> list[int]:
+    """Word count per sentence (ignoring punctuation and whitespace).
+
+    The single source of truth for sentence-length metrics — both the NB509
+    rhythm rule and the document stats read burstiness from these counts.
+    """
+    out = []
+    for sent in doc.sents:
+        n = sum(1 for t in sent if not (t.is_punct or t.is_space))
+        if n:
+            out.append(n)
+    return out
+
+
+def burstiness(lengths: list[int]) -> float:
+    """Coefficient of variation (stdev / mean) of sentence lengths.
+
+    High = varied, human rhythm; low = flat, machine-uniform. 0.0 when there is
+    too little to measure (fewer than two sentences, or an empty document).
+    """
+    if len(lengths) < 2:
+        return 0.0
+    mean = sum(lengths) / len(lengths)
+    if mean == 0:
+        return 0.0
+    return statistics.pstdev(lengths) / mean
+
+
 def target_config(target: str) -> dict[str, int]:
     targets = thresholds()["readability_targets"]
     return targets.get(target.upper(), targets["NORMAL"])
+
+
+def burstiness_thresholds(target: str) -> tuple[float, float]:
+    """(min, flat) sentence-length CV cutoffs for a target.
+
+    A CV below ``min`` is advisory (flat rhythm); below ``flat`` it is a
+    confident tell. Short-form targets tolerate flatter rhythm.
+    """
+    table = thresholds().get("burstiness", {})
+    cfg = table.get(target.upper()) or table.get("NORMAL") or {"min": 0.40, "flat": 0.28}
+    return float(cfg["min"]), float(cfg["flat"])
 
 
 def classify(level: int, words: int, target: str) -> str:
