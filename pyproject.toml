@@ -1,6 +1,6 @@
 [project]
 name = "nabokov"
-version = "26.7.4"
+version = "26.7.5"
 description = "A console prose linter — readability checks plus opt-in AI-writing / de-slop checks. Like flake8, but for English."
 readme = "README.md"
 requires-python = ">=3.12"
