@@ -419,6 +419,31 @@ def test_doesnt_mean_without_reveal_ok(analyze):
     assert "NB501" not in _codes(analyze, text)
 
 
+def test_appearance_verdict_couplet(analyze):
+    text = "This feels pointless. It is not. But the check still has to run each time."
+    issues = [i for i in analyze(text, config=AI).issues if i.code == "NB501"]
+    assert issues and issues[0].severity.value == "info"
+    assert "appearance-verdict couplet" in issues[0].message
+
+
+def test_appearance_question_followup_ok(analyze):
+    # V. Nabokov: a question after the appearance sentence is inquiry, not verdict
+    text = "This seems perfect. But is it? The play has hardly started at this point."
+    assert "NB501" not in _codes(analyze, text)
+
+
+def test_appearance_inspection_sense_ok(analyze):
+    # "looks at" is inspection, not appearance
+    text = "It looks at the manifest first. Then it resolves every pinned version."
+    assert "NB501" not in _codes(analyze, text)
+
+
+def test_appearance_spoken_reply_ok(analyze):
+    # patio11's negotiation dialogue: a comma marks the spoken reply register
+    text = "That sounds about right, yeah. Great, I cannot wait to get started."
+    assert "NB501" not in _codes(analyze, text)
+
+
 def test_colon_reveal_triad_fires_alone(analyze):
     # a single triad normally needs the density gate, but copula-colon bypasses it
     text = "That's where the real signal is: spontaneous, unfiltered, and impossible to fake."

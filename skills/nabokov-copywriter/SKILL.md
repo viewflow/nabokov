@@ -76,7 +76,15 @@ Run in order. Each pass hands a better draft to the next.
    flags the flat stretches. Flow is also *logical*, not just rhythmic: read each
    paragraph opening and ask *how did we get here from the last one?* If a reader
    would stumble, the copy jumped a topic — bridge it with an echo of the prior
-   point, not a bolted-on connector.
+   point, not a bolted-on connector. Provost's variation applies to paragraph
+   *endings* too: "make it land" does not mean land every paragraph on a
+   punchline — that uniform thump is itself a machine cadence, the one AI
+   detectors score. Two or three aphoristic closers per piece, placed where the
+   argument peaks; the rest end flat, on a fact or a detail. Same for the
+   figures that make lines land — the two-beat reversal ("This feels X. It
+   isn't."), the negation-contrast: the linter flags each one (NB501, advisory),
+   and your own count matters more — one instance hits, three become a tic the
+   reader starts hearing.
 
 4. **Assemble for the goal** — reorder the enlivened material into the chosen
    formula, open a loop early and pay it off late, and land the CTA so it grows

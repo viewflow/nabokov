@@ -62,6 +62,18 @@ Read the prose yourself and flag:
   first-hand specific.
 - **False ranges** — "from X to Y" where X and Y aren't on a real scale.
 - **Manufactured aphorisms** — "X is the language of Y", tidy fake wisdom.
+- **Aphoristic closer cadence** — read only the *last* sentence of each
+  paragraph, top to bottom. If they read as a list of quotable maxims, the
+  cadence is generated. A punchy closer is human (PG lands one on up to 40% of
+  paragraphs — corpus-measured); closing *every* paragraph on one is the tell,
+  and no length statistic separates it, so this is yours to read. Fix: keep the
+  two or three that earn it, end the rest flat — on a fact, a detail, or
+  nothing.
+- **Repeated rhetorical figure** — the same syntactic move recurring through
+  the document: the two-beat reversal ("This feels X. It is not."), the
+  negation-contrast, the copula-colon reveal, symmetric section bridges
+  ("That answers A. A harder question is B."). Once is style; three times is a
+  pattern the reader starts hearing. Keep the best instance, recast the rest.
 - **Synonym cycling** — the same thing renamed each mention.
 - **Catalogue instead of integration** — interdependent elements presented as a
   flat list; write the relationships, not the inventory.
@@ -106,7 +118,9 @@ READMEs and reference docs.
      interchangeability test): if the rewrite gained no concrete fact and no
      stance, the slop was paraphrased, not fixed.
    - *Monotone* — your own splits open every sentence the same way
-     ("We… We… We…"); read the openers down the page and vary them.
+     ("We… We… We…"); read the openers *and the paragraph closers* down the
+     page and vary them — a rewrite that lands every paragraph on a punchline
+     traded one machine cadence for another.
 7. **Stop** when warnings and errors are resolved and judgment issues handled
    (minus anything the user declined). Remaining `info` is the author's call.
 8. **Verify & report**: links, code, structure intact; meaning preserved.

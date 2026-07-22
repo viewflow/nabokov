@@ -97,6 +97,24 @@ _NEGATION_PATTERNS_INFO = [
             re.IGNORECASE,
         ),
     ),
+    # The appearance–verdict couplet: a short "how it looks" sentence followed by
+    # a short declarative verdict — "This feels pointless. It is not." / "This
+    # feels useful. In my experience it backfires." The capitalized opener stands
+    # in for a sentence boundary; commas are barred from the appearance half
+    # (spoken replies carry them: "That sounds about right, yeah."), a colon from
+    # the verdict (dialogue labels), and "looks at/into/through" is inspection,
+    # not appearance. A question follow-up is exempt — V. Nabokov's "This seems
+    # perfect. But is it?" is the lone near-hit across the 125k-word calibration
+    # corpus, and the [.!] terminator excludes it: zero corpus hits.
+    (
+        "appearance-verdict couplet",
+        re.compile(
+            r"\b(?:This|That|It)\s+(?:(?:may|might|can|could)\s+)?"
+            r"(?i:feels?|seems?|looks?|sounds?)(?!\s+(?:at|into|through)\b)\b"
+            r"[^.?!,\n]{0,40}[.!]\s+"
+            r"[^.?!:\n]{1,50}[.!]"
+        ),
+    ),
 ]
 
 # "could potentially", "may eventually" — a modal stacked with a hedge adverb;
