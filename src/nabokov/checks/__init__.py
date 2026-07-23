@@ -24,6 +24,7 @@ from .ai_writing import (
     HedgeStackRule,
     HookQuestionRule,
     IntensifierRule,
+    LexicalDiversityRule,
     MonotonousRhythmRule,
     NegationContrastRule,
     ParagraphOpenerRule,
@@ -86,6 +87,7 @@ ALL_RULES: list[Rule] = [
     HookQuestionRule(),
     FalseRangeRule(),
     UniformParagraphRule(),
+    LexicalDiversityRule(),
 ]
 
 # code -> (name, human description)
@@ -129,6 +131,7 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB525": ("ai-hook-question", "AI tell: hook-question fragment ('The best part? …')"),
     "NB526": ("ai-false-range", "AI tell: false range ('from strategy to execution')"),
     "NB527": ("ai-uniform-paragraphs", "AI tell: every paragraph the same length"),
+    "NB528": ("ai-low-lexical-diversity", "AI tell: narrow, repetitive vocabulary (low MATTR)"),
     "NB601": ("low-concreteness", "Abstract paragraph — no lived detail (advisory)"),
 }
 

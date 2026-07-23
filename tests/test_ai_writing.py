@@ -695,3 +695,67 @@ def test_contrast_in_body_not_flagged_as_heading(analyze):
 def test_plain_heading_ok(analyze):
     text = "# Pin decisions\n\nThe check catches rules that contradict each other."
     assert "NB524" not in _codes(analyze, text)
+
+
+# NB528 — low lexical diversity. A template-repetitive draft cycles the same
+# nouns and verbs; MATTR sits far below the 0.55 cutoff.
+_REPETITIVE = (
+    "Our platform delivers solutions for modern teams. The platform empowers "
+    "teams to improve their workflows. Our solution streamlines operations "
+    "across the organization. The platform provides tools for every team. "
+    "Businesses use our solution to drive growth. Our platform transforms how "
+    "teams work together. The solution integrates with existing tools. Teams "
+    "across the organization rely on our platform every day. "
+) * 4
+
+
+def test_lexical_diversity_flags_repetitive(analyze):
+    issues = [i for i in analyze(_REPETITIVE, config=AI).issues if i.code == "NB528"]
+    assert issues
+    # the message names what to vary
+    assert "platform" in issues[0].message or "team" in issues[0].message
+
+
+def test_lexical_diversity_ok_on_varied_prose(analyze):
+    text = (
+        "The migration took three weeks and touched every service we own. "
+        "Nobody expected the billing queue to be the hard part, but it was: "
+        "a decade of undocumented retry logic, half of it written for a vendor "
+        "we dropped in 2019. Sarah rewrote the scheduler first. Then came the "
+        "audit trail, which nobody had opened since the acquisition. By the "
+        "final week we were deleting more code than we wrote, and the deploy "
+        "went out on a quiet Tuesday morning with two lines in the changelog. "
+        "Customers never noticed. The pager stayed silent for a full month, "
+        "which the on-call rotation celebrated with pastries from the bakery "
+        "downstairs. Finance asked why the cloud bill dropped eleven percent."
+    )
+    assert "NB528" not in _codes(analyze, text)
+
+
+def test_lexical_diversity_skips_short_documents(analyze):
+    # under the 120-token floor even a repetitive text is too small to judge
+    text = "The platform helps the team. The platform helps the team again."
+    assert "NB528" not in _codes(analyze, text)
+
+
+def test_monotonous_rhythm_anchors_at_flattest_run(analyze):
+    text = (
+        "Short one here.\n"
+        "The system processes the incoming data. The system stores the parsed "
+        "data. The system returns the final data. The team maintains the whole "
+        "system. The team updates the core system. The team monitors the live "
+        "system."
+    )
+    issues = [i for i in analyze(text, config=AI).issues if i.code == "NB509"]
+    assert issues
+    assert "flattest run" in issues[0].message
+
+
+def test_vocab_cluster_hyphenated_term(analyze):
+    # hyphenated list terms must match through the phrase matcher
+    text = "This cutting-edge approach is paramount for the whole team."
+    assert "NB517" in _codes(analyze, text)
+
+
+def test_puffery_encompass(analyze):
+    assert "NB502" in _codes(analyze, "The guide encompasses every scenario and use case.")

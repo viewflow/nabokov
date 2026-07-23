@@ -14,6 +14,7 @@ Rules (all off by default, all category "ai"):
   NB513 curly quotes (info) NB514 title-case heading (info)  NB515 predicate hyphen (info)
   NB516 bold-label listicle (info)  NB522 engagement-bait closer (info)
   NB523 anaphora triad (info)  NB524 contrast heading (info)
+  NB528 low lexical diversity (info)
 """
 
 from __future__ import annotations
@@ -26,7 +27,13 @@ from typing import Any
 
 from ..data_loader import ai_writing, concreteness
 from ..issue import Issue, Severity
-from ..readability import burstiness, burstiness_thresholds, sentence_lengths
+from ..readability import (
+    burstiness,
+    burstiness_thresholds,
+    content_tokens,
+    mattr,
+    sentence_lengths,
+)
 from .base import CheckContext, Rule
 from .phrases import _resolve_overlaps
 
@@ -643,9 +650,15 @@ class MonotonousRhythmRule(Rule):
     severity = Severity.INFO
 
     _MIN_SENTENCES = 6
+    _RUN_MIN = 3  # a run needs at least this many sentences to be worth pointing at
 
     def check(self, ctx: CheckContext) -> Iterable[Issue]:
-        lengths = sentence_lengths(ctx.doc)
+        sents = [
+            (s.start_char, s.start_char + len(s.text.rstrip()), n)
+            for s in ctx.doc.sents
+            if (n := sum(1 for t in s if not (t.is_punct or t.is_space)))
+        ]
+        lengths = [n for _, _, n in sents]
         if len(lengths) < self._MIN_SENTENCES:
             return
         cv = burstiness(lengths)
@@ -653,19 +666,57 @@ class MonotonousRhythmRule(Rule):
         if cv >= min_cv:
             return
         severity = Severity.WARNING if cv < flat_cv else Severity.INFO
+        message = (
+            f"AI tell: monotonous sentence rhythm — mix short and long "
+            f"sentences (burstiness {cv:.2f}, aim for >= {min_cv:.2f})"
+        )
+        # Anchor at the flattest stretch so the writer knows where to start,
+        # instead of a 1:1 finding that points at nothing.
+        run = self._flattest_run(lengths)
+        if run is None:
+            line, col = 1, 1
+            end_line, end_col = 1, 1
+        else:
+            i, j = run
+            mean = sum(lengths[i:j]) / (j - i)
+            message += f"; flattest run: {j - i} sentences of ~{round(mean)} words here"
+            line, col = ctx.source.linecol(sents[i][0])
+            end_line, end_col = ctx.source.linecol(sents[j - 1][1])
         yield Issue(
             code="NB509",
             name="ai-monotonous-rhythm",
-            message=(
-                f"AI tell: monotonous sentence rhythm — mix short and long "
-                f"sentences (burstiness {cv:.2f}, aim for >= {min_cv:.2f})"
-            ),
-            line=1,
-            col=1,
-            end_line=1,
-            end_col=1,
+            message=message,
+            line=line,
+            col=col,
+            end_line=end_line,
+            end_col=end_col,
             severity=severity,
         )
+
+    @classmethod
+    def _flattest_run(cls, lengths: list[int]) -> tuple[int, int] | None:
+        """The longest [i, j) run of near-equal sentence lengths, or None.
+
+        Near-equal = the run's spread (max - min) stays within a quarter of its
+        mean, with a 2-word floor so short sentences aren't held to sub-word
+        precision. Longest run wins; ties go to the earlier one.
+        """
+        best: tuple[int, int] | None = None
+        n = len(lengths)
+        for i in range(n):
+            lo = hi = lengths[i]
+            total = 0
+            for j in range(i, n):
+                lo = min(lo, lengths[j])
+                hi = max(hi, lengths[j])
+                total += lengths[j]
+                mean = total / (j - i + 1)
+                if hi - lo > max(2, 0.25 * mean):
+                    break
+                size = j - i + 1
+                if size >= cls._RUN_MIN and (best is None or size > best[1] - best[0]):
+                    best = (i, j + 1)
+        return best
 
 
 class UniformParagraphRule(Rule):
@@ -728,6 +779,62 @@ class UniformParagraphRule(Rule):
             end_line=1,
             end_col=1,
             severity=self.severity,
+        )
+
+
+class LexicalDiversityRule(Rule):
+    """NB528 — narrow, repetitive vocabulary (low moving-average TTR).
+
+    The vocabulary sibling of NB509: rhythm can vary while the same nouns and
+    verbs cycle through every sentence. Measures MATTR (window 100) over the
+    prose tokens — length-stable, unlike plain TTR. Repo prose calibrates to
+    0.63–0.87; heavily template-repetitive drafts measure 0.10–0.40, so the
+    0.55 cutoff leaves wide margin. Truly cyclic vocabulary (below 0.45)
+    escalates to a warning. Document-level; the message names the most-repeated
+    content words so the writer knows what to vary.
+    """
+
+    code = "NB528"
+    name = "ai-low-lexical-diversity"
+    category = "ai"
+    codes = ("NB528",)
+    default_on = False
+    severity = Severity.INFO
+
+    _MIN_TOKENS = 120
+    _MIN_MATTR = 0.55
+    _FLAT_MATTR = 0.45
+    _TOP_REPEATS = 3
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        tokens = content_tokens(ctx.doc)
+        if len(tokens) < self._MIN_TOKENS:
+            return
+        score = mattr(tokens)
+        if score >= self._MIN_MATTR:
+            return
+        counts = Counter(
+            t.lemma_.lower() for t in ctx.doc if t.is_alpha and not t.is_stop
+        )
+        repeats = ", ".join(
+            f"'{word}' ×{count}"
+            for word, count in counts.most_common(self._TOP_REPEATS)
+            if count >= 3
+        )
+        message = (
+            f"AI tell: narrow vocabulary — the same words keep coming back "
+            f"(diversity {score:.2f}, aim for >= {self._MIN_MATTR:.2f}"
+        )
+        message += f"; most repeated: {repeats})" if repeats else ")"
+        yield Issue(
+            code="NB528",
+            name="ai-low-lexical-diversity",
+            message=message,
+            line=1,
+            col=1,
+            end_line=1,
+            end_col=1,
+            severity=Severity.WARNING if score < self._FLAT_MATTR else Severity.INFO,
         )
 
 
@@ -891,8 +998,11 @@ class _ListRule(Rule):
         from spacy.matcher import Matcher, PhraseMatcher
 
         terms = self._terms()
-        phrases = [t for t in terms if " " in t]
-        singles = [t for t in terms if " " not in t]
+        # Hyphenated terms ("must-visit") tokenize into several tokens, so they
+        # must go through the PhraseMatcher — a single-token LEMMA pattern
+        # would never match them.
+        phrases = [t for t in terms if " " in t or "-" in t]
+        singles = [t for t in terms if " " not in t and "-" not in t]
         pm = PhraseMatcher(nlp.vocab, attr="LOWER")
         if phrases:
             pm.add(self.code, [nlp.make_doc(p) for p in phrases])

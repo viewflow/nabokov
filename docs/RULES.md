@@ -151,7 +151,7 @@ calibration behind each threshold live in the rule docstrings in
 | `NB506` | ai-em-dash | warning | Em-dash *density* above the human range (> 12 per 1000 words). Counts `—`, spaced `–`, and the spaced hyphen; list bullets don't count. One finding per document. | "It was fast — clean — simple — done." |
 | `NB507` | ai-rule-of-three | info | 3+ consecutive short *verbless* fragments on one line. Fragments with a verb are human staccato and exempt. | "The jokes. The wins. The team." |
 | `NB508` | ai-emoji | warning | Emoji as formatting (≥ 3 in the document). One finding per document. | "✅ fast ✅ safe 🚀 shipped" |
-| `NB509` | ai-monotonous-rhythm | info / warning | Flat sentence rhythm (low burstiness). Per-target threshold; robotic flatness escalates to warning. See the CV with `--stats`. | uniform mid-length sentences throughout |
+| `NB509` | ai-monotonous-rhythm | info / warning | Flat sentence rhythm (low burstiness). Per-target threshold; robotic flatness escalates to warning. The finding anchors at the flattest run of near-equal sentences. See the CV with `--stats`. | uniform mid-length sentences throughout |
 | `NB510` | ai-intensifier | info | Weak intensifiers / weasel words. Emphatic "very" ("the very first time") and idioms ("quite a few") are exempt. | "**very**", "**really**", "**basically**" |
 | `NB511` | ai-participial-closer | info | Empty present-participle "significance" closer. | "…, **highlighting its importance**." |
 | `NB512` | ai-repeated-opener | info | 3+ sentences in a row opening with the same word. | "It … It … It …" |
@@ -170,6 +170,7 @@ calibration behind each threshold live in the rule docstrings in
 | `NB525` | ai-hook-question | info | A verbless 2–4-word question answered by the next sentence. Real questions ("Why? Because…") and fragments with a verb are exempt. | "**The best part? It's free.**" |
 | `NB526` | ai-false-range | info | "from X to Y" where the endpoints aren't on any scale (both abstract per the concreteness norms). Proper nouns, numbers, concrete pairs, and motion-verb transfers are exempt. | "everything **from strategy to execution**" |
 | `NB527` | ai-uniform-paragraphs | info | Every paragraph the same number of sentences (CV < 0.35 over ≥ 6 prose paragraphs). All-one-sentence documents are exempt. One finding per document. | eight paragraphs, three sentences each |
+| `NB528` | ai-low-lexical-diversity | info / warning | Narrow, repetitive vocabulary: moving-average TTR (window 100) below 0.55 on ≥ 120 words; below 0.45 escalates to warning. Names the most-repeated content words. See the value with `--stats` (`diversity`). One finding per document. | the same nouns and verbs cycling through every sentence |
 
 ```
 essay.md:3:1: NB502 AI tell: puffery 'delve'

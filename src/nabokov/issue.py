@@ -50,4 +50,5 @@ class DocumentStats:
     letters: int
     reading_time_secs: float
     burstiness: float  # sentence-length CV (stdev/mean); high = varied, low = flat
+    mattr: float  # moving-average TTR (window 100); high = varied vocabulary, low = repetitive
     counts: dict[str, int]  # per-category highlight counts

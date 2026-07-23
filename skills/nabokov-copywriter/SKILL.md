@@ -80,7 +80,11 @@ Run them in order. Each pass hands a better draft to the next.
    three-word sentence hits; a long one carries the reader on a current. A
    run of same-length sentences drones, however good each one is. Read it
    aloud in your head. Where it plods, split one sentence short and let the
-   next run long. NB509 flags the flat stretches. Flow is also *logical*: at
+   next run long. As a working range: a short sentence is 3–8 words, a long
+   one 25–40 — but treat these as the ends of a range to visit, not a
+   short-long-short pattern to alternate; a mechanical see-saw drones as
+   badly as uniform length. NB509 flags the flat stretches and points at the
+   flattest run. Flow is also *logical*: at
    each paragraph opening, ask how we got here from the last one. If a
    reader would stumble, the copy jumped a topic — bridge it with an echo of
    the prior point, not a bolted-on connector. Vary paragraph *endings* too:
@@ -106,6 +110,12 @@ After enlivening, re-lint: `uvx nabokov --ai <file>`. Pick the target for the
 genre: `--target social` for a short post (staccato is native there),
 `--target essay` for a long read, `--target email` for outreach. The linter
 keeps the polish honest: it catches you if a rewrite slid back into slop.
+
+Cap the polish loop at **two** enliven → re-lint rounds, and on the second
+round touch only the lines the linter (or a detector) still flags — every
+extra pass over a clean line drifts the copy flat. If findings survive round
+two, report them with your judgment instead of churning; drafting a fresh
+variant beats a third polish (see variants.md).
 
 But zero findings is **not** the goal, and here the trap is sharper than in
 editing. Dry, "clean" copy that names no benefit and takes no stance passes

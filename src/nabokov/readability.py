@@ -71,6 +71,45 @@ def burstiness(lengths: list[int]) -> float:
     return statistics.pstdev(lengths) / mean
 
 
+def content_tokens(doc) -> list[str]:
+    """Lowercased alphabetic tokens — the input for the lexical-diversity metrics.
+
+    The doc is built from the analysis text, so code fences and markup are
+    already blanked and never reach this list.
+    """
+    return [t.lower_ for t in doc if t.is_alpha]
+
+
+def mattr(tokens: list[str], window: int = 100) -> float:
+    """Moving-average type-token ratio (MATTR).
+
+    Plain TTR falls as a text grows (every "the" repeats), so it can't be
+    compared across lengths. MATTR slides a fixed window over the text and
+    averages the per-window TTR, which stays stable from a paragraph to a book.
+    Texts shorter than the window fall back to plain TTR; empty input is 0.0.
+    """
+    n = len(tokens)
+    if n == 0:
+        return 0.0
+    if n < window:
+        return len(set(tokens)) / n
+    counts: dict[str, int] = {}
+    distinct = 0
+    total = 0.0
+    for i, tok in enumerate(tokens):
+        counts[tok] = counts.get(tok, 0) + 1
+        if counts[tok] == 1:
+            distinct += 1
+        if i >= window:
+            old = tokens[i - window]
+            counts[old] -= 1
+            if counts[old] == 0:
+                distinct -= 1
+        if i >= window - 1:
+            total += distinct / window
+    return total / (n - window + 1)
+
+
 def target_config(target: str) -> dict[str, int]:
     targets = thresholds()["readability_targets"]
     return targets.get(target.upper(), targets["NORMAL"])

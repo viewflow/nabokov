@@ -50,6 +50,7 @@ def format_document_stats(results: list[AnalysisResult]) -> str:
             f"  {r.source.display_name}: "
             f"grade={s.grade} level={s.readability} words={s.words} "
             f"sentences={s.sentences} avg_sentence={avg:.1f} "
-            f"burstiness={s.burstiness:.2f} read_secs={round(s.reading_time_secs)}"
+            f"burstiness={s.burstiness:.2f} diversity={s.mattr:.2f} "
+            f"read_secs={round(s.reading_time_secs)}"
         )
     return "\n".join(lines) + "\n"

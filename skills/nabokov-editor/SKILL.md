@@ -118,7 +118,11 @@ tell: impersonal, every clause balanced, no lived detail. Word swaps will not
 move that score. Two things move it. One: the author's own details or first
 person — ask, never invent. Two: uneven syntax. One more note: a short
 polished excerpt seems to score worse than a whole document (not confirmed).
-So score the whole piece before rewriting further.
+So score the whole piece before rewriting further. Cap the loop at **two**
+rewrite → re-scan rounds. On the second round touch only the sentences still
+flagged — a clean sentence rewritten again can only drift. If flags survive
+round two, stop and report what remains and why; a third pass moves the
+meaning more than the score.
 
 Essays, opinion pieces, and academic texts also get a structural macro pass.
 It covers the thesis, a reverse outline, stitching, cohesion, and the
@@ -142,8 +146,9 @@ READMEs and reference docs.
 6. **Dryness check** — zero findings is NOT the goal. Three ways a rewrite
    passes the linter and still fails:
    - *Drier* — hedges stripped, texture gone. Measure it: `nabokov --stats`
-     prints burstiness (sentence-length variety). Run it before and after.
-     If your rewrite lowered the number, the text got flatter.
+     prints burstiness (sentence-length variety) and diversity (vocabulary
+     variety, MATTR). Run it before and after. If your rewrite lowered either
+     number, the text got flatter.
    - *Blander* — slop became clean generic claims that fail the
      competitor-name test. No new concrete fact and no stance means the slop
      was paraphrased, not fixed.
@@ -168,9 +173,10 @@ NB401 the simpler phrase).
 | NB305 | Name the real subject. Keep "there is no X" when existence itself is the point. |
 | NB501–NB508 | Rewrite the tell: drop the not-X-but-Y shape, cut puffery, trim em-dashes/emoji, break the triple. |
 | NB502/NB503 | Deleting the buzzword treats the symptom. Put the concrete case first — then the claim can arrive plain. |
-| NB509 | Vary sentence length — mix short and long. |
+| NB509 | Vary sentence length — mix short and long. Working range: short is 3–8 words, long is 25–40. Ends of a range to visit, not a pattern to alternate. The finding points at the flattest run — start there. |
 | NB512/NB521 | Vary sentence and paragraph openers. Reorder, merge, or drop the opener word — a paragraph break is already a transition. |
 | NB518 | Vary list size: two items, or four — not always three. |
+| NB528 | The words it names repeat because the *content* repeats. Cut or merge the sentences that re-say the same thing; vary sentence subjects. Do NOT fix it with synonym swaps — synonym cycling is its own tell. |
 | NB601 | The paragraph names nothing concrete. NEVER invent detail — ask the user for a real example or number. If abstract is the honest register (philosophy, math), leave it. |
 
 ## Fix playbook — judgment
