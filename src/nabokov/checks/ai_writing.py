@@ -279,12 +279,21 @@ class NegationContrastRule(Rule):
 
     def check(self, ctx: CheckContext) -> Iterable[Issue]:
         text = ctx.doc.text
-        seen: set[int] = set()
+        # one finding per stretch of text: a match whose span overlaps an
+        # earlier one is the same tell caught twice (warning patterns run
+        # first, so they win over the advisory reframes)
+        seen: list[tuple[int, int]] = []
+
+        def fresh(start: int, end: int) -> bool:
+            if any(start < e and s < end for s, e in seen):
+                return False
+            seen.append((start, end))
+            return True
+
         for pattern in _NEGATION_PATTERNS:
             for m in pattern.finditer(text):
-                if m.start() in seen:
+                if not fresh(m.start(), m.end()):
                     continue
-                seen.add(m.start())
                 phrase = m.group(0)
                 yield _issue(
                     ctx,
@@ -297,9 +306,8 @@ class NegationContrastRule(Rule):
                 )
         for label, pattern in _NEGATION_PATTERNS_INFO:
             for m in pattern.finditer(text):
-                if m.start() in seen:
+                if not fresh(m.start(), m.end()):
                     continue
-                seen.add(m.start())
                 phrase = m.group(0)
                 yield _issue(
                     ctx,

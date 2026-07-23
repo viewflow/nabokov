@@ -345,6 +345,14 @@ def test_em_dash_dense_overuse_flagged(analyze):
     assert any(i.code == "NB506" for i in r.issues)
 
 
+def test_negation_contrast_overlapping_patterns_dedupe(analyze):
+    # the countdown also contains the plain "it's not X, it's Y" shape at a
+    # later offset — one stretch of text must produce one finding
+    text = "It's not the price. It's not the features. It's the trust."
+    issues = [i for i in analyze(text, config=AI).issues if i.code == "NB501"]
+    assert len(issues) == 1
+
+
 def test_em_dash_spaced_hyphen_counts(analyze):
     # some models spell the dash as a spaced ASCII hyphen — same tell, same density gate
     text = "It was fast - clean - simple - robust - done - shipped - great."
