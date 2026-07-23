@@ -345,6 +345,27 @@ def test_em_dash_dense_overuse_flagged(analyze):
     assert any(i.code == "NB506" for i in r.issues)
 
 
+def test_signal_lists_not_stale():
+    # Tells migrate with each model generation. This fails when the signal
+    # lists in ai_writing.json haven't been reviewed for a year — refresh them
+    # against the detection literature, re-run the corpus calibration, and
+    # bump the _updated date.
+    import datetime
+    import json
+    from pathlib import Path
+
+    data = json.loads(
+        (Path(__file__).parent.parent / "src/nabokov/data/ai_writing.json").read_text()
+    )
+    stamp = data["_updated"].split(" ")[0]
+    updated = datetime.date.fromisoformat(stamp)
+    age = (datetime.date.today() - updated).days
+    assert age < 365, (
+        f"ai_writing.json signal lists last reviewed {stamp} ({age} days ago): "
+        "refresh the tell lists and bump _updated"
+    )
+
+
 def test_negation_contrast_overlapping_patterns_dedupe(analyze):
     # the countdown also contains the plain "it's not X, it's Y" shape at a
     # later offset — one stretch of text must produce one finding
