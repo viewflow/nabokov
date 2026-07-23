@@ -345,6 +345,20 @@ def test_em_dash_dense_overuse_flagged(analyze):
     assert any(i.code == "NB506" for i in r.issues)
 
 
+def test_em_dash_spaced_hyphen_counts(analyze):
+    # some models spell the dash as a spaced ASCII hyphen — same tell, same density gate
+    text = "It was fast - clean - simple - robust - done - shipped - great."
+    r = analyze(text, config=Config(select=("NB506",)))
+    assert any(i.code == "NB506" for i in r.issues)
+
+
+def test_em_dash_list_bullets_not_counted(analyze):
+    # plain-text bullet hyphens at line starts are list markup, not dashes
+    text = "Shopping list follows here.\n- apples\n- pears\n- plums\n- bread\n- milk\n"
+    r = analyze(text, config=Config(select=("NB506",)))
+    assert not any(i.code == "NB506" for i in r.issues)
+
+
 def test_title_case_heading(analyze):
     r = analyze(
         "# Getting Started With Django\n\nSome text here for the body.\n",

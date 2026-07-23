@@ -175,7 +175,9 @@ _AI_ARTIFACTS = [
     ),
 ]
 
-_EM_DASH = re.compile(r"—|(?<=\s)–(?=\s)")
+# A spaced hyphen ("word - word") is the ASCII spelling of the same dash; the
+# "\S " lookbehind keeps list bullets at line starts out of the count.
+_EM_DASH = re.compile(r"—|(?<=\s)–(?=\s)|(?<=\S )-(?= )")
 # Human essayists reach ~11 em-dashes per 1000 words (measured on a corpus of Orwell,
 # PG, Housel, SSC…), so overuse is a *density* above that, not an absolute count.
 _EM_DASH_MIN = 3  # never flag fewer than a few
