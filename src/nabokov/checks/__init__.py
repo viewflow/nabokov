@@ -11,7 +11,9 @@ from .adverbs import AdverbRule
 from .ai_writing import (
     AdjectiveTriadRule,
     AiArtifactRule,
+    AnaphoraTriadRule,
     BoldListicleRule,
+    ContrastHeadingRule,
     CurlyQuoteRule,
     EditorializingRule,
     EmDashRule,
@@ -76,6 +78,8 @@ ALL_RULES: list[Rule] = [
     HedgeStackRule(),
     ParagraphOpenerRule(),
     EngagementBaitRule(),
+    AnaphoraTriadRule(),
+    ContrastHeadingRule(),
 ]
 
 # code -> (name, human description)
@@ -114,6 +118,8 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB520": ("ai-hedge-stack", "AI tell: modal stacked with hedge adverb ('could potentially')"),
     "NB521": ("ai-paragraph-opener", "AI tell: same conjunction opens 3+ paragraphs"),
     "NB522": ("ai-engagement-bait", "AI tell: engagement-bait closer question"),
+    "NB523": ("ai-anaphora-triad", "AI tell: same quantifier opening three coordinated phrases"),
+    "NB524": ("ai-contrast-heading", "AI tell: 'X, not Y' contrast heading"),
     "NB601": ("low-concreteness", "Abstract paragraph — no lived detail (advisory)"),
 }
 

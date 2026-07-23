@@ -107,6 +107,13 @@ verifiable facts until it reads like a spec sheet — correct, and dead. Keep th
 voice, the one honest emotion, the sensory line. A finding is a prompt to look,
 not an order to delete.
 
+Grounding also buys back rhetoric. Substack's Pangram-launch post scores 100%
+human on the very detector it announces, while leaning on negation-contrast, a
+chiasmus, and an aphoristic closer. Every flourish stands on fact: a named
+partner, a date, an attributed "40%", a real person quoted. Each checkable fact
+pulled from the user's material earns the copy one more flourish; rhetoric
+without grounding is what detectors and readers smell.
+
 ## Approval gates — ask once, batched
 
 Small moves proceed: a stronger verb, a split sentence, a tightened line. Stop and

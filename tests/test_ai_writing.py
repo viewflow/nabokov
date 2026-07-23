@@ -479,3 +479,56 @@ def test_engagement_bait_only_at_document_end(analyze):
         "For me it was a podcast about logistics, of all things."
     )
     assert "NB522" not in _codes(analyze, text)
+
+
+def test_role_reveal_couplet(analyze):
+    text = "A skill does not need to teach it. Its job is activation, run after run."
+    issues = [i for i in analyze(text, config=AI).issues if i.code == "NB501"]
+    assert issues and issues[0].severity.value == "info"
+    assert "negation → role reveal" in issues[0].message
+
+
+def test_role_reveal_needs_both_halves(analyze):
+    # a bare negated obligation, or a bare role sentence, is ordinary prose
+    text = "You do not need to configure anything. The defaults cover every platform."
+    assert "NB501" not in _codes(analyze, text)
+    text = "The parser skips comments entirely. Its job is building the token stream."
+    assert "NB501" not in _codes(analyze, text)
+
+
+def test_anaphora_triad(analyze):
+    text = (
+        "The model has read more code reviews, more reports, "
+        "and more style guides than any of us ever will."
+    )
+    issues = [i for i in analyze(text, config=AI).issues if i.code == "NB523"]
+    assert issues and issues[0].severity.value == "info"
+
+
+def test_anaphora_pair_ok(analyze):
+    # two repeats is contrast, not the triad reflex
+    text = "We shipped more features and more fixes this quarter than last year."
+    assert "NB523" not in _codes(analyze, text)
+
+
+def test_anaphora_different_quantifiers_ok(analyze):
+    # a varied enumeration is exactly the human alternative the message suggests
+    text = "The model has read more reviews, several reports, and every style guide we know."
+    assert "NB523" not in _codes(analyze, text)
+
+
+def test_contrast_heading(analyze):
+    text = "# Pin decisions, not knowledge\n\nThe check catches rules that contradict each other."
+    issues = [i for i in analyze(text, config=AI).issues if i.code == "NB524"]
+    assert issues and issues[0].severity.value == "info"
+
+
+def test_contrast_in_body_not_flagged_as_heading(analyze):
+    # NB524 is a heading rule; the same shape in running text belongs to NB501
+    text = "Pin decisions, not knowledge. The rest the model already carries."
+    assert "NB524" not in _codes(analyze, text)
+
+
+def test_plain_heading_ok(analyze):
+    text = "# Pin decisions\n\nThe check catches rules that contradict each other."
+    assert "NB524" not in _codes(analyze, text)

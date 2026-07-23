@@ -88,9 +88,27 @@ Read the prose yourself and flag:
   claim hedged, no stance.
 - **Dead metaphor**; **press-release / sycophantic tone**.
 
+**Human signals — the inverse checklist.** Substack's Pangram-launch post scores
+100% human while using negation-contrast, a chiasmus, and an aphoristic closer.
+Every shape stands on something checkable. The number is attributed ("as much
+as 40%… according to Pangram's estimate"), a named person is quoted at length,
+the launch has a partner and a date, and the heading is a Coleridge line.
+Sequencing faces the reader ("more on that in a moment"); the one coined term
+lands after the concrete setup earned it. Grounding buys back rhetoric; the same shapes over abstractions read
+generated. When rewriting, add one such signal from the author's real material
+(approval gate, never invented) before another round of sanding the tells.
+
 **Detector feedback.** Treat detector-highlighted sentences as the cadence and
 pivot findings above: ground or roughen, never synonym-swap. Fix only what the
-fix improves; say where the detector is wrong.
+fix improves; say where the detector is wrong. After rewriting, re-scan the
+replacements against this same list: rewrites drift into sibling shapes. A cut
+negation-contrast resurfaces as a pseudo-cleft, a punchline closer as a fronted
+participle. If the detector still flags a text that lints clean, the register
+is the tell: impersonal, every clause balanced, no lived detail. Phrase swaps
+will not move that score. The levers left are the author's own specifics or
+first person (never invented — approval gate) and uneven syntax.
+Short polished excerpts also seem to score worse than full documents
+(unconfirmed); score the whole piece before rewriting further.
 
 Essays, opinion pieces, and academic texts also get the structural macro pass —
 thesis, reverse outline, stitching, cohesion, conclusion. Read

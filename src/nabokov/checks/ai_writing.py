@@ -13,6 +13,7 @@ Rules (all off by default, all category "ai"):
   NB510 intensifiers (info) NB511 participial closer (info)  NB512 repeated opener (info)
   NB513 curly quotes (info) NB514 title-case heading (info)  NB515 predicate hyphen (info)
   NB516 bold-label listicle (info)  NB522 engagement-bait closer (info)
+  NB523 anaphora triad (info)  NB524 contrast heading (info)
 """
 
 from __future__ import annotations
@@ -97,7 +98,7 @@ _NEGATION_PATTERNS_INFO = [
             re.IGNORECASE,
         ),
     ),
-    # The appearance–verdict couplet: a short "how it looks" sentence followed by
+    # The appearance-verdict couplet: a short "how it looks" sentence followed by
     # a short declarative verdict — "This feels pointless. It is not." / "This
     # feels useful. In my experience it backfires." The capitalized opener stands
     # in for a sentence boundary; commas are barred from the appearance half
@@ -113,6 +114,21 @@ _NEGATION_PATTERNS_INFO = [
             r"(?i:feels?|seems?|looks?|sounds?)(?!\s+(?:at|into|through)\b)\b"
             r"[^.?!,\n]{0,40}[.!]\s+"
             r"[^.?!:\n]{1,50}[.!]"
+        ),
+    ),
+    # The negation→role-reveal couplet: negate an obligation, then reveal the
+    # subject's "real" function in the next sentence — "A skill does not need
+    # to teach it. Its job is activation." Anchored on both halves: a negated
+    # need/have-to plus a possessive role-noun copula ("Its job is", "Their
+    # purpose is"). The bare negation or the bare role sentence is ordinary
+    # prose and never fires; the completed couplet has zero occurrences across
+    # 361k words of Emerson, Chesterton, Dickens, and Thoreau.
+    (
+        "negation → role reveal",
+        re.compile(
+            r"\b(?:doesn['’]?t|does not|don['’]?t|do not)\s+(?:need|have)\s+to\b"
+            r"[^.?!\n]{0,50}[.!]\s+"
+            r"(?:Its|Their)\s+(?:real\s+)?(?:job|point|role|purpose|task|value)\s+(?:is|was)\b"
         ),
     ),
 ]
@@ -1255,3 +1271,88 @@ class EngagementBaitRule(Rule):
             phrase,
             severity=self.severity,
         )
+
+
+class AnaphoraTriadRule(Rule):
+    """NB523 — in-sentence anaphora triad: the same quantifier opening three
+    coordinated phrases — "more code reviews, more reports, and more style
+    guides".
+
+    The sibling of NB507's staccato fragments and NB518's adjective triads:
+    the symmetry attractor applied to a comparative. Emerson, Dickens, and
+    Thoreau all use the shape deliberately (8 hits across 361k words,
+    ~0.02/1000 — Emerson's "every secret is told, every crime is punished"),
+    so like NB507 this is formally identical to legitimate rhetoric and only
+    intent separates them: advisory for the judgment layer.
+    """
+
+    code = "NB523"
+    name = "ai-anaphora-triad"
+    category = "ai"
+    codes = ("NB523",)
+    default_on = False
+    severity = Severity.INFO
+
+    # Closed-class anchors only — an open match on e.g. "the" would fire on
+    # every third sentence. "no X, no Y, no Z" already belongs to NB501.
+    _TRIAD = re.compile(
+        r"\b(more|less|fewer|every|each)\b[^,.;:!?\n]{1,30},\s*\1\b[^,.;:!?\n]{1,30}"
+        r",\s*(?:and\s+|or\s+)?\1\b(?:\s+[\w'’-]+){1,2}",
+        re.IGNORECASE,
+    )
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        for m in self._TRIAD.finditer(ctx.doc.text):
+            snippet = " ".join(m.group(0).split())
+            yield _issue(
+                ctx,
+                "NB523",
+                "ai-anaphora-triad",
+                f"AI tell: anaphora triad '{snippet}' — the same quantifier "
+                "three times; vary the enumeration or cut to one concrete item",
+                m.start(),
+                m.end(),
+                snippet,
+                severity=self.severity,
+            )
+
+
+class ContrastHeadingRule(Rule):
+    """NB524 — the "X, not Y" contrast heading: "Pin decisions, not knowledge".
+
+    The negation-contrast couplet (NB501) compressed into a title. The
+    thinnest tell in the catalogue — it fires on legitimate human titles
+    ("Ask forgiveness, not permission"), and the classics corpus carries no
+    markdown headings to calibrate against, so its pedigree is one detector-
+    flagged draft. It exists to make the judgment layer look at the heading;
+    a grounded contrast stays, and a document whose every heading corrects
+    something is the actual signal.
+    """
+
+    code = "NB524"
+    name = "ai-contrast-heading"
+    category = "ai"
+    codes = ("NB524",)
+    default_on = False
+    severity = Severity.INFO
+
+    _CONTRAST = re.compile(r"^[^,\n]{2,60},\s+not\s+\S.*$")
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        text = ctx.source.original_text
+        for m in _HEADING.finditer(text):
+            if _in_code(ctx, m.start(2)):
+                continue
+            heading = m.group(2)
+            if self._CONTRAST.match(heading):
+                yield _issue(
+                    ctx,
+                    "NB524",
+                    "ai-contrast-heading",
+                    f"AI tell: 'X, not Y' contrast heading '{heading}' — name "
+                    "what the section says instead of what it corrects",
+                    m.start(2),
+                    m.end(2),
+                    heading,
+                    severity=self.severity,
+                )
