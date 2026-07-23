@@ -661,6 +661,69 @@ class MonotonousRhythmRule(Rule):
         )
 
 
+class UniformParagraphRule(Rule):
+    """NB527 — uniform paragraph length: every paragraph the same number of
+    sentences. The paragraph-level sibling of NB509: AI drafts settle into a
+    steady 3–4 sentences per paragraph; humans mix one-liners with long runs.
+
+    Measures the CV of sentences-per-paragraph. Repo docs and skill prose
+    measure 0.77–2.95; a uniform draft measures ~0. The 0.35 cutoff leaves
+    wide margin. Needs >= 6 prose paragraphs and a mean >= 2 sentences
+    (all-one-sentence documents are line-oriented style, not the tell).
+    Document-level, advisory.
+    """
+
+    code = "NB527"
+    name = "ai-uniform-paragraphs"
+    category = "ai"
+    codes = ("NB527",)
+    default_on = False
+    severity = Severity.INFO
+
+    _MIN_PARAGRAPHS = 6
+    _MIN_MEAN = 2.0
+    _MIN_CV = 0.35
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        from .base import paragraph_ranges
+
+        doc = ctx.doc
+        counts: list[int] = []
+        for start, end in paragraph_ranges(doc.text):
+            span = doc.char_span(start, end, alignment_mode="expand")
+            if span is None:
+                continue
+            n = sum(
+                1
+                for s in span.sents
+                if sum(1 for t in s if not (t.is_punct or t.is_space)) >= 3
+            )
+            if n:
+                counts.append(n)
+        if len(counts) < self._MIN_PARAGRAPHS:
+            return
+        mean = sum(counts) / len(counts)
+        if mean < self._MIN_MEAN:
+            return
+        var = sum((c - mean) ** 2 for c in counts) / len(counts)
+        cv = var**0.5 / mean
+        if cv >= self._MIN_CV:
+            return
+        yield Issue(
+            code="NB527",
+            name="ai-uniform-paragraphs",
+            message=(
+                f"AI tell: uniform paragraph length ({len(counts)} paragraphs, "
+                f"~{mean:.0f} sentences each) — mix short and long paragraphs"
+            ),
+            line=1,
+            col=1,
+            end_line=1,
+            end_col=1,
+            severity=self.severity,
+        )
+
+
 class ParticipialCloserRule(Rule):
     """NB511 — empty present-participle "significance" closer."""
 

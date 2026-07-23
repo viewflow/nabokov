@@ -34,6 +34,7 @@ from .ai_writing import (
     RuleOfThreeRule,
     TitleCaseHeadingRule,
     TransitionRule,
+    UniformParagraphRule,
     VocabClusterRule,
 )
 from .base import CheckContext, Rule
@@ -84,6 +85,7 @@ ALL_RULES: list[Rule] = [
     ContrastHeadingRule(),
     HookQuestionRule(),
     FalseRangeRule(),
+    UniformParagraphRule(),
 ]
 
 # code -> (name, human description)
@@ -126,6 +128,7 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB524": ("ai-contrast-heading", "AI tell: 'X, not Y' contrast heading"),
     "NB525": ("ai-hook-question", "AI tell: hook-question fragment ('The best part? …')"),
     "NB526": ("ai-false-range", "AI tell: false range ('from strategy to execution')"),
+    "NB527": ("ai-uniform-paragraphs", "AI tell: every paragraph the same length"),
     "NB601": ("low-concreteness", "Abstract paragraph — no lived detail (advisory)"),
 }
 

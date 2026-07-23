@@ -390,6 +390,33 @@ def test_hook_question_across_paragraphs_exempt(analyze):
     assert "NB525" not in _codes(analyze, "The results?\n\nWe measured them for a month.")
 
 
+def test_uniform_paragraphs_flagged(analyze):
+    para = (
+        "The team shipped the release on time. The metrics moved in the right "
+        "direction. The customers noticed the change quickly."
+    )
+    text = "\n\n".join([para] * 7)
+    assert "NB527" in _codes(analyze, text)
+
+
+def test_varied_paragraphs_not_flagged(analyze):
+    short = "The release shipped on time."
+    long = (
+        "The team spent three weeks on the migration and hit every deadline. "
+        "The metrics moved in the right direction within days. The customers "
+        "noticed the change quickly. Support tickets dropped by half. Nobody "
+        "asked for a rollback."
+    )
+    text = "\n\n".join([short, long, short, long, short, long, short, long])
+    assert "NB527" not in _codes(analyze, text)
+
+
+def test_one_sentence_paragraphs_not_flagged(analyze):
+    # line-oriented style (changelogs, notes) is not the tell
+    text = "\n\n".join(["The release shipped on time for everyone."] * 8)
+    assert "NB527" not in _codes(analyze, text)
+
+
 def test_false_range_abstract_pair(analyze):
     issues = [
         i
