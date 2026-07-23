@@ -1,4 +1,4 @@
-.PHONY: deploy deploy-app test lint format typecheck check
+.PHONY: deploy deploy-app test lint format typecheck prose check
 
 # Full deploy: app on jack.lan + nginx edge on viewflow.io
 deploy:
@@ -20,4 +20,10 @@ format:
 typecheck:
 	uv run pyright
 
-check: lint typecheck test
+# The skills must pass their own linter: no very-hard sentences, document
+# grade <= 9 (roughly B1/B2 reading level).
+prose:
+	uv run nabokov --select NB201 --max-grade 9 \
+		skills/nabokov-editor/SKILL.md skills/nabokov-copywriter/SKILL.md
+
+check: lint typecheck prose test
