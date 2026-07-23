@@ -93,6 +93,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="print document metrics (grade, sentence length, burstiness) per file",
     )
     parser.add_argument(
+        "--score",
+        action="store_true",
+        help="print an AI-likeness estimate (0-100) per file instead of findings; "
+        "implies --ai. A gauge for before/after edits, not a detector verdict",
+    )
+    parser.add_argument(
         "--all-adverbs",
         dest="adverbs_all_pos",
         action="store_true",
@@ -156,7 +162,7 @@ def main(argv: list[str] | None = None) -> int:
     extend_select = _split_codes(args.extend_select) or ()
     if args.ai_only:
         select = (*select, "NB5")
-    if args.ai:
+    if args.ai or args.score:
         extend_select = (*extend_select, "NB5")
 
     overrides = {
@@ -194,6 +200,13 @@ def main(argv: list[str] | None = None) -> int:
 
     engine = Engine(config)
     results = [engine.analyze(source) for source in sources]
+
+    if args.score:
+        from .score import print_score
+
+        for result in results:
+            print_score(result, sys.stdout)
+        return EXIT_ERROR if had_missing else EXIT_OK
 
     fmt = resolve_format(config.fmt, sys.stdout)
     get_reporter(fmt)(results, config, sys.stdout)

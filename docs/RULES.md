@@ -191,6 +191,19 @@ nabokov --ai-only essay.md   # only the AI-writing checks
 extend_select = ["NB5"]
 ```
 
+### `--score` — one number for before/after edits
+
+`nabokov --score draft.md` prints a composite **AI-likeness estimate (0–100,
+higher = more AI-like)** per file, built from four calibrated signals:
+burstiness (35), NB5 tell density per 100 words (40), NB519/NB513 artifacts
+(cap 15), and vocabulary diversity (10). Bands: <25 reads human, <50 leans
+human, <75 leans AI, 75+ reads AI. Run it before and after an edit to show
+movement. It is a gauge of the measurable statistical signals only — **not a
+detector verdict**: a low score does not mean a trained classifier will read
+the text as human. Texts under 25 words or 3 sentences are not scored.
+(Adapted from lakshitha-dev/ai-humanizer-skill's estimator, MIT; rebuilt on
+nabokov's own signals.)
+
 ## Semantic density (NB6) — empty prose
 
 | Code | Name | Sev | Flags | Example |

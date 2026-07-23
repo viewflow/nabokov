@@ -123,3 +123,55 @@ def test_bad_config_exits_2(tmp_path, capsys, monkeypatch):
     rc = main(["a.txt"])
     assert rc == 2
     assert "config error" in capsys.readouterr().err
+
+
+def test_score_flag(tmp_path, capsys):
+    slop = (
+        "In today's fast-paced world, our platform plays a crucial role. "
+        "It offers a seamless and robust experience for every user. "
+        "Moreover, it helps teams navigate the evolving landscape with ease. "
+        "Ultimately, the future looks bright for this transformative journey. "
+    ) * 3
+    path = _write(tmp_path, "slop.txt", slop)
+    rc = main([path, "--score"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "AI-likeness" in out
+    assert "not a detector verdict" in out
+
+
+def test_score_too_short(tmp_path, capsys):
+    path = _write(tmp_path, "tiny.txt", "The cat sat on the mat.\n")
+    rc = main([path, "--score"])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert "too short to score" in out
+
+
+def test_score_ranks_slop_above_human_prose(tmp_path, capsys):
+    slop = (
+        "In today's fast-paced world, our platform plays a crucial role. "
+        "It offers a seamless and robust experience for every user. "
+        "Moreover, it helps teams navigate the evolving landscape with ease. "
+        "Ultimately, the future looks bright for this transformative journey. "
+    ) * 3
+    human = (
+        "We shipped late. The onboarding flow confused the first ten testers, "
+        "so Dana rewrote it over a weekend and we pushed the launch to March. "
+        "Was that the right call? Probably. Nobody asked for a refund, and the "
+        "support queue stayed quiet for the first time since the beta opened. "
+        "Next quarter we will hire one more engineer and fix the billing page. "
+    ) * 2
+    slop_path = _write(tmp_path, "slop.txt", slop)
+    human_path = _write(tmp_path, "human.txt", human)
+    main([slop_path, "--score"])
+    slop_out = capsys.readouterr().out
+    main([human_path, "--score"])
+    human_out = capsys.readouterr().out
+
+    def score_of(out):
+        import re
+
+        return int(re.search(r"AI-likeness (\d+)/100", out).group(1))
+
+    assert score_of(slop_out) > score_of(human_out)
