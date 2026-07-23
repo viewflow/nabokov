@@ -390,6 +390,33 @@ def test_hook_question_across_paragraphs_exempt(analyze):
     assert "NB525" not in _codes(analyze, "The results?\n\nWe measured them for a month.")
 
 
+def test_false_range_abstract_pair(analyze):
+    issues = [
+        i
+        for i in analyze(
+            "Our platform handles everything from strategy to execution.", config=AI
+        ).issues
+        if i.code == "NB526"
+    ]
+    assert len(issues) == 1
+
+
+def test_false_range_real_ranges_exempt(analyze):
+    # proper nouns, numbers, concrete pairs, idioms — all real ranges
+    for text in [
+        "The train goes from London to Paris every morning.",
+        "We work from 9 to 5 on weekdays without a break.",
+        "She read the report from start to finish in one sitting.",
+        "He checks the mailbox from time to time during the week.",
+    ]:
+        assert "NB526" not in _codes(analyze, text), text
+
+
+def test_false_range_motion_verb_exempt(analyze):
+    # a transfer is not a range
+    assert "NB526" not in _codes(analyze, "He moved from marketing to consulting last year.")
+
+
 def test_more_than_just_reframe(analyze):
     from nabokov.issue import Severity
 

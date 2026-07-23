@@ -19,6 +19,7 @@ from .ai_writing import (
     EmDashRule,
     EmojiRule,
     EngagementBaitRule,
+    FalseRangeRule,
     FillerRule,
     HedgeStackRule,
     HookQuestionRule,
@@ -82,6 +83,7 @@ ALL_RULES: list[Rule] = [
     AnaphoraTriadRule(),
     ContrastHeadingRule(),
     HookQuestionRule(),
+    FalseRangeRule(),
 ]
 
 # code -> (name, human description)
@@ -123,6 +125,7 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB523": ("ai-anaphora-triad", "AI tell: same quantifier opening three coordinated phrases"),
     "NB524": ("ai-contrast-heading", "AI tell: 'X, not Y' contrast heading"),
     "NB525": ("ai-hook-question", "AI tell: hook-question fragment ('The best part? …')"),
+    "NB526": ("ai-false-range", "AI tell: false range ('from strategy to execution')"),
     "NB601": ("low-concreteness", "Abstract paragraph — no lived detail (advisory)"),
 }
 

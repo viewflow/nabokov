@@ -24,7 +24,7 @@ from collections import Counter
 from collections.abc import Iterable
 from typing import Any
 
-from ..data_loader import ai_writing
+from ..data_loader import ai_writing, concreteness
 from ..issue import Issue, Severity
 from ..readability import burstiness, burstiness_thresholds, sentence_lengths
 from .base import CheckContext, Rule
@@ -1333,6 +1333,97 @@ class AnaphoraTriadRule(Rule):
                 "three times; vary the enumeration or cut to one concrete item",
                 m.start(),
                 m.end(),
+                snippet,
+                severity=self.severity,
+            )
+
+
+class FalseRangeRule(Rule):
+    """NB526 — the false range: "from X to Y" where X and Y are not points on
+    any scale — "from strategy to execution", "from ancient philosophy to
+    modern quantum mechanics".
+
+    Grounded in the Brysbaert concreteness norms: the tell needs an abstract
+    endpoint (min < 2.2) and an abstract pair overall (mean < 3.0), so real
+    ranges survive — "from London to Paris" (proper nouns), "from 9 to 5"
+    (numbers), "from start to finish" (2.7/2.9), "from time to time" (3.1).
+    A motion/change verb governing the "from" ("moved from marketing to
+    engineering") is a transfer, not a range, and is exempt. Advisory: some
+    abstract pairs are honest progressions, so the judgment layer decides.
+    """
+
+    code = "NB526"
+    name = "ai-false-range"
+    category = "ai"
+    codes = ("NB526",)
+    default_on = False
+    severity = Severity.INFO
+
+    _MAX_MIN = 2.2
+    _MAX_MEAN = 3.0
+    _MOTION_VERBS = frozenset(
+        "move go come switch shift transition jump migrate travel walk drive fly "
+        "run change convert translate promote graduate rise fall climb drop turn "
+        "grow evolve progress".split()
+    )
+    _IDIOMS = frozenset({("time", "time"), ("strength", "strength")})
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        ratings = concreteness()
+        doc = ctx.doc
+        text = doc.text
+        for tok in doc:
+            if tok.lower_ != "from":
+                continue
+            sent = tok.sent
+            to_tok = next(
+                (
+                    doc[j]
+                    for j in range(tok.i + 1, min(tok.i + 7, sent.end))
+                    if doc[j].lower_ == "to"
+                ),
+                None,
+            )
+            if to_tok is None or to_tok.pos_ == "PART":  # infinitive "to"
+                continue
+            x_span = doc[tok.i + 1 : to_tok.i]
+            y_end = to_tok.i + 1
+            while (
+                y_end < min(to_tok.i + 5, sent.end)
+                and not doc[y_end].is_punct
+                and doc[y_end].pos_ not in ("CCONJ", "SCONJ")
+            ):
+                y_end += 1
+            y_span = doc[to_tok.i + 1 : y_end]
+            spans = list(x_span) + list(y_span)
+            if not spans or any(t.pos_ in ("NUM", "PROPN") for t in spans):
+                continue
+            x = next((t for t in reversed(x_span) if t.pos_ == "NOUN"), None)
+            y = next((t for t in reversed(y_span) if t.pos_ == "NOUN"), None)
+            if x is None or y is None:
+                continue
+            if (x.lemma_.lower(), y.lemma_.lower()) in self._IDIOMS:
+                continue
+            head = tok.head
+            if head.pos_ == "VERB" and head.lemma_.lower() in self._MOTION_VERBS:
+                continue
+            rx = ratings.get(x.lemma_.lower())
+            ry = ratings.get(y.lemma_.lower())
+            if rx is None or ry is None:
+                continue
+            if min(rx, ry) >= self._MAX_MIN or (rx + ry) / 2 >= self._MAX_MEAN:
+                continue
+            start = tok.idx
+            end = y_span[-1].idx + len(y_span[-1].text)
+            snippet = " ".join(text[start:end].split())
+            yield _issue(
+                ctx,
+                "NB526",
+                "ai-false-range",
+                f"AI tell: false range '{snippet}' — '{x.text}' and '{y.text}' "
+                "aren't points on a scale; name the real list or cut",
+                start,
+                end,
                 snippet,
                 severity=self.severity,
             )
