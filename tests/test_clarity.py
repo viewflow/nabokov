@@ -186,6 +186,29 @@ def test_perplexity_upload_marker_flagged(analyze):
     assert _found(result, "NB519")
 
 
+def test_invisible_characters_flagged(analyze):
+    # zero-width space and word joiner ride along in AI-tool copy-paste
+    result = analyze("The plan​ works fine and ships⁠ this week.", config=AI)
+    assert len(_found(result, "NB519")) == 2
+
+
+def test_homoglyph_swap_flagged(analyze):
+    # Cyrillic е sandwiched inside a Latin word is a laundering swap
+    result = analyze("Our dеtection rate improved a lot this quarter.", config=AI)
+    issues = _found(result, "NB519")
+    assert issues and "homoglyph" in issues[0].message
+
+
+def test_legit_mixed_language_not_flagged(analyze):
+    # whole-script words, Cyrillic suffix on a Latin brand, and unit prefixes
+    # are ordinary multilingual text, not homoglyph swaps
+    result = analyze(
+        "Мы пишем в Slackе каждый день. The delay was 5 μs overall.",
+        config=AI,
+    )
+    assert not _found(result, "NB519")
+
+
 # --- chat-residue filler --------------------------------------------------
 
 

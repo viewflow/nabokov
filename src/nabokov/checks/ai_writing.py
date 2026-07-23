@@ -191,6 +191,29 @@ _AI_ARTIFACTS = [
             re.IGNORECASE,
         ),
     ),
+    # Zero-width and joiner characters never belong in prose a person typed;
+    # they ride along in AI-tool copy-paste (and in deliberate text
+    # laundering). NBSP and narrow NBSP are NOT here — Russian and French
+    # typography uses them legitimately.
+    (
+        "invisible character",
+        # U+200B zero-width space, U+200C/D (non-)joiner, U+2060 word joiner,
+        # U+FEFF BOM appearing mid-text
+        re.compile("[\u200b\u200c\u200d\u2060\ufeff]"),
+    ),
+    # A Cyrillic/Greek look-alike letter sandwiched inside a Latin word (or the
+    # reverse) is a homoglyph swap — "dеtection" with a Cyrillic е — a
+    # laundering trick detectors now catch. The sandwich shape keeps legit
+    # mixed tokens clean: whole-script words (ordinary Russian/Greek),
+    # Latin brands with Cyrillic inflection suffixes ("в Slackе"), and unit
+    # prefixes ("μs") have no interior mixed letter.
+    (
+        "mixed-script homoglyph",
+        re.compile(
+            "[A-Za-z][\u0400-\u04ff\u0370-\u03ff][A-Za-z]"
+            "|[\u0400-\u04ff][A-Za-z][\u0400-\u04ff]"
+        ),
+    ),
 ]
 
 # A spaced hyphen ("word - word") is the ASCII spelling of the same dash; the
