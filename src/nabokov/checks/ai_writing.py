@@ -1574,22 +1574,31 @@ class ContrastHeadingRule(Rule):
     severity = Severity.INFO
 
     _CONTRAST = re.compile(r"^[^,\n]{2,60},\s+not\s+\S.*$")
+    _ESCALATE_AT = 2  # repeated correction-shaped headings are the real signal
 
     def check(self, ctx: CheckContext) -> Iterable[Issue]:
         text = ctx.source.original_text
-        for m in _HEADING.finditer(text):
-            if _in_code(ctx, m.start(2)):
-                continue
+        hits = [
+            m
+            for m in _HEADING.finditer(text)
+            if not _in_code(ctx, m.start(2)) and self._CONTRAST.match(m.group(2))
+        ]
+        repeated = len(hits) >= self._ESCALATE_AT
+        for m in hits:
             heading = m.group(2)
-            if self._CONTRAST.match(heading):
-                yield _issue(
-                    ctx,
-                    "NB524",
-                    "ai-contrast-heading",
-                    f"AI tell: 'X, not Y' contrast heading '{heading}' — name "
-                    "what the section says instead of what it corrects",
-                    m.start(2),
-                    m.end(2),
-                    heading,
-                    severity=self.severity,
-                )
+            message = (
+                f"AI tell: 'X, not Y' contrast heading '{heading}' — name "
+                "what the section says instead of what it corrects"
+            )
+            if repeated:
+                message += f" ({len(hits)} such headings in this document)"
+            yield _issue(
+                ctx,
+                "NB524",
+                "ai-contrast-heading",
+                message,
+                m.start(2),
+                m.end(2),
+                heading,
+                severity=Severity.WARNING if repeated else self.severity,
+            )

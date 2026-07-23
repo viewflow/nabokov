@@ -661,6 +661,22 @@ def test_contrast_heading(analyze):
     assert issues and issues[0].severity.value == "info"
 
 
+def test_contrast_headings_repeated_escalate(analyze):
+    # one correction-shaped heading is a style choice; a document full of them
+    # is the signal, so repeats escalate to warning
+    text = (
+        "# Pin decisions, not knowledge\n\nBody text one goes here.\n\n"
+        "## Ship outcomes, not features\n\nBody text two goes here.\n"
+    )
+    issues = [
+        i
+        for i in analyze(text, config=AI, is_markdown=True, name="t.md").issues
+        if i.code == "NB524"
+    ]
+    assert len(issues) == 2
+    assert all(i.severity.value == "warning" for i in issues)
+
+
 def test_contrast_in_body_not_flagged_as_heading(analyze):
     # NB524 is a heading rule; the same shape in running text belongs to NB501
     text = "Pin decisions, not knowledge. The rest the model already carries."
