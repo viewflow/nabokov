@@ -105,6 +105,18 @@ def test_align_with_editorializing(analyze):
     assert "NB503" in _codes(analyze, "The roadmap aligns with our long-term goals.")
 
 
+def test_humanizer_sourced_phrases(analyze):
+    # additions cross-checked against lakshitha-dev/ai-humanizer-skill (MIT)
+    codes = _codes(
+        analyze,
+        "In our fast-paced world, the app emerged as a wealth of insight. "
+        "Ultimately, writing means putting pen to paper on a journey of "
+        "self-discovery into your innermost thoughts.",
+    )
+    assert codes.count("NB503") >= 5
+    assert "NB505" in codes  # ultimately
+
+
 def test_emoji_overuse_threshold(analyze):
     assert "NB508" not in _codes(analyze, "Nice work 🌱 on the release.")
     assert "NB508" in _codes(analyze, "Features: ✅ fast ✅ safe ✅ simple 🚀 shipped.")

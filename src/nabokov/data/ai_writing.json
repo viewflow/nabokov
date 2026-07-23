@@ -58,7 +58,9 @@
     "at the end of the day", "when all is said and done", "exciting times ahead",
     "the possibilities are endless",
     "studies show", "research suggests", "industry leaders agree",
-    "one thing is certain", "as we move forward", "whether you're a"
+    "one thing is certain", "as we move forward", "whether you're a",
+    "emerged as", "a wealth of", "fast-paced world", "comes with trade-offs",
+    "innermost thoughts", "putting pen to paper", "journey of self-discovery"
   ],
   "vocab_tier2": [
     "significant", "innovative", "effective", "dynamic", "scalable",
@@ -93,6 +95,6 @@
     "moreover", "furthermore", "additionally", "notably", "importantly",
     "subsequently", "consequently", "firstly",
     "in conclusion", "in summary", "to sum up", "generally speaking",
-    "in essence", "at its core", "feel free to"
+    "in essence", "at its core", "feel free to", "ultimately"
   ]
 }
