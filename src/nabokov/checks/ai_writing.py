@@ -657,8 +657,8 @@ class MonotonousRhythmRule(Rule):
             code="NB509",
             name="ai-monotonous-rhythm",
             message=(
-                f"AI tell: monotonous sentence rhythm "
-                f"(burstiness {cv:.2f}, aim for >= {min_cv:.2f} by varying length)"
+                f"AI tell: monotonous sentence rhythm — mix short and long "
+                f"sentences (burstiness {cv:.2f}, aim for >= {min_cv:.2f})"
             ),
             line=1,
             col=1,
@@ -749,7 +749,8 @@ class ParticipialCloserRule(Rule):
                 ctx,
                 "NB511",
                 "ai-participial-closer",
-                f"AI tell: participial 'significance' closer '{phrase}'",
+                f"AI tell: empty 'significance' closer '{phrase}' — cut it "
+                "or state the concrete fact",
                 m.start(),
                 m.end(),
                 phrase,
@@ -1078,7 +1079,8 @@ class AiArtifactRule(Rule):
                     ctx,
                     "NB519",
                     "ai-artifact",
-                    f"AI artifact: {kind} '{m.group(0)}' — near-proof of an unedited paste",
+                    f"AI artifact: {kind} '{m.group(0)}' — pasted from an AI tool "
+                    "without editing; remove it",
                     m.start(),
                     m.end(),
                     m.group(0),
@@ -1104,7 +1106,7 @@ class HedgeStackRule(Rule):
                 ctx,
                 "NB520",
                 "ai-hedge-stack",
-                f"AI tell: stacked hedge '{m.group(0)}' — pick one, the pair asserts nothing",
+                f"AI tell: stacked hedge '{m.group(0)}' — the two hedges cancel out; keep one",
                 m.start(),
                 m.end(),
                 m.group(0),
@@ -1196,11 +1198,11 @@ class AdjectiveTriadRule(Rule):
             end = group[-1].idx + len(group[-1].text)
             snippet = " ".join(text[start:end].split())
             message = (
-                f"AI tell: colon-reveal triad '{snippet}' — a colon straight "
-                "after a copula launching a balanced triple"
+                f"AI tell: colon-reveal triad '{snippet}' — drop the colon "
+                "or the balanced triple"
                 if reveal
-                else f"AI tell: adjective triad '{snippet}' — vary enumeration size "
-                "(two for contrast, four for abundance)"
+                else f"AI tell: adjective triad '{snippet}' — cut one item, "
+                "or use two or four"
             )
             yield _issue(
                 ctx,
@@ -1355,8 +1357,8 @@ class EngagementBaitRule(Rule):
             ctx,
             "NB522",
             "ai-engagement-bait",
-            f"AI tell: engagement-bait closer '{phrase}' — the algorithmic-reach "
-            "CTA question; end on your point instead",
+            f"AI tell: engagement-bait closer '{phrase}' — a question written "
+            "to farm replies; end on your point instead",
             para_start + m.start(1),
             para_start + m.end(1),
             phrase,
@@ -1399,8 +1401,8 @@ class AnaphoraTriadRule(Rule):
                 ctx,
                 "NB523",
                 "ai-anaphora-triad",
-                f"AI tell: anaphora triad '{snippet}' — the same quantifier "
-                "three times; vary the enumeration or cut to one concrete item",
+                f"AI tell: anaphora triad '{snippet}' — the same word opens "
+                "all three items; vary them or keep one concrete item",
                 m.start(),
                 m.end(),
                 snippet,
@@ -1552,8 +1554,8 @@ class HookQuestionRule(Rule):
                 ctx,
                 "NB525",
                 "ai-hook-question",
-                f"AI tell: hook-question fragment '{snippet}' — the "
-                "self-interview cadence; say the point directly",
+                f"AI tell: hook-question fragment '{snippet}' — asking and "
+                "answering your own question; say the point directly",
                 start,
                 end,
                 snippet,

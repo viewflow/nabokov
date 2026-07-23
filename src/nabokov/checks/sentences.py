@@ -90,7 +90,7 @@ class PeriodicSentenceRule(Rule):
                 name="periodic-sentence",
                 message=(
                     f"main clause arrives after {lead} words — "
-                    "front-load the point or split before the pile-up"
+                    "put the point first, or split the sentence there"
                 ),
                 line=line,
                 col=col,

@@ -57,8 +57,8 @@ class ConcretenessRule(Rule):
                 code="NB601",
                 name="low-concreteness",
                 message=(
-                    f"abstract paragraph (concreteness {mean:.1f}/5) — "
-                    "no lived detail; add a concrete example, number, or image"
+                    f"abstract paragraph (concreteness {mean:.1f}/5) — it names "
+                    "nothing you can see or touch; add a real example, number, or image"
                 ),
                 line=line,
                 col=col,
