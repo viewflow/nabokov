@@ -173,3 +173,12 @@ def _print_summary(console, Text, result) -> None:
         f"{counts['qualifiers']} qualifiers · {counts['complexWords']} complex"
     )
     console.print(Text(detail, style="dim"))
+    if result.issues:
+        from collections import Counter
+
+        by_code = Counter(i.code for i in result.issues)
+        grouped = " · ".join(
+            f"{code} ×{n}" if n > 1 else code
+            for code, n in sorted(by_code.items(), key=lambda kv: (-kv[1], kv[0]))
+        )
+        console.print(Text(f"  {grouped}", style="dim"))
