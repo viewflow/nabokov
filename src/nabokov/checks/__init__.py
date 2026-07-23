@@ -21,6 +21,7 @@ from .ai_writing import (
     EngagementBaitRule,
     FillerRule,
     HedgeStackRule,
+    HookQuestionRule,
     IntensifierRule,
     MonotonousRhythmRule,
     NegationContrastRule,
@@ -80,6 +81,7 @@ ALL_RULES: list[Rule] = [
     EngagementBaitRule(),
     AnaphoraTriadRule(),
     ContrastHeadingRule(),
+    HookQuestionRule(),
 ]
 
 # code -> (name, human description)
@@ -120,6 +122,7 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB522": ("ai-engagement-bait", "AI tell: engagement-bait closer question"),
     "NB523": ("ai-anaphora-triad", "AI tell: same quantifier opening three coordinated phrases"),
     "NB524": ("ai-contrast-heading", "AI tell: 'X, not Y' contrast heading"),
+    "NB525": ("ai-hook-question", "AI tell: hook-question fragment ('The best part? …')"),
     "NB601": ("low-concreteness", "Abstract paragraph — no lived detail (advisory)"),
 }
 

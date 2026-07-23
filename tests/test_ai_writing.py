@@ -366,6 +366,30 @@ def test_signal_lists_not_stale():
     )
 
 
+def test_hook_question_fragment(analyze):
+    issues = [
+        i
+        for i in analyze("The best part? It's free for everyone.", config=AI).issues
+        if i.code == "NB525"
+    ]
+    assert len(issues) == 1
+
+
+def test_hook_question_real_question_exempt(analyze):
+    # interrogative-word questions are real questions, not the hook cadence
+    assert "NB525" not in _codes(analyze, "Why? Because the tests were failing again.")
+
+
+def test_hook_question_verb_exempt(analyze):
+    # a fragment with a verb ("Sound familiar?") is not the noun-phrase hook
+    assert "NB525" not in _codes(analyze, "Sound familiar? We fixed it last week.")
+
+
+def test_hook_question_across_paragraphs_exempt(analyze):
+    # a heading-like question with a new paragraph after it is not the couplet
+    assert "NB525" not in _codes(analyze, "The results?\n\nWe measured them for a month.")
+
+
 def test_more_than_just_reframe(analyze):
     from nabokov.issue import Severity
 

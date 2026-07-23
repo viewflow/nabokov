@@ -1338,6 +1338,68 @@ class AnaphoraTriadRule(Rule):
             )
 
 
+class HookQuestionRule(Rule):
+    """NB525 — the hook-question fragment: a verbless noun-phrase question
+    answered by the next sentence — "The best part? It's free." / "The
+    result? More sales."
+
+    The self-interview cadence current models lean on. Kept conservative:
+    the fragment must be 2–4 words, verbless, and free of interrogative
+    words — "Why? Because it works." is a real question and "Sound
+    familiar?" carries a verb; neither fires. The answer must be a
+    declarative sentence in the same paragraph. Humans use the shape too
+    (it is a rhetorical device), so advisory for the judgment layer.
+    """
+
+    code = "NB525"
+    name = "ai-hook-question"
+    category = "ai"
+    codes = ("NB525",)
+    default_on = False
+    severity = Severity.INFO
+
+    _WH = frozenset(
+        {"why", "how", "what", "who", "whom", "whose", "when", "where", "which"}
+    )
+    _MIN_WORDS = 2
+    _MAX_WORDS = 4
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        text = ctx.doc.text
+        sents = list(ctx.doc.sents)
+        for sent, nxt in zip(sents, sents[1:]):
+            stripped = sent.text.strip()
+            if not stripped.endswith("?"):
+                continue
+            words = [t for t in sent if not (t.is_punct or t.is_space)]
+            if not (self._MIN_WORDS <= len(words) <= self._MAX_WORDS):
+                continue
+            if any(t.pos_ in ("VERB", "AUX") for t in sent):
+                continue
+            if any(t.lower_ in self._WH for t in words):
+                continue
+            answer = nxt.text.strip()
+            if not answer or answer.endswith("?"):
+                continue
+            frag_end = sent.start_char + len(sent.text.rstrip())
+            if "\n\n" in text[frag_end : nxt.start_char]:  # new paragraph
+                continue
+            start = sent.start_char
+            end = nxt.start_char + len(nxt.text.rstrip())
+            snippet = " ".join(text[start:end].split())
+            yield _issue(
+                ctx,
+                "NB525",
+                "ai-hook-question",
+                f"AI tell: hook-question fragment '{snippet}' — the "
+                "self-interview cadence; say the point directly",
+                start,
+                end,
+                snippet,
+                severity=self.severity,
+            )
+
+
 class ContrastHeadingRule(Rule):
     """NB524 — the "X, not Y" contrast heading: "Pin decisions, not knowledge".
 
