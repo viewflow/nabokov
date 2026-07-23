@@ -107,9 +107,14 @@ over abstractions read machine-made. So when you rewrite, add one real detail
 from the author's material before another round of tell-removal. Ask for it
 first — never invent it.
 
-**Detector feedback.** When a detector highlights a sentence, treat it as one
-of the cadence or pointer findings above. Ground it or roughen it; never just swap
-synonyms. Fix only what the fix improves, and say where the detector is
+**Detector feedback.** Detectors come in two families. Statistical ones
+measure rhythm and word predictability; real structural variety moves them.
+Trained classifiers (Pangram, Turnitin) learned what whole human documents
+look like; only grounded specifics and a real voice move them. Word swaps
+move neither. When a detector highlights a sentence, treat it as one of the
+cadence or pointer findings above. Ground it or roughen it; never just swap
+synonyms. Track movement with `nabokov --score <file>` before and after —
+and pass on the caveat it prints: it gauges the statistical family only. Fix only what the fix improves, and say where the detector is
 wrong. After rewriting, check the new sentences against this same list.
 Rewrites drift into sibling shapes: a cut not-X-but-Y comes back as "what X
 does is Y", and a punchline ending comes back as an "-ing" closer. Sometimes
@@ -224,9 +229,14 @@ asking. Ask first — as one batch — before a change that:
 - **Clean slop is still slop.** The linter can't tell "clean and concrete"
   from "clean and interchangeable" — that judgment is yours alone.
 - **Never invent** facts, examples, or numbers to satisfy a check.
+- **Never fake imperfection.** Don't add spelling or grammar mistakes to look
+  human — detectors don't reward broken English, and readers notice. Human
+  texture means variety and voice, not errors.
 - **Preserve markup** — nabokov ignores URLs, code, and headings; so must you.
 - **Respect voice.** Emoji, em-dashes, and punchy phrasing are often
   deliberate style — use `--ai` when de-slopping is the goal, not by default.
-  If other writing by the same author is available, read some first.
+  If other writing by the same author is available, read some first. Note the
+  average *and the range* of sentence length, the punctuation habits, and any
+  recurring tics — then edit inside that pattern, not toward a generic one.
 - Use inline `<!-- nabokov: ignore NBxxx -->` only for exceptions the user
   agrees to — don't silence findings to "win".

@@ -81,8 +81,8 @@ Run them in order. Each pass hands a better draft to the next.
    run of same-length sentences drones, however good each one is. Read it
    aloud in your head. Where it plods, split one sentence short and let the
    next run long. As a working range: a short sentence is 3–8 words, a long
-   one 25–40 — but treat these as the ends of a range to visit, not a
-   short-long-short pattern to alternate; a mechanical see-saw drones as
+   one 25–40. Treat these as the ends of a range to visit, not a
+   short-long-short pattern to alternate — a mechanical see-saw drones as
    badly as uniform length. NB509 flags the flat stretches and points at the
    flattest run. Flow is also *logical*: at
    each paragraph opening, ask how we got here from the last one. If a
