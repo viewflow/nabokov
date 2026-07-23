@@ -366,6 +366,23 @@ def test_signal_lists_not_stale():
     )
 
 
+def test_more_than_just_reframe(analyze):
+    from nabokov.issue import Severity
+
+    issues = [
+        i
+        for i in analyze("This is more than just a tool for writers.", config=AI).issues
+        if i.code == "NB501"
+    ]
+    assert len(issues) == 1
+    assert issues[0].severity is Severity.INFO
+
+
+def test_more_than_just_plain_verb_exempt(analyze):
+    # without a copula the phrase is ordinary prose
+    assert "NB501" not in _codes(analyze, "We offer more than just speed to our users.")
+
+
 def test_negation_contrast_overlapping_patterns_dedupe(analyze):
     # the countdown also contains the plain "it's not X, it's Y" shape at a
     # later offset — one stretch of text must produce one finding

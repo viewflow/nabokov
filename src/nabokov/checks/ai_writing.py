@@ -116,6 +116,17 @@ _NEGATION_PATTERNS_INFO = [
             r"[^.?!:\n]{1,50}[.!]"
         ),
     ),
+    # The positive twin of "isn't just X": a copula + "more than just" —
+    # "This is more than just a tool." Copula-anchored to stay precise;
+    # "we offer more than just speed" (plain verb) is ordinary prose.
+    (
+        "'more than just' reframe",
+        re.compile(
+            r"(?:\b(?:is|are|was|were|becomes?|became)\b|['’](?:s|re))\s+"
+            r"(?:so much\s+)?more than just\b",
+            re.IGNORECASE,
+        ),
+    ),
     # The negation→role-reveal couplet: negate an obligation, then reveal the
     # subject's "real" function in the next sentence — "A skill does not need
     # to teach it. Its job is activation." Anchored on both halves: a negated
