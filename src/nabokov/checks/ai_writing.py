@@ -210,8 +210,7 @@ _AI_ARTIFACTS = [
     (
         "mixed-script homoglyph",
         re.compile(
-            "[A-Za-z][\u0400-\u04ff\u0370-\u03ff][A-Za-z]"
-            "|[\u0400-\u04ff][A-Za-z][\u0400-\u04ff]"
+            "[A-Za-z][\u0400-\u04ff\u0370-\u03ff][A-Za-z]|[\u0400-\u04ff][A-Za-z][\u0400-\u04ff]"
         ),
     ),
 ]
@@ -775,9 +774,7 @@ class UniformParagraphRule(Rule):
             if span is None:
                 continue
             n = sum(
-                1
-                for s in span.sents
-                if sum(1 for t in s if not (t.is_punct or t.is_space)) >= 3
+                1 for s in span.sents if sum(1 for t in s if not (t.is_punct or t.is_space)) >= 3
             )
             if n:
                 counts.append(n)
@@ -836,9 +833,7 @@ class LexicalDiversityRule(Rule):
         score = mattr(tokens)
         if score >= self._MIN_MATTR:
             return
-        counts = Counter(
-            t.lemma_.lower() for t in ctx.doc if t.is_alpha and not t.is_stop
-        )
+        counts = Counter(t.lemma_.lower() for t in ctx.doc if t.is_alpha and not t.is_stop)
         repeats = ", ".join(
             f"'{word}' ×{count}"
             for word, count in counts.most_common(self._TOP_REPEATS)
@@ -1319,9 +1314,7 @@ class AdjectiveTriadRule(Rule):
         words = sum(1 for t in ctx.doc if not (t.is_punct or t.is_space))
         text = ctx.doc.text
         dense = (
-            len(triads) >= self._MIN_TRIADS
-            and words
-            and len(triads) / words * 1000 >= self._RATE
+            len(triads) >= self._MIN_TRIADS and words and len(triads) / words * 1000 >= self._RATE
         )
         for group in triads:
             start = group[0].idx
@@ -1331,11 +1324,9 @@ class AdjectiveTriadRule(Rule):
             end = group[-1].idx + len(group[-1].text)
             snippet = " ".join(text[start:end].split())
             message = (
-                f"AI tell: colon-reveal triad '{snippet}' — drop the colon "
-                "or the balanced triple"
+                f"AI tell: colon-reveal triad '{snippet}' — drop the colon or the balanced triple"
                 if reveal
-                else f"AI tell: adjective triad '{snippet}' — cut one item, "
-                "or use two or four"
+                else f"AI tell: adjective triad '{snippet}' — cut one item, or use two or four"
             )
             yield _issue(
                 ctx,
@@ -1654,9 +1645,7 @@ class HookQuestionRule(Rule):
     default_on = False
     severity = Severity.INFO
 
-    _WH = frozenset(
-        {"why", "how", "what", "who", "whom", "whose", "when", "where", "which"}
-    )
+    _WH = frozenset({"why", "how", "what", "who", "whom", "whose", "when", "where", "which"})
     _MIN_WORDS = 2
     _MAX_WORDS = 4
 
@@ -1744,3 +1733,143 @@ class ContrastHeadingRule(Rule):
                 heading,
                 severity=Severity.WARNING if repeated else self.severity,
             )
+
+
+class PunchlineEndingRule(Rule):
+    """NB529 — most paragraphs close on a short punchline sentence.
+
+    Ending a paragraph on a short beat is a strong move; ending most of them
+    that way is machine cadence — every paragraph lands, nothing ends flat.
+    (From the 2026-07 Pangram gap experiment: trained detectors flag
+    beat-perfect closes that word-level tells and sentence burstiness never
+    see.) Needs >= 6 prose paragraphs averaging >= 2 sentences — one-liner
+    paragraphs are line-oriented style, NB527's guard. Flags when >= 3
+    closers are <= 8 words and they are at least half of all paragraphs.
+    Document-level, advisory; anchored at the first punchline closer.
+    """
+
+    code = "NB529"
+    name = "ai-punchline-endings"
+    category = "ai"
+    codes = ("NB529",)
+    default_on = False
+    severity = Severity.INFO
+
+    _MIN_PARAGRAPHS = 6
+    _MIN_MEAN = 2.0
+    _MAX_PUNCH_WORDS = 8
+    _MIN_COUNT = 3
+    _MIN_SHARE = 0.5
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        from .base import paragraph_ranges
+
+        doc = ctx.doc
+        closers: list[tuple[int, int, str] | None] = []  # punchline spans, None = flat close
+        sentence_counts: list[int] = []
+        for start, end in paragraph_ranges(doc.text):
+            span = doc.char_span(start, end, alignment_mode="expand")
+            if span is None:
+                continue
+            sents = [
+                (s, n)
+                for s in span.sents
+                if (n := sum(1 for t in s if not (t.is_punct or t.is_space)))
+            ]
+            if not sents:
+                continue
+            sentence_counts.append(len(sents))
+            last, n = sents[-1]
+            if n <= self._MAX_PUNCH_WORDS:
+                s_start = last.start_char
+                s_end = last.start_char + len(last.text.rstrip())
+                closers.append((s_start, s_end, last.text.rstrip()))
+            else:
+                closers.append(None)
+        total = len(sentence_counts)
+        if total < self._MIN_PARAGRAPHS:
+            return
+        if sum(sentence_counts) / total < self._MIN_MEAN:
+            return
+        punches = [c for c in closers if c is not None]
+        if len(punches) < self._MIN_COUNT or len(punches) / total < self._MIN_SHARE:
+            return
+        start, end, text = punches[0]
+        yield _issue(
+            ctx,
+            "NB529",
+            "ai-punchline-endings",
+            (
+                f"AI tell: {len(punches)} of {total} paragraphs end on a short "
+                "punchline — land two or three where the argument peaks and "
+                "let the rest end flat"
+            ),
+            start,
+            end,
+            text[:80],
+            severity=self.severity,
+        )
+
+
+class FragmentDensityRule(Rule):
+    """NB530 — verbless label fragments crowd the piece.
+
+    "Three different contexts." "One question underneath." A fragment is a
+    beat; a piece built on beats is machine staccato. Counts sentences whose
+    root is not a verb or auxiliary AND that end in terminal punctuation —
+    the punctuation requirement keeps headings, list items, and captions out
+    (they end bare). Individual fragments are the writer's call (human
+    staccato looks identical — same reasoning as NB507); the density is the
+    tell. Flags when >= 3 such fragments make up more than 12% of a
+    document's sentences (min 8). Document-level, advisory; anchored at the
+    first fragment.
+
+    Known noise: noun/verb-ambiguous words ("the server restarts") can
+    misparse a full sentence as noun-rooted. The count and share floors
+    absorb isolated misparses, and the advisory severity leaves the call to
+    the editor.
+    """
+
+    code = "NB530"
+    name = "ai-fragment-density"
+    category = "ai"
+    codes = ("NB530",)
+    default_on = False
+    severity = Severity.INFO
+
+    _MIN_SENTENCES = 8
+    _MIN_COUNT = 3
+    _MIN_SHARE = 0.12
+    _TERMINAL = (".", "!", "?", "…")
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        sents = [s for s in ctx.doc.sents if any(not (t.is_punct or t.is_space) for t in s)]
+        if len(sents) < self._MIN_SENTENCES:
+            return
+        fragments = [
+            s
+            for s in sents
+            if s.root.pos_ not in ("VERB", "AUX") and s.text.rstrip().endswith(self._TERMINAL)
+        ]
+        if len(fragments) < self._MIN_COUNT:
+            return
+        share = len(fragments) / len(sents)
+        if share <= self._MIN_SHARE:
+            return
+        first = fragments[0]
+        start = first.start_char
+        end = first.start_char + len(first.text.rstrip())
+        yield _issue(
+            ctx,
+            "NB530",
+            "ai-fragment-density",
+            (
+                f"AI tell: {len(fragments)} of {len(sents)} sentences are "
+                "verbless fragments — keep the best beats, give the rest "
+                "their verbs back"
+            ),
+            start,
+            end,
+            first.text.rstrip()[:80],
+            severity=self.severity,
+        )

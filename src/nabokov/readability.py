@@ -71,6 +71,39 @@ def burstiness(lengths: list[int]) -> float:
     return statistics.pstdev(lengths) / mean
 
 
+# Punctuation that breaks a sentence into breath-length segments. Coordinating
+# conjunctions are NOT breaks: a human run-on ("...and we don't have it then we
+# tell ourselves...") must stay one long segment — that length IS the signal.
+_SEGMENT_PUNCT = {",", ";", ":", "—", "–", "--", "(", ")"}  # noqa: RUF001 - en dash is a real break char
+
+
+def segment_lengths(doc) -> list[int]:
+    """Word count per punctuation-delimited segment within each sentence.
+
+    LLM prose punctuates on a metronome — a comma or dash every clause, so
+    segment lengths cluster tightly. Human prose under- and over-punctuates:
+    a 25-word unpunctuated run beside a two-word aside. The CV of these
+    lengths (via :func:`burstiness`) separates texts that sentence-level CV
+    ties, because a balanced LLM sentence and a human run-on can be the same
+    length while their internal punctuation differs completely.
+    """
+    out = []
+    for sent in doc.sents:
+        n = 0
+        for t in sent:
+            if t.is_space:
+                continue
+            if t.is_punct:
+                if t.text in _SEGMENT_PUNCT and n:
+                    out.append(n)
+                    n = 0
+            else:
+                n += 1
+        if n:
+            out.append(n)
+    return out
+
+
 def content_tokens(doc) -> list[str]:
     """Lowercased alphabetic tokens — the input for the lexical-diversity metrics.
 

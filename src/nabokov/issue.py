@@ -52,3 +52,4 @@ class DocumentStats:
     burstiness: float  # sentence-length CV (stdev/mean); high = varied, low = flat
     mattr: float  # moving-average TTR (window 100); high = varied vocabulary, low = repetitive
     counts: dict[str, int]  # per-category highlight counts
+    seg_burstiness: float = 0.0  # punctuation-segment length CV; low = metronome commas

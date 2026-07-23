@@ -6,9 +6,11 @@ from nabokov.readability import (
     HARD,
     NORMAL,
     VERY_HARD,
+    burstiness,
     classify,
     letters_in,
     reading_level,
+    segment_lengths,
 )
 
 
@@ -53,3 +55,39 @@ def test_classify_short_sentence_never_flagged():
 
 def test_classify_technical_target_is_more_lenient():
     assert classify(12, 20, "TECHNICAL") == NORMAL  # hard threshold is 14 here
+
+
+def _doc(text):
+    from nabokov.analyzer import load_nlp
+
+    return load_nlp()(text)
+
+
+def test_segment_lengths_splits_on_punctuation_not_conjunctions():
+    # comma and dash break segments; "and" does not — the run-on stays whole
+    doc = _doc("We shipped late, and the queue stayed quiet — finally.")
+    assert segment_lengths(doc) == [3, 5, 1]
+
+
+def test_segment_lengths_sentence_boundary_breaks():
+    doc = _doc("We shipped late. The queue stayed quiet.")
+    assert segment_lengths(doc) == [3, 4]
+
+
+def test_segment_lengths_ignores_empty_segments():
+    # ", —" back to back must not emit a zero-length segment
+    doc = _doc("Well, — fine.")
+    assert 0 not in segment_lengths(doc)
+
+
+def test_segment_cv_separates_metronome_from_runon():
+    # every clause comma'd at the same length vs one long unpunctuated run
+    metronome = _doc(
+        "The launch was smooth, the team was proud, the users were happy. "
+        "The docs were clear, the tests were green, the demo was ready."
+    )
+    runon = _doc(
+        "We wanted the launch to go well and it mostly did even though nobody "
+        "had slept much. Fine, we thought. The docs, though, needed work."
+    )
+    assert burstiness(segment_lengths(runon)) > burstiness(segment_lengths(metronome))

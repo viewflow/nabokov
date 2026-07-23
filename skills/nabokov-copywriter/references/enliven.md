@@ -57,6 +57,13 @@ and listen for the plod — that's where nabokov's NB509 (flat rhythm) fires. Fi
 by splitting one sentence short and letting the next run long, not by chopping
 everything into fragments (that's its own AI tell, NB507).
 
+Rhythm lives inside sentences too. Machine prose punctuates on a metronome — a
+comma or dash every clause, all clauses the same weight. Human prose
+under-punctuates and over-punctuates: a 25-word run with no comma at all, then a
+two-word aside. When you build a long sentence, let it run loose on "and" and
+"so" instead of slicing it into balanced comma'd clauses; `--score` prints a
+punct-rhythm number that drops when every segment comes out the same size.
+
 ## Human noise — carefully
 
 Real writing has a little texture: a first-person aside, a small honest doubt, a
@@ -66,6 +73,16 @@ So add human noise as *deliberate voice*, and use it sparingly. Never let it
 become the reflexive hedging ("it's worth noting that", "in today's world") that
 reads as machine filler. One genuine aside beats five nervous qualifiers. When in
 doubt, the linter's NB520 (hedge stack) and NB504 (filler) mark the line.
+
+Noise is syntactic as much as lexical. A parenthetical dropped mid-sentence, a
+paragraph that ends flat instead of on a beat, one long sentence left loosely
+coordinated where a machine would balance it — these read human because they are
+how drafts actually come out. The cheapest source of all of this is the author's
+own draft: a line nothing flagged keeps its original wording, word for word.
+Their phrasing — slightly off-balance, personally theirs — is the noise you
+cannot fake, and paraphrasing it away is how a clean rewrite ends up scoring
+100% AI. Never inject errors to fake any of this; looseness is not sloppiness,
+and a manufactured typo is fabrication aimed at the reader.
 
 ## The order matters
 

@@ -121,7 +121,9 @@ does is Y", and a punchline ending comes back as an "-ing" closer. Sometimes
 the detector still flags text that lints clean. Then the register is the
 tell: impersonal, every clause balanced, no lived detail. Word swaps will not
 move that score. Two things move it. One: the author's own details or first
-person — ask, never invent. Two: uneven syntax. One more note: a short
+person — ask, never invent. Two: uneven syntax — `--score`'s punct-rhythm
+number tracks one form of it (metronome punctuation, a comma every clause);
+keep the author's long unpunctuated runs instead of comma-splitting them. One more note: a short
 polished excerpt seems to score worse than a whole document (not confirmed).
 So score the whole piece before rewriting further. Cap the loop at **two**
 rewrite → re-scan rounds. On the second round touch only the sentences still
@@ -142,7 +144,12 @@ READMEs and reference docs.
    Skip it when the user asked for a plain readability lint.
 2. **Judgment pass** (+ macro pass for essays).
 3. **Fix, keeping the meaning** — playbooks below. Keep the author's intent,
-   facts, links, code, structure. Never invent content. **Patch or rebuild?**
+   facts, links, code, structure. Never invent content. **Minimal
+   paraphrase:** a line that nothing flagged — linter, detector, judgment
+   pass — keeps its original wording, word for word. Every gratuitous
+   paraphrase swaps author idiolect for model idiolect, the exact
+   distribution trained classifiers detect; the author's surviving words are
+   the one human signal a rewrite cannot synthesize. **Patch or rebuild?**
    When vocabulary hits span 3+ categories *and* the rhythm is flat (NB509),
    the structure itself is generated. Propose a rebuild from the piece's
    one-sentence core (needs approval).

@@ -10,10 +10,18 @@ It is a gauge of "did the edit move the measurable signals", not a detector
 verdict — a low score does not mean a trained classifier will read the text
 as human.
 
-Components (weights follow the source script; higher = more AI-like):
+Components (weights adapted from the source script; higher = more AI-like):
 
-- **burstiness** (35) — sentence-length CV. Detector literature puts AI text
+- **burstiness** (25) — sentence-length CV. Detector literature puts AI text
   near 0.20 and human near 0.60+; risk scales linearly between them.
+- **punct rhythm** (10) — punctuation-segment length CV (see
+  ``readability.segment_lengths``). LLM prose places a comma or dash every
+  clause, so segment lengths cluster; human prose mixes long unpunctuated
+  runs with short asides. This separates texts that sentence-level CV ties:
+  in the 2026-07 Pangram gap experiment, an LLM rewrite and a
+  detector-passing humanized text tied on sentence CV (0.50 vs 0.52) but
+  split cleanly here (0.58 vs 0.73). Bands calibrated on that small corpus —
+  treat as a coarse signal, hence the low weight.
 - **tell density** (40) — span-level NB5xx findings per 100 words, saturating
   at 4/100w. Document-level metric rules and artifact rules are excluded
   here — they have their own components.
@@ -31,7 +39,7 @@ if TYPE_CHECKING:
 
 # Document-level metric rules: their signal is already carried by the
 # burstiness/diversity components or is a density verdict, not a span tell.
-_DOC_LEVEL = {"NB506", "NB508", "NB509", "NB527", "NB528"}
+_DOC_LEVEL = {"NB506", "NB508", "NB509", "NB527", "NB528", "NB529", "NB530"}
 _ARTIFACT = {"NB513", "NB519"}
 
 _MIN_WORDS = 25
@@ -39,6 +47,7 @@ _MIN_SENTENCES = 3
 
 # burstiness bands from the detector literature; MATTR bands from NB528
 _CV_AI, _CV_HUMAN = 0.20, 0.60
+_SEG_CV_AI, _SEG_CV_HUMAN = 0.45, 0.75  # punctuation-segment CV, gap-experiment corpus
 _MATTR_FLAT, _MATTR_HUMAN = 0.45, 0.55
 _TELL_SATURATION = 4.0  # tells per 100 words
 
@@ -61,7 +70,10 @@ def compute(result: AnalysisResult) -> dict:
         }
 
     cv = stats.burstiness
-    burst = _clamp((_CV_HUMAN - cv) / (_CV_HUMAN - _CV_AI), 0, 1) * 35
+    burst = _clamp((_CV_HUMAN - cv) / (_CV_HUMAN - _CV_AI), 0, 1) * 25
+
+    seg_cv = stats.seg_burstiness
+    seg_risk = _clamp((_SEG_CV_HUMAN - seg_cv) / (_SEG_CV_HUMAN - _SEG_CV_AI), 0, 1) * 10
 
     nb5 = [i for i in result.issues if i.code.startswith("NB5")]
     tells = [i for i in nb5 if i.code not in _DOC_LEVEL | _ARTIFACT]
@@ -74,7 +86,7 @@ def compute(result: AnalysisResult) -> dict:
     mattr = stats.mattr
     div_risk = _clamp((_MATTR_HUMAN - mattr) / (_MATTR_HUMAN - _MATTR_FLAT), 0, 1) * 10
 
-    score = round(_clamp(burst + tell_risk + artifact_risk + div_risk, 0, 100))
+    score = round(_clamp(burst + seg_risk + tell_risk + artifact_risk + div_risk, 0, 100))
     if score < 25:
         band = "reads human"
     elif score < 50:
@@ -89,6 +101,8 @@ def compute(result: AnalysisResult) -> dict:
         "band": band,
         "burstiness": cv,
         "burstiness_risk": round(burst),
+        "seg_burstiness": seg_cv,
+        "seg_risk": round(seg_risk),
         "tells": len(tells),
         "tell_density": round(density, 1),
         "tell_risk": round(tell_risk),
@@ -107,7 +121,8 @@ def print_score(result: AnalysisResult, out: TextIO) -> None:
         return
     out.write(f"{name}: AI-likeness {r['score']}/100 ({r['band']})\n")
     out.write(
-        f"  burstiness {r['burstiness']:.2f} -> {r['burstiness_risk']}/35 · "
+        f"  burstiness {r['burstiness']:.2f} -> {r['burstiness_risk']}/25 · "
+        f"punct rhythm {r['seg_burstiness']:.2f} -> {r['seg_risk']}/10 · "
         f"tells {r['tells']} ({r['tell_density']}/100w) -> {r['tell_risk']}/40 · "
         f"artifacts {r['artifacts']} -> {r['artifact_risk']}/15 · "
         f"diversity {r['mattr']:.2f} -> {r['diversity_risk']}/10\n"

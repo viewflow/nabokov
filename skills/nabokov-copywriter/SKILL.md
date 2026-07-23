@@ -91,7 +91,21 @@ Run them in order. Each pass hands a better draft to the next.
    ending every one on a punchline is a machine cadence. Two or three
    punchline endings per piece, where the argument peaks; the rest end flat.
    Ration the figures the same way — one not-X-but-Y hits, three are a tic
-   (NB501 flags each).
+   (NB501 flags each). And know the trap in this very pass: the Provost
+   cadence *executed too cleanly* is now itself a machine signature. Trained
+   detectors flag copy where every beat lands — anaphora runs ("The career
+   that… The income that… The lifestyle that…"), balanced two-clause
+   aphorisms, a fragment couplet at every hinge. Caps per piece: one fragment
+   couplet, one aphorism, at most one anaphora run — and don't let the hook,
+   the hinge, *and* the close all land on beats. Watch the commas too:
+   machine prose punctuates on a metronome, a comma or dash every clause of
+   the same length. Leave one long, loosely coordinated sentence unsplit —
+   the kind that runs on "and… and…" the way people actually talk. The
+   `--score` punct-rhythm number tracks this. The linter backs the caps:
+   NB530 flags a fragment pileup, NB529 flags punchline-heavy paragraph
+   endings. But `--target social` silences NB507 and NB512 (staccato and
+   repeated openers are the genre), so on a social post you enforce those
+   two caps by eye.
 
 4. **Assemble for the goal** — reorder the enlivened material into the chosen
    formula. Open a loop early and pay it off late. Land the CTA so it grows
@@ -147,6 +161,12 @@ Stop and ask before anything that changes the piece's shape or substance:
   the user's facts, never manufacture facts to enliven. No invented metrics,
   testimonials, outcomes, or biography. A missing detail is a question, not
   a guess.
+- **Minimal paraphrase.** Never rewrite a line that nothing flagged — not the
+  linter, not a detector, not your own judgment pass. Every gratuitous
+  paraphrase swaps the author's idiolect for model idiolect, which is exactly
+  what trained classifiers are trained on. The author's surviving words are
+  the one human signal you cannot synthesize; smoothing "This thought stayed
+  with me" into "The thought stuck" is a loss, not a fix.
 - **The goal is the user's call.** Don't quietly optimize for engagement when
   they asked for trust; the formula follows their stated goal.
 - **Preserve markup, links, code, prices, and legal claims** exactly — copy

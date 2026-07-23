@@ -21,6 +21,7 @@ from .ai_writing import (
     EngagementBaitRule,
     FalseRangeRule,
     FillerRule,
+    FragmentDensityRule,
     HedgeStackRule,
     HookQuestionRule,
     IntensifierRule,
@@ -31,6 +32,7 @@ from .ai_writing import (
     ParticipialCloserRule,
     PredicateHyphenRule,
     PufferyRule,
+    PunchlineEndingRule,
     RepeatedOpenerRule,
     RuleOfThreeRule,
     TitleCaseHeadingRule,
@@ -88,6 +90,8 @@ ALL_RULES: list[Rule] = [
     FalseRangeRule(),
     UniformParagraphRule(),
     LexicalDiversityRule(),
+    PunchlineEndingRule(),
+    FragmentDensityRule(),
 ]
 
 # code -> (name, human description)
@@ -132,6 +136,8 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB526": ("ai-false-range", "AI tell: false range ('from strategy to execution')"),
     "NB527": ("ai-uniform-paragraphs", "AI tell: every paragraph the same length"),
     "NB528": ("ai-low-lexical-diversity", "AI tell: narrow, repetitive vocabulary (low MATTR)"),
+    "NB529": ("ai-punchline-endings", "AI tell: most paragraphs end on a short punchline"),
+    "NB530": ("ai-fragment-density", "AI tell: verbless label fragments crowd the piece"),
     "NB601": ("low-concreteness", "Abstract paragraph — no lived detail (advisory)"),
 }
 

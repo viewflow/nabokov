@@ -175,3 +175,23 @@ def test_score_ranks_slop_above_human_prose(tmp_path, capsys):
         return int(re.search(r"AI-likeness (\d+)/100", out).group(1))
 
     assert score_of(slop_out) > score_of(human_out)
+
+
+def test_score_punct_component_separates_gap_pair(analyze):
+    # Pangram gap regression: metronome punctuation (a comma every clause, all
+    # segments the same length) must carry more seg risk than loose human
+    # punctuation (run-ons beside two-word asides), even when word-level tells
+    # are absent from both.
+    from nabokov.score import compute
+
+    metronome = analyze(
+        "The launch went well, the team felt proud, the users stayed happy. "
+        "The docs were clear, the tests were green, the demo was ready. "
+        "The queue stayed quiet, the beta held up, the refunds never came."
+    )
+    loose = analyze(
+        "We wanted the launch to go well and it mostly did even though nobody had slept. "
+        "Fine, we thought. "
+        "The queue stayed quiet and the beta held up and the refunds never came at all."
+    )
+    assert compute(loose)["seg_risk"] < compute(metronome)["seg_risk"]

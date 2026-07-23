@@ -171,6 +171,8 @@ calibration behind each threshold live in the rule docstrings in
 | `NB526` | ai-false-range | info | "from X to Y" where the endpoints aren't on any scale (both abstract per the concreteness norms). Proper nouns, numbers, concrete pairs, and motion-verb transfers are exempt. | "everything **from strategy to execution**" |
 | `NB527` | ai-uniform-paragraphs | info | Every paragraph the same number of sentences (CV < 0.35 over ≥ 6 prose paragraphs). All-one-sentence documents are exempt. One finding per document. | eight paragraphs, three sentences each |
 | `NB528` | ai-low-lexical-diversity | info / warning | Narrow, repetitive vocabulary: moving-average TTR (window 100) below 0.55 on ≥ 120 words; below 0.45 escalates to warning. Names the most-repeated content words. See the value with `--stats` (`diversity`). One finding per document. | the same nouns and verbs cycling through every sentence |
+| `NB529` | ai-punchline-endings | info | Most paragraphs close on a short beat (≥ 3 closers of ≤ 8 words, ≥ half of ≥ 6 prose paragraphs averaging ≥ 2 sentences). Two or three punchline endings are craft; every paragraph landing is cadence. One finding per document. | every paragraph ending "**It worked.**" |
+| `NB530` | ai-fragment-density | info | Verbless label fragments (noun-rooted, with terminal punctuation — headings and list items are exempt) at ≥ 3 and > 12% of ≥ 8 sentences. Any one fragment is a beat and the writer's call; the density is the tell. One finding per document. | "**Three contexts. One question. A single answer.**" |
 
 ```
 essay.md:3:1: NB502 AI tell: puffery 'delve'
@@ -194,9 +196,11 @@ extend_select = ["NB5"]
 ### `--score` — one number for before/after edits
 
 `nabokov --score draft.md` prints a composite **AI-likeness estimate (0–100,
-higher = more AI-like)** per file, built from four calibrated signals:
-burstiness (35), NB5 tell density per 100 words (40), NB519/NB513 artifacts
-(cap 15), and vocabulary diversity (10). Bands: <25 reads human, <50 leans
+higher = more AI-like)** per file, built from five calibrated signals:
+sentence burstiness (25), punctuation rhythm (10 — segment-length CV; LLM
+prose punctuates on a metronome, human prose mixes long unpunctuated runs
+with short asides), NB5 tell density per 100 words (40), NB519/NB513
+artifacts (cap 15), and vocabulary diversity (10). Bands: <25 reads human, <50 leans
 human, <75 leans AI, 75+ reads AI. Run it before and after an edit to show
 movement. It is a gauge of the measurable statistical signals only — **not a
 detector verdict**: a low score does not mean a trained classifier will read

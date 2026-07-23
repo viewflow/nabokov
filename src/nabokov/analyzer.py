@@ -19,6 +19,7 @@ from .readability import (
     letters_in,
     mattr,
     reading_level,
+    segment_lengths,
     sentence_lengths,
 )
 from .source import SourceFile
@@ -417,6 +418,7 @@ def _document_stats(doc, target: str, issues: list[Issue]) -> DocumentStats:
     grade = reading_level(letters, n_words, n_sentences)
     bucket = classify(grade, n_words, target)
     cv = burstiness(sentence_lengths(doc))
+    seg_cv = burstiness(segment_lengths(doc))
     diversity = mattr(content_tokens(doc))
 
     counts = dict.fromkeys(
@@ -445,4 +447,5 @@ def _document_stats(doc, target: str, issues: list[Issue]) -> DocumentStats:
         burstiness=round(cv, 2),
         mattr=round(diversity, 2),
         counts=counts,
+        seg_burstiness=round(seg_cv, 2),
     )

@@ -310,7 +310,9 @@ _ROBOTIC = (
 def test_monotonous_rhythm_warns_when_robotic(analyze):
     from nabokov.issue import Severity
 
-    issues = [i for i in analyze(_ROBOTIC, config=Config(select=("NB509",))).issues if i.code == "NB509"]
+    issues = [
+        i for i in analyze(_ROBOTIC, config=Config(select=("NB509",))).issues if i.code == "NB509"
+    ]
     assert issues and issues[0].severity is Severity.WARNING
 
 
@@ -438,6 +440,65 @@ def test_one_sentence_paragraphs_not_flagged(analyze):
     assert "NB527" not in _codes(analyze, text)
 
 
+def test_punchline_endings_flagged(analyze):
+    # every paragraph lands on a short beat — machine cadence
+    para = (
+        "The team spent three weeks rewriting the onboarding flow from "
+        "scratch and testing it with real users. It worked."
+    )
+    text = "\n\n".join([para] * 6)
+    assert "NB529" in _codes(analyze, text)
+
+
+def test_punchline_endings_flat_closes_not_flagged(analyze):
+    para = (
+        "The team spent three weeks rewriting the onboarding flow. "
+        "It shipped to every customer without a single rollback request."
+    )
+    text = "\n\n".join([para] * 6)
+    assert "NB529" not in _codes(analyze, text)
+
+
+def test_punchline_endings_line_oriented_exempt(analyze):
+    # one-sentence paragraphs are line-oriented style, not the tell (NB527's guard)
+    text = "\n\n".join(["The release shipped."] * 8)
+    assert "NB529" not in _codes(analyze, text)
+
+
+def test_fragment_density_flagged(analyze):
+    text = (
+        "We shipped the release on Tuesday morning. Three regressions. "
+        "One rollback. A long night. The team patched the build before "
+        "sunrise. Nobody slept much that week. The customers never noticed "
+        "anything wrong. The metrics recovered by Friday. Support stayed "
+        "quiet through the whole thing."
+    )
+    assert "NB530" in _codes(analyze, text)
+
+
+def test_fragment_density_few_fragments_not_flagged(analyze):
+    # two beats in nine sentences is a writer's call, not a density tell
+    text = (
+        "We shipped the release on Tuesday morning. Three regressions. "
+        "One rollback. The night ran long. The team patched the build before "
+        "sunrise. Nobody slept much that week. The customers never noticed "
+        "anything wrong. The metrics went back to normal by Friday. Support "
+        "stayed quiet through the whole thing."
+    )
+    assert "NB530" not in _codes(analyze, text)
+
+
+def test_fragment_density_headings_exempt(analyze):
+    # headings end bare, so they never count as fragments
+    body = (
+        "The install step runs in one command. The config file lives at the "
+        "repo root. The server will restart on save. The logs go to stdout."
+    )
+    text = f"# Quick Start\n\n{body}\n\n# Configuration\n\n{body}\n\n# Deployment\n\n{body}"
+    issues = analyze(text, config=AI, is_markdown=True).issues
+    assert "NB530" not in [i.code for i in issues]
+
+
 def test_false_range_abstract_pair(analyze):
     issues = [
         i
@@ -544,7 +605,9 @@ def test_severity_split(analyze):
 
 
 def test_no_longer_reframe(analyze):
-    text = "They're no longer entertainment or background noise. They're part of my market research."
+    text = (
+        "They're no longer entertainment or background noise. They're part of my market research."
+    )
     issues = [i for i in analyze(text, config=AI).issues if i.code == "NB501"]
     assert issues and issues[0].severity.value == "info"  # advisory — human rhetoric too
 
