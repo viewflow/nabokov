@@ -390,6 +390,15 @@ def test_hook_question_across_paragraphs_exempt(analyze):
     assert "NB525" not in _codes(analyze, "The results?\n\nWe measured them for a month.")
 
 
+def test_density_rules_one_finding_per_document(analyze):
+    # overuse is a document-level fact — one finding with the count, not one
+    # copy of the same message per occurrence
+    r = analyze("It was fast — clean — simple — robust — done — shipped — great.", config=AI)
+    assert sum(1 for i in r.issues if i.code == "NB506") == 1
+    r = analyze("Features: ✅ fast ✅ safe ✅ simple 🚀 shipped.", config=AI)
+    assert sum(1 for i in r.issues if i.code == "NB508") == 1
+
+
 def test_uniform_paragraphs_flagged(analyze):
     para = (
         "The team shipped the release on time. The metrics moved in the right "

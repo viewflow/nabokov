@@ -348,16 +348,19 @@ class EmDashRule(Rule):
         rate = len(hits) / words * 1000
         if rate < _EM_DASH_RATE:  # within the human range — not overuse
             return
-        for m in hits:
-            yield _issue(
-                ctx,
-                "NB506",
-                "ai-em-dash",
-                f"AI tell: em-dash overuse ({len(hits)} in {words} words, {rate:.0f}/1k)",
-                m.start(),
-                m.end(),
-                m.group(0),
-            )
+        # the overuse is a document-level fact: one finding at the first dash,
+        # not one copy of the same message per dash
+        first = hits[0]
+        yield _issue(
+            ctx,
+            "NB506",
+            "ai-em-dash",
+            f"AI tell: em-dash overuse ({len(hits)} in {words} words, "
+            f"{rate:.0f}/1k) — replace most with commas or periods",
+            first.start(),
+            first.end(),
+            first.group(0),
+        )
 
 
 class EmojiRule(Rule):
@@ -372,16 +375,18 @@ class EmojiRule(Rule):
         hits = list(_EMOJI.finditer(text))
         if len(hits) < _EMOJI_THRESHOLD:
             return
-        for m in hits:
-            yield _issue(
-                ctx,
-                "NB508",
-                "ai-emoji",
-                f"AI tell: emoji as formatting ({len(hits)} in this document)",
-                m.start(),
-                m.end(),
-                m.group(0),
-            )
+        # document-level: one finding at the first emoji, with the count
+        first = hits[0]
+        yield _issue(
+            ctx,
+            "NB508",
+            "ai-emoji",
+            f"AI tell: emoji as formatting ({len(hits)} in this document) — "
+            "cut them or keep one or two",
+            first.start(),
+            first.end(),
+            first.group(0),
+        )
 
 
 class RuleOfThreeRule(Rule):
@@ -590,17 +595,19 @@ class BoldListicleRule(Rule):
         text = ctx.source.original_text
         hits = [m for m in _BOLD_LABEL.finditer(text) if not _in_code(ctx, m.start(1) + 2)]
         if len(hits) >= self._THRESHOLD:
-            for m in hits:
-                yield _issue(
-                    ctx,
-                    "NB516",
-                    "ai-bold-listicle",
-                    f"AI tell: bold-label listicle ({len(hits)} in this document)",
-                    m.start(1),
-                    m.end(1),
-                    m.group(1),
-                    severity=self.severity,
-                )
+            # the stack is one document-level fact: one finding at the first label
+            first = hits[0]
+            yield _issue(
+                ctx,
+                "NB516",
+                "ai-bold-listicle",
+                f"AI tell: bold-label listicle ({len(hits)} in this document) — "
+                "turn the list into prose or drop the bold labels",
+                first.start(1),
+                first.end(1),
+                first.group(1),
+                severity=self.severity,
+            )
         for m in self._LABEL_PERIOD.finditer(text):
             if _in_code(ctx, m.start(1) + 2):
                 continue
