@@ -1,0 +1,17 @@
+[Unit]
+Description=Nabokov Editor Telegram Bot
+After=network.target
+
+[Service]
+User={{ project_user }}
+Group={{ project_group }}
+WorkingDirectory={{ project_dir }}
+EnvironmentFile={{ project_dir }}/.env
+Environment=DB_PATH={{ project_dir }}/nabokovbot.sqlite3
+ExecStart={{ venv_path }}/bin/python main.py
+Restart=always
+RestartSec=5
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target

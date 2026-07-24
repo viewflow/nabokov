@@ -23,3 +23,8 @@ dist/
 
 # local-only working directory
 docs/marketer/
+# bot (bot/) — secrets and local state
+bot/.env
+bot/deploy/.env
+bot/*.sqlite3
+bot/.venv/

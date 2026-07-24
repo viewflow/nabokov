@@ -1,0 +1,169 @@
+# Deploy the Nabokov Editor Telegram bot to jack.lan (pattern copied from lila).
+#
+# Usage:
+#     cp .env deploy/.env          # real secrets for the server
+#     ansible-playbook -i deploy/inventory.ini deploy.yml
+# Refresh code only:
+#     ansible-playbook -i deploy/inventory.ini --tags=update deploy.yml
+#
+- name: "Nabokov bot deployment"
+  hosts: all
+  become: true
+  gather_facts: false
+  environment:
+    LANG: "en_US.UTF-8"
+    LC_ALL: "en_US.UTF-8"
+  vars:
+    ansible_ssh_pipelining: 1
+    ansible_python_interpreter: /usr/bin/python3
+    project_name: nabokov-bot
+    project_user: nabokovbot
+    project_group: nabokovbot
+    project_dir: /srv/{{ project_name }}
+    venv_path: "{{ project_dir }}/.venv"
+  handlers:
+    - name: "Bot | Restart"
+      ansible.builtin.systemd:
+        name: "{{ project_name }}"
+        state: restarted
+        daemon_reload: true
+      tags: ['always']
+
+  tasks:
+    - name: "System | Ensure project group exists"
+      ansible.builtin.group:
+        name: "{{ project_group }}"
+        state: present
+
+    - name: "System | Ensure project user exists"
+      ansible.builtin.user:
+        name: "{{ project_user }}"
+        group: "{{ project_group }}"
+        groups:
+          - systemd-journal
+        system: true
+        create_home: false
+
+    - name: "System | Ensure project directory exists"
+      ansible.builtin.file:
+        path: "{{ project_dir }}"
+        state: directory
+        owner: "{{ project_user }}"
+        group: "{{ project_group }}"
+        mode: "0755"
+
+    - name: "System | Install system dependencies"
+      ansible.builtin.package:
+        state: present
+        name:
+          - rsync
+          - python3-pip
+          - python3-venv
+          - python3-dev
+          - git
+
+    - name: "UV | Create cache directory"
+      ansible.builtin.file:
+        path: "{{ project_dir }}/.cache/uv"
+        state: directory
+        owner: "{{ project_user }}"
+        group: "{{ project_group }}"
+        mode: "0755"
+
+    - name: "Project | Synchronize source code"
+      ansible.posix.synchronize:
+        src: ./
+        dest: "{{ project_dir }}/"
+        delete: true
+        use_ssh_args: true
+        rsync_opts:
+          - "--exclude='.*'"
+          - "--exclude='*.pyc'"
+          - "--exclude='/deploy/'"
+          - "--exclude='/.venv/'"
+          - "--exclude='*.sqlite3'"
+      register: source
+      notify:
+        - "Bot | Restart"
+      tags: [update]
+
+    - name: "Project | Fix ownership"
+      ansible.builtin.file:
+        path: "{{ project_dir }}"
+        owner: "{{ project_user }}"
+        group: "{{ project_group }}"
+        recurse: true
+      when: source.changed
+      tags: [update]
+
+    - name: "Python | Install UV package manager globally"
+      ansible.builtin.pip:
+        name: uv
+        state: present
+        extra_args: "--break-system-packages"
+      register: uv_install
+      retries: 3
+      delay: 5
+      until: uv_install is succeeded
+
+    - name: "Python | Create virtual environment with UV"
+      ansible.builtin.shell: "uv venv {{ venv_path }}"
+      args:
+        chdir: "{{ project_dir }}"
+        creates: "{{ venv_path }}/bin/python"
+      environment:
+        UV_CACHE_DIR: "{{ project_dir }}/.cache/uv"
+      become: true
+      become_user: "{{ project_user }}"
+
+    - name: "Python | Install dependencies with UV"
+      ansible.builtin.shell: "uv sync --no-default-groups"
+      args:
+        chdir: "{{ project_dir }}"
+      environment:
+        UV_CACHE_DIR: "{{ project_dir }}/.cache/uv"
+      become: true
+      become_user: "{{ project_user }}"
+      register: uv_sync
+      retries: 2
+      delay: 10
+      until: uv_sync.rc == 0
+      tags: [update]
+
+    - name: "Python | Ensure spaCy language model"
+      ansible.builtin.shell: "uv run nabokov download-model"
+      args:
+        chdir: "{{ project_dir }}"
+      environment:
+        UV_CACHE_DIR: "{{ project_dir }}/.cache/uv"
+      become: true
+      become_user: "{{ project_user }}"
+      register: model
+      changed_when: "'downloading' in model.stderr"
+      tags: [update]
+
+    - name: "Bot | Create/Update .env file"
+      ansible.builtin.copy:
+        src: "deploy/.env"
+        dest: "{{ project_dir }}/.env"
+        owner: "{{ project_user }}"
+        group: "{{ project_group }}"
+        mode: "0600"
+      notify:
+        - "Bot | Restart"
+      tags: [update]
+
+    - name: "Bot | Install systemd service"
+      ansible.builtin.template:
+        src: "deploy/nabokov-bot.service.j2"
+        dest: "/etc/systemd/system/{{ project_name }}.service"
+        mode: "0644"
+      notify:
+        - "Bot | Restart"
+
+    - name: "Bot | Enable and start service"
+      ansible.builtin.systemd:
+        name: "{{ project_name }}"
+        enabled: true
+        state: started
+        daemon_reload: true
