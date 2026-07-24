@@ -25,15 +25,16 @@ router = Router()
 _questions: dict[int, tuple[asyncio.Future, list[str]]] = {}
 _running: set[int] = set()
 
-SKIP = "⏭ Пропустить"
+SKIP = "⏭ Skip"
 
 START_TEXT = (
-    "Привет! Я редактор на базе прозо-линтера nabokov.\n\n"
-    "Пришли текст (до {max_words} слов) — уберу ИИ-штампы, верну ритм, "
-    "или усилю как копирайтер. Для английских текстов покажу AI-likeness "
-    "до и после (наш линтер английский; русские тексты правлю без скора).\n\n"
-    "Первые {free} текста бесплатно, дальше {pack} текстов за {stars} ⭐ (/buy). "
-    "Остаток — /balance."
+    "Hi! I'm an editor built on the nabokov prose linter.\n\n"
+    "Send me a text (up to {max_words} words). I cut the AI slop and "
+    "restore the rhythm, or punch it up in copywriter mode. English texts "
+    "get the AI-likeness score before and after. The linter is "
+    "English-only, so other languages get the edit without the score.\n\n"
+    "First {free} texts are free, then {pack} texts for {stars} ⭐ (/buy). "
+    "Check your balance with /balance."
 ).format(
     max_words=config.MAX_WORDS,
     free=config.FREE_TEXTS,
@@ -50,25 +51,25 @@ def _settings_keyboard(mode: str, creative: int) -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text=f"{mark(mode == 'editor')}✍️ Редактор",
+                    text=f"{mark(mode == 'editor')}✍️ Editor",
                     callback_data="mode:editor",
                 ),
                 InlineKeyboardButton(
-                    text=f"{mark(mode == 'copywriter')}🚀 Копирайтер",
+                    text=f"{mark(mode == 'copywriter')}🚀 Copywriter",
                     callback_data="mode:copywriter",
                 ),
             ],
             [
                 InlineKeyboardButton(
-                    text=f"{mark(creative == 0)}Креативность: норм",
+                    text=f"{mark(creative == 0)}Creativity: normal",
                     callback_data="temp:0",
                 ),
                 InlineKeyboardButton(
-                    text=f"{mark(creative == 1)}Повышенная",
+                    text=f"{mark(creative == 1)}Raised",
                     callback_data="temp:1",
                 ),
             ],
-            [InlineKeyboardButton(text="▶️ Поехали", callback_data="run")],
+            [InlineKeyboardButton(text="▶️ Go", callback_data="run")],
         ]
     )
 
@@ -76,7 +77,7 @@ def _settings_keyboard(mode: str, creative: int) -> InlineKeyboardMarkup:
 def _quota_line(message: Message) -> str:
     user = db.get_user(message.chat.id, message.chat.username)
     left = db.texts_left(user, message.chat.username)
-    return "безлимит (админ)" if left is None else str(left)
+    return "unlimited (admin)" if left is None else str(left)
 
 
 @router.message(CommandStart())
@@ -90,25 +91,25 @@ async def cmd_balance(message: Message) -> None:
     user = db.get_user(message.from_user.id, message.from_user.username)
     left = db.texts_left(user, message.from_user.username)
     if left is None:
-        await message.answer("У тебя безлимит (админ).")
+        await message.answer("You have unlimited texts (admin).")
     else:
         await message.answer(
-            f"Осталось текстов: {left}.\nПакет {config.PACK_TEXTS} текстов "
-            f"за {config.PACK_STARS} ⭐ — /buy"
+            f"Texts left: {left}.\nA pack of {config.PACK_TEXTS} texts "
+            f"is {config.PACK_STARS} ⭐: /buy"
         )
 
 
 @router.message(Command("buy"))
 async def cmd_buy(message: Message) -> None:
     await message.answer_invoice(
-        title=f"{config.PACK_TEXTS} текстов",
+        title=f"{config.PACK_TEXTS} texts",
         description=(
-            f"Пакет на {config.PACK_TEXTS} обработок текста "
-            f"ботом @nabokov_editor_bot"
+            f"A pack of {config.PACK_TEXTS} text edits "
+            f"by @nabokov_editor_bot"
         ),
         payload="pack13",
         currency="XTR",
-        prices=[LabeledPrice(label=f"{config.PACK_TEXTS} текстов", amount=config.PACK_STARS)],
+        prices=[LabeledPrice(label=f"{config.PACK_TEXTS} texts", amount=config.PACK_STARS)],
     )
 
 
@@ -123,7 +124,7 @@ async def paid(message: Message) -> None:
     db.add_pack(message.from_user.id, message.successful_payment.telegram_payment_charge_id)
     user = db.get_user(message.from_user.id, message.from_user.username)
     left = db.texts_left(user, message.from_user.username)
-    await message.answer(f"Спасибо! Добавил {config.PACK_TEXTS} текстов. Осталось: {left}.")
+    await message.answer(f"Thank you! Added {config.PACK_TEXTS} texts. Left: {left}.")
 
 
 @router.message(F.text & ~F.text.startswith("/"))
@@ -140,18 +141,18 @@ async def incoming_text(message: Message) -> None:
         return
 
     if tg_id in _running:
-        await message.answer("Я ещё работаю над предыдущим текстом — секунду.")
+        await message.answer("Still working on your previous text. One moment.")
         return
 
     words = len(text.split())
     if words > config.MAX_WORDS:
         await message.answer(
-            f"Текст длинноват: {words} слов, лимит {config.MAX_WORDS}. "
-            "Сократи или пришли частями."
+            f"That's {words} words; the limit is {config.MAX_WORDS}. "
+            "Trim it or send it in parts."
         )
         return
     if words < 5:
-        await message.answer("Пришли текст подлиннее — хотя бы несколько предложений.")
+        await message.answer("Send a longer text — at least a few sentences.")
         return
 
     user = db.get_user(tg_id, message.from_user.username)
@@ -161,10 +162,10 @@ async def incoming_text(message: Message) -> None:
         return
 
     db.set_pending(tg_id, text)
-    lang_note = "" if linting.is_english(text) else "\n(русский текст — правка без скора)"
+    lang_note = "" if linting.is_english(text) else "\n(non-English text: edited without the score)"
     await message.answer(
-        f"Текст принят: {words} слов. Осталось текстов: {_quota_line(message)}.{lang_note}\n"
-        "Что делаем?",
+        f"Got it: {words} words. Texts left: {_quota_line(message)}.{lang_note}\n"
+        "What do we do?",
         reply_markup=_settings_keyboard("editor", 0),
     )
 
@@ -198,7 +199,7 @@ async def cb_answer(query: CallbackQuery) -> None:
     tg_id = query.from_user.id
     pending_q = _questions.pop(tg_id, None)
     if pending_q is None:
-        await query.answer("Вопрос уже неактуален")
+        await query.answer("That question is no longer active")
         return
     future, options = pending_q
     idx = int(query.data.split(":", 1)[1])
@@ -225,7 +226,7 @@ def _make_ask(bot: Bot, tg_id: int) -> deepseek.AskFn:
         _questions[tg_id] = (future, options)
         await bot.send_message(
             tg_id,
-            f"❓ {question}\n(кнопкой или просто ответь сообщением)",
+            f"❓ {question}\n(tap a button or just reply)",
             reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons),
         )
         try:
@@ -253,16 +254,16 @@ async def cb_run(query: CallbackQuery, bot: Bot) -> None:
     tg_id = query.from_user.id
     pending = db.get_pending(tg_id)
     if pending is None:
-        await query.answer("Пришли текст заново", show_alert=True)
+        await query.answer("Send the text again", show_alert=True)
         return
     if tg_id in _running:
-        await query.answer("Уже работаю")
+        await query.answer("Already on it")
         return
 
     user = db.get_user(tg_id, query.from_user.username)
     left = db.texts_left(user, query.from_user.username)
     if left is not None and left <= 0:
-        await query.answer("Тексты закончились — /buy", show_alert=True)
+        await query.answer("You are out of texts: /buy", show_alert=True)
         return
 
     await query.answer()
@@ -273,7 +274,7 @@ async def cb_run(query: CallbackQuery, bot: Bot) -> None:
 
     text, mode, creative = pending["text"], pending["mode"], bool(pending["creative"])
     _running.add(tg_id)
-    status = await bot.send_message(tg_id, "🖋 Работаю…")
+    status = await bot.send_message(tg_id, "🖋 Working…")
     try:
         before = await asyncio.to_thread(linting.lint, text)
         result = await deepseek.rewrite(text, mode, creative, ask=_make_ask(bot, tg_id))
@@ -291,22 +292,22 @@ async def cb_run(query: CallbackQuery, bot: Bot) -> None:
         )
 
         try:
-            await status.edit_text("✅ Готово:")
+            await status.edit_text("✅ Done:")
         except TelegramBadRequest:
             pass
         await _send_result(status, result)
         summary = []
         if before and after and before["score"] is not None and after["score"] is not None:
             summary.append(f"AI-likeness: {before['score']} → {after['score']}")
-            summary.append(f"находок линтера: {before['findings_count']} → {after['findings_count']}")
+            summary.append(f"linter findings: {before['findings_count']} → {after['findings_count']}")
         user = db.get_user(tg_id, query.from_user.username)
         left = db.texts_left(user, query.from_user.username)
-        summary.append("осталось: безлимит" if left is None else f"осталось текстов: {left}")
+        summary.append("texts left: unlimited" if left is None else f"texts left: {left}")
         await bot.send_message(tg_id, "📊 " + " · ".join(summary))
     except Exception:
         logger.exception("job failed for %s", tg_id)
         await bot.send_message(
-            tg_id, "Что-то сломалось, текст не списан. Попробуй ещё раз чуть позже."
+            tg_id, "Something broke and it did not cost you a text. Try again in a minute."
         )
     finally:
         _running.discard(tg_id)
