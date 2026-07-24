@@ -170,28 +170,31 @@ async def incoming_text(message: Message) -> None:
     )
 
 
-@router.callback_query(F.data.startswith("mode:"))
-async def cb_mode(query: CallbackQuery) -> None:
-    mode = query.data.split(":", 1)[1]
-    db.update_pending(query.from_user.id, mode=mode)
+async def _refresh_settings(query: CallbackQuery) -> None:
+    """Update the keyboard; tapping an already-selected option is a no-op
+    (Telegram rejects an edit with identical markup)."""
     pending = db.get_pending(query.from_user.id)
     if pending:
-        await query.message.edit_reply_markup(
-            reply_markup=_settings_keyboard(pending["mode"], pending["creative"])
-        )
+        try:
+            await query.message.edit_reply_markup(
+                reply_markup=_settings_keyboard(pending["mode"], pending["creative"])
+            )
+        except TelegramBadRequest:
+            pass
+
+
+@router.callback_query(F.data.startswith("mode:"))
+async def cb_mode(query: CallbackQuery) -> None:
     await query.answer()
+    db.update_pending(query.from_user.id, mode=query.data.split(":", 1)[1])
+    await _refresh_settings(query)
 
 
 @router.callback_query(F.data.startswith("temp:"))
 async def cb_temp(query: CallbackQuery) -> None:
-    creative = int(query.data.split(":", 1)[1])
-    db.update_pending(query.from_user.id, creative=creative)
-    pending = db.get_pending(query.from_user.id)
-    if pending:
-        await query.message.edit_reply_markup(
-            reply_markup=_settings_keyboard(pending["mode"], pending["creative"])
-        )
     await query.answer()
+    db.update_pending(query.from_user.id, creative=int(query.data.split(":", 1)[1]))
+    await _refresh_settings(query)
 
 
 @router.callback_query(F.data.startswith("ans:"))
