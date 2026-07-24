@@ -46,7 +46,12 @@ from .concreteness import ConcretenessRule
 from .passive import PassiveRule
 from .phrases import ComplexPhraseRule, QualifierRule
 from .sentences import PeriodicSentenceRule, SentenceRule
-from .style import StyleConnectorRule, StylePunctuationRule, StyleRhythmRule
+from .style import (
+    StyleAuthorshipRule,
+    StyleConnectorRule,
+    StylePunctuationRule,
+    StyleRhythmRule,
+)
 from .usage import RepeatedWordRule, UncomparableRule
 
 ALL_RULES: list[Rule] = [
@@ -97,6 +102,7 @@ ALL_RULES: list[Rule] = [
     StyleConnectorRule(),
     StyleRhythmRule(),
     StylePunctuationRule(),
+    StyleAuthorshipRule(),
 ]
 
 # code -> (name, human description)
@@ -147,6 +153,7 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB701": ("style-connector", "Style drift: connector the author profile never uses"),
     "NB702": ("style-rhythm", "Style drift: rhythm flatter than the author's baseline"),
     "NB703": ("style-punctuation", "Style drift: punctuation far above the author's rate"),
+    "NB704": ("style-authorship", "Style drift: stylometric distance from the author (Delta)"),
 }
 
 ALL_CODES: tuple[str, ...] = tuple(RULE_META)

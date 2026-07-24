@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 
 from ..issue import Issue, Severity
 from ..readability import burstiness, segment_lengths, sentence_lengths
-from ..styleprofile import CONNECTORS, load_profile
+from ..styleprofile import CONNECTORS, delta_distance, load_profile, pos_divergence
 from .base import CheckContext, Rule
 
 if TYPE_CHECKING:
@@ -211,3 +211,59 @@ class StylePunctuationRule(Rule):
             emitted += 1
             if emitted >= self._MAX_FINDINGS:
                 return
+
+
+class StyleAuthorshipRule(Rule):
+    """NB704 — stylometric distance from the author's profile.
+
+    Two topic-blind measures. Burrows' Delta: mean absolute z-score of the
+    text's function-word rates against the author's per-block means — the
+    standard authorship-attribution statistic since 2002. POS-trigram
+    Jensen-Shannon divergence: how differently the text builds phrases,
+    regardless of vocabulary.
+
+    Thresholds calibrated on the shipped corpus (7 authors, 574 pairings):
+    same-author texts sit at Delta median 0.67 / p90 1.06 and JSD median
+    0.24 / p90 0.32; cross-author at Delta median 1.01, JSD median 0.31.
+    The distributions overlap — this is an advisory signal that the text is
+    outside the author's typical range, not an attribution verdict.
+    """
+
+    code = "NB704"
+    name = "style-authorship"
+    category = "style"
+    codes = ("NB704",)
+    default_on = True
+    severity = Severity.INFO
+
+    _DELTA_FAR = 1.1  # above the same-author p90 measured on the corpus
+    _JSD_FAR = 0.35
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        profile = _active_profile(ctx)
+        if profile is None:
+            return
+        delta = delta_distance(profile, ctx.doc)
+        jsd = pos_divergence(profile, ctx.doc)
+        drifts = []
+        if delta is not None and delta > self._DELTA_FAR:
+            drifts.append(
+                f"function-word distance {delta:.2f} (their texts sit below ~1.1)"
+            )
+        if jsd is not None and jsd > self._JSD_FAR:
+            drifts.append(f"syntax divergence {jsd:.2f} (their typical is below ~0.32)")
+        if not drifts:
+            return
+        yield Issue(
+            code="NB704",
+            name="style-authorship",
+            message=(
+                f"style drift: statistically far from {profile['name']} — "
+                + "; ".join(drifts)
+            ),
+            line=1,
+            col=1,
+            end_line=1,
+            end_col=1,
+            severity=self.severity,
+        )

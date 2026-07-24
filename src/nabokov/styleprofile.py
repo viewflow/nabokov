@@ -42,6 +42,14 @@ CONNECTORS = (
 )  # fmt: skip
 
 _CONTENT_POS = ("NOUN", "VERB", "ADJ", "ADV")
+
+# Burrows' Delta settings: block size for variance estimation, how many
+# most-frequent function words enter the measure, and the minimum blocks
+# for a standard deviation worth trusting.
+_DELTA_CHUNK = 1000
+_DELTA_WORDS = 100
+_MIN_DELTA_CHUNKS = 5
+_POS_TRIGRAMS_STORED = 150
 _PUNCT_MARKS = {
     "em_dash": "—",
     "en_dash": "–",  # noqa: RUF001 - the en dash is the mark being counted
@@ -116,6 +124,13 @@ def build_profile(sources: list[SourceFile], name: str) -> dict:
     paragraph_sentences: list[int] = []
     punchline_endings = 0
     fragments = 0
+    # Burrows' Delta needs per-word variance measured over comparable-size
+    # blocks — natural docs vary from 300 to 13k words, so we chunk the
+    # concatenated corpus instead (chunks may span doc boundaries).
+    delta_chunks: list[dict[str, float]] = []
+    chunk: Counter[str] = Counter()
+    chunk_n = 0
+    pos_trigrams: Counter[str] = Counter()
 
     for source in sources:
         doc = nlp(source.analysis_text)
@@ -128,12 +143,20 @@ def build_profile(sources: list[SourceFile], name: str) -> dict:
             punct_counts[mark_name] += source.analysis_text.count(mark)
 
         for t in doc:
+            if t.is_punct or t.is_space:
+                continue
+            chunk_n += 1
             if t.is_alpha and t.is_stop:
                 function_counts[t.lower_] += 1
+                chunk[t.lower_] += 1
             elif t.is_alpha and t.pos_ in _CONTENT_POS:
                 lemma = t.lemma_.lower()
                 content_counts[lemma] += 1
                 doc_content.add(lemma)
+            if chunk_n == _DELTA_CHUNK:
+                delta_chunks.append(dict(chunk))
+                chunk.clear()
+                chunk_n = 0
         for a, b in pairwise(doc):
             if a.is_alpha and b.is_alpha and not (a.is_stop and b.is_stop):
                 bigram = f"{a.lower_} {b.lower_}"
@@ -144,6 +167,9 @@ def build_profile(sources: list[SourceFile], name: str) -> dict:
             tokens = [t for t in sent if not (t.is_punct or t.is_space)]
             if not tokens:
                 continue
+            pos = [t.pos_ for t in tokens]
+            for i in range(len(pos) - 2):
+                pos_trigrams[" ".join(pos[i : i + 3])] += 1
             n_sentences += 1
             opener_counts[tokens[0].lower_] += 1
             two = " ".join(t.lower_ for t in tokens[:2])
@@ -177,6 +203,10 @@ def build_profile(sources: list[SourceFile], name: str) -> dict:
         for b in doc_bigrams:
             bigram_docfreq[b] += 1
 
+    # trailing partial block: keep if at least half a chunk, scaled to rate
+    if chunk_n >= _DELTA_CHUNK // 2:
+        delta_chunks.append({w: c * _DELTA_CHUNK / chunk_n for w, c in chunk.items()})
+
     docs = len(sources)
     per_1000 = 1000 / n_words if n_words else 0.0
     min_df = max(2, docs // 4)  # a signature repeats across texts; topic words don't
@@ -187,7 +217,7 @@ def build_profile(sources: list[SourceFile], name: str) -> dict:
             items = [(k, v) for k, v in items if docfreq[k] >= min_df]
         return {k: round(v * per_1000, 2) for k, v in items[:top]}
 
-    return {
+    profile: dict = {
         "name": name,
         "corpus": {"docs": docs, "words": n_words, "sentences": n_sentences},
         "rhythm": {
@@ -220,6 +250,92 @@ def build_profile(sources: list[SourceFile], name: str) -> dict:
         "favorite_words_per_1000": rated(content_counts, 40, content_docfreq),
         "favorite_bigrams_per_1000": rated(bigram_counts, 25, bigram_docfreq),
     }
+
+    if len(delta_chunks) >= _MIN_DELTA_CHUNKS:
+        stats: dict[str, list[float]] = {}
+        for w, _ in function_counts.most_common(_DELTA_WORDS):
+            vals = [c.get(w, 0.0) for c in delta_chunks]
+            mean = sum(vals) / len(vals)
+            std = statistics.pstdev(vals)
+            if std > 0:
+                stats[w] = [round(mean, 3), round(std, 3)]
+        profile["delta"] = {
+            "chunk_words": _DELTA_CHUNK,
+            "chunks": len(delta_chunks),
+            "words": stats,
+        }
+
+    total_tri = sum(pos_trigrams.values())
+    if total_tri:
+        profile["pos_trigrams"] = {
+            tri: round(count / total_tri, 5)
+            for tri, count in pos_trigrams.most_common(_POS_TRIGRAMS_STORED)
+        }
+
+    return profile
+
+
+# Delta on a short text is noise: rare function words legitimately miss.
+MIN_SCORED_WORDS = 300
+
+
+def delta_distance(profile: dict, doc) -> float | None:
+    """Burrows' Delta between a spaCy doc and the profile's author.
+
+    The mean absolute z-score of the document's function-word rates against
+    the author's per-1000-word means and deviations. Lower = closer to the
+    author. None when the profile predates the delta section or the text is
+    too short to score.
+    """
+    d = profile.get("delta")
+    if not d:
+        return None
+    n_words = sum(1 for t in doc if not (t.is_punct or t.is_space))
+    if n_words < MIN_SCORED_WORDS:
+        return None
+    counts: Counter[str] = Counter(t.lower_ for t in doc if t.is_alpha and t.is_stop)
+    zs = [
+        abs((counts.get(w, 0) * 1000 / n_words - mean) / std)
+        for w, (mean, std) in d["words"].items()
+    ]
+    return sum(zs) / len(zs) if zs else None
+
+
+def pos_divergence(profile: dict, doc) -> float | None:
+    """Jensen-Shannon divergence (base 2, 0..1) between POS-trigram
+    distributions of the doc and the profile. Syntax only — topic-blind."""
+    import math
+
+    stored = profile.get("pos_trigrams")
+    if not stored:
+        return None
+    n_words = sum(1 for t in doc if not (t.is_punct or t.is_space))
+    if n_words < MIN_SCORED_WORDS:
+        return None
+    counts: Counter[str] = Counter()
+    for sent in doc.sents:
+        pos = [t.pos_ for t in sent if not (t.is_punct or t.is_space)]
+        for i in range(len(pos) - 2):
+            counts[" ".join(pos[i : i + 3])] += 1
+    total = sum(counts.values())
+    if not total:
+        return None
+    # Renormalize both over the union of keys; the stored top-150 covers the
+    # bulk of the author's mass, so the truncation error is small and equal
+    # in direction for every comparison.
+    keys = set(stored) | set(counts)
+    p_sum = sum(stored.get(k, 0.0) for k in keys)
+    q_sum = total
+    js = 0.0
+    for k in keys:
+        p = stored.get(k, 0.0) / p_sum if p_sum else 0.0
+        q = counts.get(k, 0) / q_sum
+        m = (p + q) / 2
+        if p:
+            js += 0.5 * p * math.log2(p / m)
+        if q:
+            js += 0.5 * q * math.log2(q / m)
+    return js
 
 
 def render_card(profile: dict) -> str:
@@ -266,6 +382,13 @@ def render_card(profile: dict) -> str:
         "connectors and words over generic ones, match the rhythm numbers, and never "
         "invent facts or opinions on the author's behalf.",
     ]
+    if "delta" in profile:
+        d = profile["delta"]
+        lines.insert(
+            2,
+            f"Stylometry: Burrows' Delta baseline over {d['chunks']} blocks of "
+            f"{d['chunk_words']} words; POS-trigram signature stored (NB704 active).",
+        )
     if c["words"] < 10_000:
         lines.insert(2, "")
         lines.insert(

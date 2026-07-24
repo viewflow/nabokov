@@ -186,5 +186,563 @@
     "the united": 0.38,
     "united states": 0.38,
     "value of": 0.38
+  },
+  "delta": {
+    "chunk_words": 1000,
+    "chunks": 23,
+    "words": {
+      "the": [
+        42.087,
+        10.778
+      ],
+      "to": [
+        28.913,
+        5.484
+      ],
+      "a": [
+        27.435,
+        4.68
+      ],
+      "of": [
+        25.391,
+        7.789
+      ],
+      "and": [
+        18.261,
+        5.431
+      ],
+      "that": [
+        17.043,
+        5.842
+      ],
+      "you": [
+        17.174,
+        14.113
+      ],
+      "is": [
+        16.391,
+        5.538
+      ],
+      "in": [
+        15.652,
+        5.205
+      ],
+      "for": [
+        11.0,
+        2.874
+      ],
+      "it": [
+        10.348,
+        3.344
+      ],
+      "i": [
+        10.391,
+        7.118
+      ],
+      "this": [
+        9.957,
+        3.169
+      ],
+      "not": [
+        7.478,
+        3.786
+      ],
+      "on": [
+        7.304,
+        2.911
+      ],
+      "with": [
+        6.522,
+        2.811
+      ],
+      "are": [
+        6.348,
+        2.664
+      ],
+      "your": [
+        6.304,
+        4.505
+      ],
+      "they": [
+        6.435,
+        5.191
+      ],
+      "be": [
+        6.087,
+        2.873
+      ],
+      "have": [
+        5.826,
+        2.315
+      ],
+      "as": [
+        5.391,
+        2.778
+      ],
+      "will": [
+        5.261,
+        2.54
+      ],
+      "an": [
+        5.565,
+        2.482
+      ],
+      "which": [
+        5.348,
+        2.883
+      ],
+      "at": [
+        5.348,
+        3.016
+      ],
+      "if": [
+        5.217,
+        3.635
+      ],
+      "by": [
+        4.87,
+        2.383
+      ],
+      "or": [
+        4.609,
+        3.486
+      ],
+      "but": [
+        4.696,
+        2.595
+      ],
+      "about": [
+        4.435,
+        3.062
+      ],
+      "do": [
+        4.522,
+        2.652
+      ],
+      "one": [
+        4.043,
+        3.47
+      ],
+      "from": [
+        3.696,
+        2.031
+      ],
+      "we": [
+        3.565,
+        3.295
+      ],
+      "them": [
+        3.478,
+        2.338
+      ],
+      "can": [
+        3.522,
+        2.811
+      ],
+      "their": [
+        3.522,
+        2.164
+      ],
+      "has": [
+        3.261,
+        1.823
+      ],
+      "more": [
+        3.13,
+        2.133
+      ],
+      "would": [
+        3.043,
+        1.732
+      ],
+      "because": [
+        3.0,
+        1.888
+      ],
+      "what": [
+        2.913,
+        2.796
+      ],
+      "so": [
+        2.739,
+        1.893
+      ],
+      "was": [
+        2.652,
+        3.045
+      ],
+      "other": [
+        2.478,
+        1.557
+      ],
+      "no": [
+        2.304,
+        2.052
+      ],
+      "many": [
+        2.13,
+        1.227
+      ],
+      "all": [
+        2.261,
+        2.048
+      ],
+      "get": [
+        2.217,
+        1.999
+      ],
+      "who": [
+        2.174,
+        1.761
+      ],
+      "me": [
+        2.217,
+        3.05
+      ],
+      "than": [
+        2.13,
+        1.596
+      ],
+      "some": [
+        1.957,
+        2.493
+      ],
+      "does": [
+        1.913,
+        1.472
+      ],
+      "might": [
+        1.739,
+        1.421
+      ],
+      "say": [
+        1.739,
+        2.288
+      ],
+      "my": [
+        1.696,
+        1.852
+      ],
+      "should": [
+        1.565,
+        3.132
+      ],
+      "then": [
+        1.609,
+        1.31
+      ],
+      "very": [
+        1.609,
+        1.343
+      ],
+      "there": [
+        1.478,
+        1.058
+      ],
+      "any": [
+        1.565,
+        1.789
+      ],
+      "up": [
+        1.478,
+        1.5
+      ],
+      "much": [
+        1.522,
+        1.314
+      ],
+      "being": [
+        1.478,
+        1.137
+      ],
+      "those": [
+        1.435,
+        1.173
+      ],
+      "most": [
+        1.435,
+        1.469
+      ],
+      "out": [
+        1.391,
+        1.406
+      ],
+      "also": [
+        1.348,
+        1.237
+      ],
+      "why": [
+        1.304,
+        1.545
+      ],
+      "when": [
+        1.261,
+        1.072
+      ],
+      "something": [
+        1.174,
+        1.007
+      ],
+      "how": [
+        1.217,
+        1.531
+      ],
+      "every": [
+        1.174,
+        1.34
+      ],
+      "just": [
+        1.174,
+        1.049
+      ],
+      "into": [
+        1.13,
+        1.115
+      ],
+      "its": [
+        1.087,
+        1.442
+      ],
+      "such": [
+        1.13,
+        1.65
+      ],
+      "well": [
+        1.13,
+        1.361
+      ],
+      "less": [
+        1.043,
+        1.083
+      ],
+      "had": [
+        1.087,
+        1.06
+      ],
+      "did": [
+        1.087,
+        0.928
+      ],
+      "make": [
+        1.0,
+        1.063
+      ],
+      "could": [
+        0.957,
+        1.301
+      ],
+      "down": [
+        1.0,
+        1.251
+      ],
+      "only": [
+        1.0,
+        1.142
+      ],
+      "own": [
+        0.957,
+        1.268
+      ],
+      "over": [
+        0.913,
+        1.139
+      ],
+      "where": [
+        0.957,
+        0.859
+      ],
+      "someone": [
+        1.0,
+        1.022
+      ],
+      "doing": [
+        0.957,
+        1.233
+      ],
+      "am": [
+        0.957,
+        1.197
+      ],
+      "through": [
+        0.913,
+        0.974
+      ],
+      "see": [
+        0.913,
+        0.88
+      ],
+      "our": [
+        0.913,
+        1.472
+      ],
+      "sometimes": [
+        0.87,
+        1.262
+      ],
+      "he": [
+        0.87,
+        1.985
+      ],
+      "were": [
+        0.739,
+        0.943
+      ],
+      "after": [
+        0.826,
+        0.962
+      ]
+    }
+  },
+  "pos_trigrams": {
+    "ADP DET NOUN": 0.02931,
+    "NOUN ADP DET": 0.02032,
+    "DET ADJ NOUN": 0.01894,
+    "DET NOUN ADP": 0.01809,
+    "NOUN ADP NOUN": 0.0162,
+    "ADJ NOUN ADP": 0.01605,
+    "VERB DET NOUN": 0.01539,
+    "PRON AUX VERB": 0.01122,
+    "VERB ADP DET": 0.01028,
+    "DET NOUN NOUN": 0.009,
+    "ADP DET ADJ": 0.008,
+    "ADP ADJ NOUN": 0.00781,
+    "NOUN ADP PRON": 0.00767,
+    "AUX VERB ADP": 0.00748,
+    "ADJ NOUN NOUN": 0.00687,
+    "SCONJ PRON VERB": 0.00672,
+    "VERB DET ADJ": 0.00668,
+    "NOUN NOUN ADP": 0.00663,
+    "ADP NOUN ADP": 0.00639,
+    "NOUN PRON AUX": 0.00639,
+    "PRON AUX ADV": 0.00635,
+    "NOUN PRON VERB": 0.00635,
+    "DET NOUN AUX": 0.0063,
+    "PRON VERB DET": 0.00625,
+    "VERB NOUN ADP": 0.00601,
+    "NOUN AUX VERB": 0.00601,
+    "VERB PART VERB": 0.00582,
+    "DET NOUN VERB": 0.00549,
+    "NOUN PART VERB": 0.00549,
+    "SCONJ PRON AUX": 0.0054,
+    "ADP PRON NOUN": 0.0054,
+    "PRON VERB ADP": 0.00526,
+    "AUX ADV VERB": 0.00526,
+    "VERB ADP PRON": 0.00526,
+    "VERB ADJ NOUN": 0.00526,
+    "VERB ADP NOUN": 0.00521,
+    "ADJ ADJ NOUN": 0.00516,
+    "NOUN ADP ADJ": 0.00493,
+    "AUX PART VERB": 0.00488,
+    "NOUN NOUN NOUN": 0.00488,
+    "NOUN VERB ADP": 0.00483,
+    "PRON VERB PRON": 0.00474,
+    "PART VERB PRON": 0.00455,
+    "ADJ NOUN AUX": 0.0045,
+    "ADP NOUN NOUN": 0.00445,
+    "NOUN CCONJ NOUN": 0.00445,
+    "ADV VERB ADP": 0.00445,
+    "DET NOUN PRON": 0.00436,
+    "ADV ADJ NOUN": 0.00431,
+    "NOUN SCONJ PRON": 0.00426,
+    "NOUN ADP PROPN": 0.00407,
+    "PART VERB DET": 0.00403,
+    "ADJ NOUN VERB": 0.00398,
+    "PART VERB ADP": 0.00388,
+    "PRON AUX PART": 0.00388,
+    "SCONJ DET NOUN": 0.00384,
+    "PROPN PROPN PROPN": 0.00379,
+    "VERB PRON NOUN": 0.00379,
+    "AUX VERB PRON": 0.00374,
+    "PRON ADV VERB": 0.00374,
+    "ADJ NOUN PRON": 0.00374,
+    "NOUN NOUN CCONJ": 0.00374,
+    "ADV VERB DET": 0.00369,
+    "ADJ NOUN CCONJ": 0.0036,
+    "NOUN AUX ADV": 0.00355,
+    "AUX VERB DET": 0.00346,
+    "ADP DET PROPN": 0.00341,
+    "NOUN VERB DET": 0.00336,
+    "NOUN NOUN VERB": 0.00336,
+    "AUX ADV ADJ": 0.00327,
+    "PRON ADJ NOUN": 0.00322,
+    "ADV ADJ ADP": 0.00317,
+    "DET NOUN CCONJ": 0.00317,
+    "ADV VERB NOUN": 0.00313,
+    "VERB PRON VERB": 0.00313,
+    "VERB PRON ADP": 0.00303,
+    "NOUN NOUN AUX": 0.00303,
+    "DET NOUN ADV": 0.00294,
+    "PRON AUX AUX": 0.00289,
+    "ADJ ADP DET": 0.00289,
+    "NOUN ADP VERB": 0.00289,
+    "VERB SCONJ PRON": 0.00284,
+    "PRON NOUN NOUN": 0.00279,
+    "ADP NOUN CCONJ": 0.00279,
+    "ADP NOUN PRON": 0.00279,
+    "DET NOUN SCONJ": 0.0027,
+    "NOUN VERB PRON": 0.00265,
+    "NOUN CCONJ VERB": 0.0026,
+    "DET PROPN PROPN": 0.0026,
+    "NOUN NOUN PRON": 0.00251,
+    "AUX AUX VERB": 0.00246,
+    "VERB ADP ADJ": 0.00246,
+    "PRON VERB ADJ": 0.00242,
+    "PART VERB NOUN": 0.00242,
+    "PRON PRON AUX": 0.00237,
+    "VERB NOUN NOUN": 0.00237,
+    "PRON AUX DET": 0.00232,
+    "PRON NOUN ADP": 0.00232,
+    "DET NOUN PART": 0.00232,
+    "NOUN DET NOUN": 0.00227,
+    "PRON VERB ADV": 0.00227,
+    "PRON AUX ADJ": 0.00227,
+    "AUX ADJ ADP": 0.00227,
+    "AUX DET NOUN": 0.00227,
+    "ADJ NOUN PART": 0.00223,
+    "NOUN ADV VERB": 0.00218,
+    "ADV VERB PRON": 0.00218,
+    "NOUN AUX ADJ": 0.00213,
+    "NOUN VERB NOUN": 0.00213,
+    "PRON ADP DET": 0.00208,
+    "AUX ADV ADV": 0.00208,
+    "CCONJ ADJ NOUN": 0.00208,
+    "DET ADJ ADJ": 0.00208,
+    "PRON PRON VERB": 0.00208,
+    "ADV ADP DET": 0.00204,
+    "NOUN AUX PART": 0.00204,
+    "PRON VERB PART": 0.00204,
+    "VERB PRON AUX": 0.00199,
+    "ADP PRON ADJ": 0.00199,
+    "NOUN CCONJ DET": 0.00199,
+    "ADP NOUN VERB": 0.00199,
+    "ADJ NOUN SCONJ": 0.00194,
+    "AUX DET ADJ": 0.00194,
+    "NOUN CCONJ PRON": 0.00194,
+    "CCONJ PRON AUX": 0.00194,
+    "PRON VERB NOUN": 0.00194,
+    "ADJ ADP PRON": 0.00189,
+    "ADP PROPN PROPN": 0.00189,
+    "ADV DET NOUN": 0.00189,
+    "NOUN AUX AUX": 0.00185,
+    "VERB ADV ADJ": 0.00185,
+    "ADV PRON AUX": 0.0018,
+    "NOUN CCONJ ADJ": 0.0018,
+    "ADJ PART VERB": 0.00175,
+    "ADP VERB NOUN": 0.00175,
+    "DET ADV ADJ": 0.0017,
+    "ADV ADV VERB": 0.00166,
+    "VERB SCONJ DET": 0.00166,
+    "VERB ADP PROPN": 0.00166,
+    "NOUN ADJ NOUN": 0.00161,
+    "VERB ADV ADP": 0.00161,
+    "AUX VERB SCONJ": 0.00156,
+    "ADP PRON PRON": 0.00156,
+    "VERB ADP VERB": 0.00156,
+    "AUX VERB PART": 0.00156,
+    "AUX VERB NOUN": 0.00156,
+    "VERB ADP ADP": 0.00152,
+    "PROPN AUX VERB": 0.00152,
+    "PRON PART VERB": 0.00152,
+    "NUM NOUN ADP": 0.00147
   }
 }
