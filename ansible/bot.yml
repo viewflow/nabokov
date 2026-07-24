@@ -1,13 +1,19 @@
-# Deploy the Nabokov Editor Telegram bot to jack.lan (pattern copied from lila).
+# Deploy the Nabokov Editor Telegram bot (@nabokov_editor_bot) to jack.lan.
 #
-# Usage:
-#     cp .env deploy/.env          # real secrets for the server
-#     ansible-playbook -i deploy/inventory.ini deploy.yml
+# Separate playbook from deploy.yml (the web demo), but shares this directory
+# and inventory.ini. The bot is its own uv project under ../bot; this playbook
+# rsyncs that tree to /srv/nabokov-bot and runs it as the nabokov-bot unit.
+#
+# Usage (on the home LAN, jack.lan resolves):
+#     cp bot/.env ansible/secrets/nabokov-bot.env   # real secrets for the server
+#     ansible-playbook -i ansible/inventory.ini ansible/bot.yml
 # Refresh code only:
-#     ansible-playbook -i deploy/inventory.ini --tags=update deploy.yml
+#     ansible-playbook -i ansible/inventory.ini --tags=update ansible/bot.yml
+# From outside the LAN, add the reverse-tunnel overrides (same as the web deploy):
+#     -e ansible_host=viewflow.io -e ansible_port=22022 -e ansible_user=root
 #
 - name: "Nabokov bot deployment"
-  hosts: all
+  hosts: app
   become: true
   gather_facts: false
   environment:
@@ -72,14 +78,14 @@
 
     - name: "Project | Synchronize source code"
       ansible.posix.synchronize:
-        src: ./
+        src: "{{ playbook_dir }}/../bot/"
         dest: "{{ project_dir }}/"
         delete: true
         use_ssh_args: true
         rsync_opts:
           - "--exclude='.*'"
           - "--exclude='*.pyc'"
-          - "--exclude='/deploy/'"
+          - "--exclude='__pycache__'"
           - "--exclude='/.venv/'"
           - "--exclude='*.sqlite3'"
       register: source
@@ -144,7 +150,7 @@
 
     - name: "Bot | Create/Update .env file"
       ansible.builtin.copy:
-        src: "deploy/.env"
+        src: "secrets/nabokov-bot.env"
         dest: "{{ project_dir }}/.env"
         owner: "{{ project_user }}"
         group: "{{ project_group }}"
@@ -155,7 +161,7 @@
 
     - name: "Bot | Install systemd service"
       ansible.builtin.template:
-        src: "deploy/nabokov-bot.service.j2"
+        src: "templates/nabokov-bot.service.j2"
         dest: "/etc/systemd/system/{{ project_name }}.service"
         mode: "0644"
       notify:
