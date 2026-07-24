@@ -834,3 +834,49 @@ def test_vocab_cluster_hyphenated_term(analyze):
 
 def test_puffery_encompass(analyze):
     assert "NB502" in _codes(analyze, "The guide encompasses every scenario and use case.")
+
+
+def test_bolted_connector_flagged(analyze):
+    text = (
+        "The team shipped the feature on Tuesday.\n\n"
+        "That reminded me of a question someone asked at the workshop.\n\n"
+        "Recently, I was listening to a podcast about the same thing."
+    )
+    codes = _codes(analyze, text)
+    assert codes.count("NB531") == 2
+
+
+def test_bolted_connector_real_transition_exempt(analyze):
+    # a bridge that echoes the prior point, not an associative announcement
+    text = (
+        "The onboarding flow lost half its users at the second step.\n\n"
+        "That second step asked for a credit card before anyone saw value."
+    )
+    assert "NB531" not in _codes(analyze, text)
+
+
+def test_bolted_connector_recent_action_exempt(analyze):
+    # "Recently I switched" is a real event, not a read/heard/watched scene-setter
+    text = (
+        "The build failed twice this morning.\n\n"
+        "Recently I switched CI providers and the flakiness went away."
+    )
+    assert "NB531" not in _codes(analyze, text)
+
+
+def test_asserted_unity_flagged(analyze):
+    text = (
+        "These may sound like different conversations. "
+        "But they are all about the same thing."
+    )
+    assert "NB532" in _codes(analyze, text)
+
+
+def test_asserted_unity_it_is_all_form(analyze):
+    assert "NB532" in _codes(analyze, "Strip away the labels and it's all about the same idea.")
+
+
+def test_asserted_unity_literal_sameness_exempt(analyze):
+    # a concrete claim two things agree, not a papered-over coherence gap
+    text = "The two APIs may seem different, but the docs describe them clearly."
+    assert "NB532" not in _codes(analyze, text)

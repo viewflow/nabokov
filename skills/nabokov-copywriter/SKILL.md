@@ -55,7 +55,7 @@ job is to collect them, not to decorate. Ask the user.
 Read [references/formulas.md](references/formulas.md) once the goal is set.
 It holds each formula's skeleton, the goal→formula choice, and CTA patterns.
 
-## The four passes
+## The five passes
 
 Run them in order. Each pass hands a better draft to the next.
 
@@ -84,10 +84,8 @@ Run them in order. Each pass hands a better draft to the next.
    one 25–40. Treat these as the ends of a range to visit, not a
    short-long-short pattern to alternate — a mechanical see-saw drones as
    badly as uniform length. NB509 flags the flat stretches and points at the
-   flattest run. Flow is also *logical*: at
-   each paragraph opening, ask how we got here from the last one. If a
-   reader would stumble, the copy jumped a topic — bridge it with an echo of
-   the prior point, not a bolted-on connector. Vary paragraph *endings* too:
+   flattest run. (Logical flow between sections is its own pass — Connect,
+   next.) Vary paragraph *endings* too:
    ending every one on a punchline is a machine cadence. Two or three
    punchline endings per piece, where the argument peaks; the rest end flat.
    Ration the figures the same way — one not-X-but-Y hits, three are a tic
@@ -107,7 +105,29 @@ Run them in order. Each pass hands a better draft to the next.
    repeated openers are the genre), so on a social post you enforce those
    two caps by eye.
 
-4. **Assemble for the goal** — reorder the enlivened material into the chosen
+4. **Connect** — the coherence pass. Copy fails not only sentence by
+   sentence but section by section: parts that each read well yet don't carry
+   the reader from one to the next. Sentence rhythm can be perfect and the
+   piece still read as beads with no string. Do this as a checklist, not a
+   vibe:
+   - List each section or scene in order.
+   - For each, name the **one sentence** that carries the reader here from the
+     section before. If you can't name it, the bridge is missing — the copy
+     jumped a topic. Fix it before shipping.
+   - Bridge with an **echo of the prior point**, not a bolted-on connector.
+     "That reminded me of…", "Recently, I was listening to…", "It made me
+     wonder…" *announce* a link instead of building one (NB531 flags these).
+   - Watch the failure this pass exists for: **serial anecdote stacking** —
+     two or three "I read / I heard / I was asked" hooks piled up in the
+     opening, fused only by a claim that "they are all about the same thing"
+     (NB532 flags that claim). The fix: pick one entry and thread the others
+     through it, and name the shared idea *before* you assert unity, not
+     after. The reader should feel the connection, not be told it exists.
+
+   NB531 and NB532 flag *where* to look, never whether the bridge is real —
+   that judgment is yours. A clean linter run is not a coherence pass.
+
+5. **Assemble for the goal** — reorder the connected material into the chosen
    formula. Open a loop early and pay it off late. Land the CTA so it grows
    out of the copy instead of bolting on. Reordering the whole piece and
    adding a CTA are **big changes** — collect them and get approval before

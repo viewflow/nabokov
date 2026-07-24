@@ -15,6 +15,7 @@ Rules (all off by default, all category "ai"):
   NB516 bold-label listicle (info)  NB522 engagement-bait closer (info)
   NB523 anaphora triad (info)  NB524 contrast heading (info)
   NB528 low lexical diversity (info)
+  NB531 bolted-on connector (info)  NB532 asserted unity (info)
 """
 
 from __future__ import annotations
@@ -1873,3 +1874,110 @@ class FragmentDensityRule(Rule):
             first.text.rstrip()[:80],
             severity=self.severity,
         )
+
+
+class BoltedConnectorRule(Rule):
+    """NB531 — a paragraph opens with a bolted-on associative connector.
+
+    "That reminded me of…", "Recently, I was listening to…", "It made me
+    wonder…" — a transition that *announces* the link instead of building it.
+    The paragraphs read as beads on a string: each new scene is glued to the
+    last by "this reminded me", not by a shared idea the reader can feel. The
+    coherence-level sibling of the de-slop tells (from the 2026-07 review: a
+    copywriter draft that stacked three "I read / I heard / I was asked" hooks
+    and fused them only by assertion). Anchor with an *echo* of the prior
+    point, not a connector. One finding per offending paragraph opener;
+    advisory — a single associative hop is fine, a piece built on them is the
+    tell.
+    """
+
+    code = "NB531"
+    name = "ai-bolted-connector"
+    category = "ai"
+    codes = ("NB531",)
+    default_on = False
+    severity = Severity.INFO
+
+    _OPENER = re.compile(
+        r"^\s*(?:and\s+)?(?:that|this|it|which|all\s+of\s+this)\s+"
+        r"(?:reminded\s+me|made\s+me\s+(?:wonder|think|realize)|got\s+me\s+thinking|"
+        r"brought\s+to\s+mind|took\s+me\s+back)\b"
+        r"|^\s*recently,?\s+i\s+(?:was\s+)?"
+        r"(?:read|reading|listen|listening|watch|watching|heard|saw)\b"
+        r"|^\s*speaking\s+of\b",
+        re.IGNORECASE,
+    )
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        from .base import paragraph_ranges
+
+        text = ctx.doc.text
+        for para_start, para_end in paragraph_ranges(text):
+            chunk = text[para_start:para_end]
+            match = self._OPENER.match(chunk)
+            if match is None:
+                continue
+            matched = match.group(0)
+            lead = len(matched) - len(matched.lstrip())
+            start = para_start + lead
+            end = para_start + match.end()
+            yield _issue(
+                ctx,
+                "NB531",
+                "ai-bolted-connector",
+                (
+                    "AI tell: paragraph opens with a bolted-on connector — "
+                    "bridge with an echo of the prior point, not "
+                    "'this reminded me'"
+                ),
+                start,
+                end,
+                text[start:end][:80],
+                severity=self.severity,
+            )
+
+
+class AssertedUnityRule(Rule):
+    """NB532 — the writer claims the parts are "all the same thing".
+
+    "These may sound like different conversations, but they are all about the
+    same thing." A concession that things *seem* separate, capped by an
+    assertion that they are one — the coherence gap papered over with a claim
+    of unity instead of a shown connection. Name the shared idea and let the
+    reader feel it; don't announce it. One finding per occurrence; advisory.
+    """
+
+    code = "NB532"
+    name = "ai-asserted-unity"
+    category = "ai"
+    codes = ("NB532",)
+    default_on = False
+    severity = Severity.INFO
+
+    _PATTERN = re.compile(
+        r"\b(?:may|might|could)\s+(?:sound|seem|look|feel)\s+like\b[^.?!]*?"
+        r"\b(?:different|separate|unrelated|opposite|two)\b[^.?!]*?"
+        r"(?:[.?!]\s+|\s+(?:but|yet|however)\b)[^.?!]*?"
+        r"\b(?:same|one\s+(?:thing|idea|question)|all\s+(?:about|connected|the\s+same))\b"
+        r"|\bit(?:'?s|\s+is)\s+all\s+(?:about\s+)?(?:the\s+same|one)\s+(?:thing|idea|question)\b",
+        re.IGNORECASE,
+    )
+
+    def check(self, ctx: CheckContext) -> Iterable[Issue]:
+        text = ctx.doc.text
+        for match in self._PATTERN.finditer(text):
+            start, end = match.start(), match.end()
+            yield _issue(
+                ctx,
+                "NB532",
+                "ai-asserted-unity",
+                (
+                    "AI tell: claims the parts are 'all the same thing' instead "
+                    "of showing the link — name the shared idea and let the "
+                    "reader feel it"
+                ),
+                start,
+                end,
+                text[start:end][:80],
+                severity=self.severity,
+            )
