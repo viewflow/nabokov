@@ -18,9 +18,11 @@ nabokov.viewflow.io:80, nabokov.lan:80 {
     }
   }
 
-  # The landing page is a static file — Django never sees it.
+  # The landing page and legal pages are static files — Django never sees them.
+  # try_files lets /privacy and /terms resolve to privacy.html / terms.html.
   handle {
     root * {{ project_dir }}/site
+    try_files {path} {path}.html {path}/index.html
     file_server
   }
 
