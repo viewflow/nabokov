@@ -218,6 +218,35 @@ The fix is never mechanical: add a concrete example, number, or image, or ask th
 author for one. The [nabokov-editor skill](../skills/nabokov-editor/SKILL.md) treats
 this as an approval-gated change, since inventing detail is worse than abstraction.
 
+## Style drift (NB7) — needs an author profile
+
+Classic stylometry in reverse: instead of identifying an author, nabokov records
+their signature and flags what falls outside it. Build a profile from a corpus of
+one author's texts, then lint against it:
+
+```bash
+nabokov --build-profile me.style.json my-posts/          # extract the signature
+nabokov --profile-card paulgraham                        # read a bundled voice card
+nabokov --profile-card list                              # bundled profile names
+nabokov --ai --style paulgraham draft.md                 # lint with drift checks
+```
+
+Bundled profiles (built from the calibration corpus): `paulgraham`, `orwell`,
+`housel`, `patio11`, `scottalexander`, `sivers`, `nabokov`. `--style` also takes a
+path to your own profile JSON. The NB7 rules are enabled by default but **inert
+without `--style`** — no profile, no findings. All advisory: the advice direction
+is always "come back to the author's distribution", never "imitate harder".
+
+| Code | Name | Sev | Flags | Example |
+|------|------|-----|-------|---------|
+| `NB701` | style-connector | info | A sentence opens with a connector the author uses below 1 per 1000 sentences — strict absence is too strict; on a big corpus every connector appears once somewhere (profile needs ≥ 300 sentences). Names the author's actual favorites. | "**Moreover,** …" against a profile whose connectors are but/and/so |
+| `NB702` | style-rhythm | info | Sentence variety or punctuation looseness below 0.65× the author's baseline — flatness only; more varied than the author is not a defect. Needs ≥ 6 sentences and a ≥ 5k-word profile. | uniform 12-word sentences vs an author at CV 0.7 |
+| `NB703` | style-punctuation | info | A mark at ≥ 3× the author's per-1000-word rate (≥ 3 occurrences, ≥ 1/1000 excess, max 3 findings). Anchored at the file top — it is a document-level rate. | em dash at 8.1/1000 vs Graham's 1.4 |
+
+A profile is honest data — favorite words, connectors, rhythm norms the author
+demonstrably has. The voice card ends with the rule that keeps it safe: reuse the
+author's *words*, never invent facts or opinions on their behalf.
+
 ---
 
 ## Severities & exit codes

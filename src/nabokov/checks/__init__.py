@@ -46,6 +46,7 @@ from .concreteness import ConcretenessRule
 from .passive import PassiveRule
 from .phrases import ComplexPhraseRule, QualifierRule
 from .sentences import PeriodicSentenceRule, SentenceRule
+from .style import StyleConnectorRule, StylePunctuationRule, StyleRhythmRule
 from .usage import RepeatedWordRule, UncomparableRule
 
 ALL_RULES: list[Rule] = [
@@ -92,6 +93,10 @@ ALL_RULES: list[Rule] = [
     LexicalDiversityRule(),
     PunchlineEndingRule(),
     FragmentDensityRule(),
+    # NB7xx — style drift vs an author profile (inert without --style)
+    StyleConnectorRule(),
+    StyleRhythmRule(),
+    StylePunctuationRule(),
 ]
 
 # code -> (name, human description)
@@ -139,6 +144,9 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB529": ("ai-punchline-endings", "AI tell: most paragraphs end on a short punchline"),
     "NB530": ("ai-fragment-density", "AI tell: verbless label fragments crowd the piece"),
     "NB601": ("low-concreteness", "Abstract paragraph — no lived detail (advisory)"),
+    "NB701": ("style-connector", "Style drift: connector the author profile never uses"),
+    "NB702": ("style-rhythm", "Style drift: rhythm flatter than the author's baseline"),
+    "NB703": ("style-punctuation", "Style drift: punctuation far above the author's rate"),
 }
 
 ALL_CODES: tuple[str, ...] = tuple(RULE_META)

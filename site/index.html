@@ -157,13 +157,14 @@
   }
   #demo-lint:hover:not(:disabled) { opacity: 0.85; }
   #demo-lint:disabled { opacity: 0.5; cursor: wait; }
-  #demo-target {
+  #demo-target, #demo-style {
     background: transparent;
     color: var(--muted);
     border: 1px solid var(--hairline);
     border-radius: 4px;
     padding: 0.4rem 0.5rem;
   }
+  pre .sty { color: #c9a86b; }
   #demo-sample {
     background: none;
     border: 0;
@@ -355,10 +356,13 @@
       <option value="SOCIAL">--target social</option>
       <option value="EMAIL">--target email</option>
     </select>
+    <select id="demo-style" aria-label="Author style profile">
+      <option value="" selected>no style profile</option>
+    </select>
     <button id="demo-sample" type="button">paste a slop sample</button>
   </div>
   <pre id="demo-out" hidden><code></code></pre>
-  <p class="sub mono">The real linter, AI checks on. We keep nothing.</p>
+  <p class="sub mono">The real linter, AI checks on. Pick an author profile and the drift checks compare your text with their signature. We keep nothing.</p>
 </section>
 
 <section id="try">
@@ -436,6 +440,7 @@ $ npx skills add viewflow/nabokov</code></pre>
   // — live demo — (script content is invisible to the linter: blank_html drops it)
   const demoText = document.getElementById("demo-text");
   const demoTarget = document.getElementById("demo-target");
+  const demoStyle = document.getElementById("demo-style");
   const demoLint = document.getElementById("demo-lint");
   const demoSample = document.getElementById("demo-sample");
   const demoOut = document.getElementById("demo-out");
@@ -457,8 +462,23 @@ $ npx skills add viewflow/nabokov</code></pre>
     if (code === "NB303") return "qua";
     if (code.startsWith("NB4")) return "wrd";
     if (code.startsWith("NB5")) return "ai";
+    if (code.startsWith("NB7")) return "sty";
     return "p";
   }
+
+  // Populate the profile picker from the backend, so new bundled profiles
+  // appear here without touching the page.
+  fetch("/api/profiles")
+    .then(r => r.ok ? r.json() : { profiles: [] })
+    .then(data => {
+      for (const name of data.profiles || []) {
+        const o = document.createElement("option");
+        o.value = name;
+        o.textContent = "--style " + name;
+        demoStyle.append(o);
+      }
+    })
+    .catch(() => {});
 
   function span(cls, text) {
     const s = document.createElement("span");
@@ -472,12 +492,14 @@ $ npx skills add viewflow/nabokov</code></pre>
     demoOut.hidden = false;
   }
 
-  function cmdLine(target) {
-    return "$ nabokov --ai --target " + target.toLowerCase() + " yours.md\n";
+  function cmdLine(target, style) {
+    let cmd = "$ nabokov --ai --target " + target.toLowerCase();
+    if (style) cmd += " --style " + style;
+    return cmd + " yours.md\n";
   }
 
-  function renderResult(target, data) {
-    const nodes = [span("", cmdLine(target))];
+  function renderResult(target, style, data) {
+    const nodes = [span("", cmdLine(target, style))];
     for (const d of data.diagnostics) {
       nodes.push(span("p", "yours.md:" + d.line + ":" + d.col + ": "));
       nodes.push(span(codeClass(d.code), d.code));
@@ -498,23 +520,24 @@ $ npx skills add viewflow/nabokov</code></pre>
     const text = demoText.value.trim();
     if (!text) { demoText.focus(); return; }
     const target = demoTarget.value;
+    const style = demoStyle.value;
     demoLint.disabled = true;
-    showTerminal([span("", cmdLine(target)), span("p", "linting…")]);
+    showTerminal([span("", cmdLine(target, style)), span("p", "linting…")]);
     try {
       const resp = await fetch("/api/lint", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: text, target: target }),
+        body: JSON.stringify({ text: text, target: target, style: style || null }),
       });
       const data = await resp.json();
       if (!resp.ok) {
-        showTerminal([span("", cmdLine(target)), span("err", "error: " + (data.error || resp.status) + "\n")]);
+        showTerminal([span("", cmdLine(target, style)), span("err", "error: " + (data.error || resp.status) + "\n")]);
       } else {
-        renderResult(target, data);
+        renderResult(target, style, data);
       }
     } catch (e) {
       showTerminal([
-        span("", cmdLine(target)),
+        span("", cmdLine(target, style)),
         span("err", "error: the demo backend is unreachable"),
         span("p", " — run `uvx nabokov` locally instead\n"),
       ]);

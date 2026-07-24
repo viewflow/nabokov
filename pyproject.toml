@@ -115,5 +115,9 @@ addopts = "-q"
 [tool.nabokov]
 # Default configuration (also read from a project's own pyproject.toml / .nabokov.toml).
 target = "TECHNICAL"       # ACCESSIBLE | NORMAL | TECHNICAL
+# This repo's own prose (skill references, the landing) is deliberately
+# staccato reference/marketing register — the fragment-density and
+# punchline-ending cadence checks are genre there, not tells.
+extend_ignore = ["NB529", "NB530"]
 # select = ["NB"]
 # ignore = []

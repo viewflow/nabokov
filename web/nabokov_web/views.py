@@ -16,6 +16,7 @@ from nabokov.analyzer import Engine, load_nlp
 from nabokov.config import VALID_TARGETS, Config
 from nabokov.reporters.json_reporter import result_payload
 from nabokov.source import SourceFile
+from nabokov.styleprofile import available_profiles
 
 # Hard cap on submitted text: spaCy on arbitrary input is a CPU amplifier, and
 # this endpoint is public. ~20k chars is several pages of prose.
@@ -28,15 +29,20 @@ def get_nlp():
     return load_nlp(auto_download=False)
 
 
-def _engine(target: str) -> Engine:
+def _engine(target: str, style: str | None = None) -> Engine:
     # The demo always runs the AI-writing checks too (CLI --ai).
-    engine = Engine(Config(target=target, extend_select=("NB5",)))
+    engine = Engine(Config(target=target, extend_select=("NB5",), style=style))
     engine._nlp = get_nlp()  # inject the shared pipeline
     return engine
 
 
 def health(request: HttpRequest) -> JsonResponse:
     return JsonResponse({"status": "ok"})
+
+
+def profiles(request: HttpRequest) -> JsonResponse:
+    """Bundled author style profiles the demo can lint against."""
+    return JsonResponse({"profiles": available_profiles()})
 
 
 @require_POST
@@ -61,8 +67,16 @@ def lint(request: HttpRequest) -> JsonResponse:
             status=400,
         )
 
+    # Bundled names only — never filesystem paths on a public endpoint.
+    style = payload.get("style") or None
+    if style is not None and style not in available_profiles():
+        return JsonResponse(
+            {"error": f"unknown style profile (choose from {', '.join(available_profiles())})"},
+            status=400,
+        )
+
     source = SourceFile.from_text(text, "input.md", is_markdown=True)
-    result = _engine(target).analyze(source)
+    result = _engine(target, style).analyze(source)
     body = result_payload(result)
     del body["path"]  # meaningless for pasted text
     return JsonResponse(body)

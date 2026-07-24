@@ -73,3 +73,37 @@ def test_health():
     response = Client().get("/api/health")
     assert response.status_code == 200
     assert json.loads(response.content) == {"status": "ok"}
+
+
+def test_lint_with_style_profile():
+    text = (
+        "Moreover, the plan worked well for us. The team shipped the release "
+        "on time. The customers noticed the difference quickly."
+    )
+    status, body = _post({"text": text, "style": "paulgraham"})
+    assert status == 200
+    assert any(d["code"].startswith("NB7") for d in body["diagnostics"])
+
+
+def test_lint_without_style_has_no_drift_findings():
+    status, body = _post({"text": "Moreover, the plan worked well for us today."})
+    assert status == 200
+    assert not any(d["code"].startswith("NB7") for d in body["diagnostics"])
+
+
+def test_rejects_unknown_style():
+    status, body = _post({"text": "Fine prose here.", "style": "nobody"})
+    assert status == 400
+    assert "profile" in body["error"]
+
+
+def test_rejects_style_path_traversal():
+    status, _ = _post({"text": "Fine prose here.", "style": "../../etc/passwd"})
+    assert status == 400
+
+
+def test_profiles_endpoint():
+    response = Client().get("/api/profiles")
+    assert response.status_code == 200
+    names = json.loads(response.content)["profiles"]
+    assert "paulgraham" in names and "mikhail" in names

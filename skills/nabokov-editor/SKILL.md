@@ -137,6 +137,17 @@ conclusion. Read
 [references/macro-pass.md](references/macro-pass.md) for it. Skip it for
 READMEs and reference docs.
 
+**Voice profiles.** When a rewrite is unavoidable, nabokov can keep it inside
+the author's own distribution. `uvx nabokov --profile-card list` names the
+bundled author profiles; `--style <name-or-json>` adds NB7xx drift findings
+(foreign connectors, flat rhythm, punctuation off the author's rate) to any
+lint run. Prefer a personal profile built from the author's other texts
+(`--build-profile out.json their-posts/`); otherwise suggest the closest
+bundled one by genre and confirm before using it. Read the voice card first
+and pull rewritten lines toward its connectors, rhythm, and punctuation — the
+author's surviving words still beat any profile-guided rewrite, and a profile
+never supplies facts.
+
 ## Workflow
 
 1. **Static pass**: `nabokov --format=flake8 <file>`. Add `--ai` when the

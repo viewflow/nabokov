@@ -125,6 +125,27 @@ genre: `--target social` for a short post (staccato is native there),
 `--target essay` for a long read, `--target email` for outreach. The linter
 keeps the polish honest: it catches you if a rewrite slid back into slop.
 
+**Voice profiles.** nabokov can also lint against an author's style
+signature. `uvx nabokov --profile-card list` names the bundled profiles;
+`--style <name-or-json>` adds the NB7xx drift checks — connectors the author
+never uses, rhythm flatter than their baseline, punctuation far above their
+rate. Use it in this order:
+
+1. If the author has a corpus (their own posts), build a personal profile
+   first: `uvx nabokov --build-profile author.style.json their-posts/` —
+   that profile beats any bundled one.
+2. Otherwise propose the closest bundled profile by genre and **confirm with
+   the user** before using it: idea essays → `paulgraham`; plain-style
+   opinion → `orwell`; finance/investing → `housel`; business/tech deep
+   dives → `patio11`; long argumentative essays → `scottalexander`; short
+   personal notes → `sivers`; literary prose → `nabokov`.
+3. Read the card (`--profile-card <name>`) before rewriting, and rewrite
+   *into* that distribution — its connectors, punctuation rates, and rhythm
+   are the register to match. The minimal-paraphrase rule still wins:
+   the profile guides only lines you already have to rewrite. A profile
+   supplies register, never facts — inventing content "in the author's
+   style" is still fabrication.
+
 Cap the polish loop at **two** enliven → re-lint rounds, and on the second
 round touch only the lines the linter (or a detector) still flags — every
 extra pass over a clean line drifts the copy flat. If findings survive round

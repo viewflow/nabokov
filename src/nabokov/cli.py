@@ -99,6 +99,26 @@ def build_parser() -> argparse.ArgumentParser:
         "implies --ai. A gauge for before/after edits, not a detector verdict",
     )
     parser.add_argument(
+        "--build-profile",
+        metavar="OUT.json",
+        default=None,
+        help="build an author style profile from the input texts, write it to "
+        "OUT.json, and print the voice card",
+    )
+    parser.add_argument(
+        "--style",
+        default=None,
+        metavar="PROFILE",
+        help="author style profile — a bundled name (see --profile-card list) or a "
+        ".json path; activates the NB7xx style-drift checks",
+    )
+    parser.add_argument(
+        "--profile-card",
+        default=None,
+        metavar="PROFILE",
+        help="print the voice card for a profile and exit; use 'list' to list bundled profiles",
+    )
+    parser.add_argument(
         "--all-adverbs",
         dest="adverbs_all_pos",
         action="store_true",
@@ -158,6 +178,29 @@ def main(argv: list[str] | None = None) -> int:
         download_model()
         return EXIT_OK
 
+    if args.profile_card:
+        from .styleprofile import available_profiles, load_profile, render_card
+
+        if args.profile_card == "list":
+            for name in available_profiles():
+                print(name)
+            return EXIT_OK
+        try:
+            sys.stdout.write(render_card(load_profile(args.profile_card)))
+        except ValueError as exc:
+            print(f"nabokov: {exc}", file=sys.stderr)
+            return EXIT_ERROR
+        return EXIT_OK
+
+    if args.style:
+        from .styleprofile import load_profile
+
+        try:
+            load_profile(args.style)
+        except ValueError as exc:
+            print(f"nabokov: {exc}", file=sys.stderr)
+            return EXIT_ERROR
+
     select = _split_codes(args.select) or ()
     extend_select = _split_codes(args.extend_select) or ()
     if args.ai_only:
@@ -179,6 +222,7 @@ def main(argv: list[str] | None = None) -> int:
         "doc_stats": args.doc_stats,
         "adverbs_all_pos": args.adverbs_all_pos,
         "stdin_display_name": args.stdin_display_name,
+        "style": args.style,
     }
     if not args.paths:
         parser.error("no input paths (pass files, a directory, or - for stdin)")
@@ -194,6 +238,18 @@ def main(argv: list[str] | None = None) -> int:
         if not had_missing:
             print("nabokov: no supported files found", file=sys.stderr)
         return EXIT_ERROR
+
+    if args.build_profile:
+        import json
+
+        from .styleprofile import build_profile, render_card
+
+        out_path = Path(args.build_profile)
+        profile = build_profile(sources, name=out_path.stem.removesuffix(".style"))
+        out_path.write_text(json.dumps(profile, indent=2, ensure_ascii=False), encoding="utf-8")
+        sys.stdout.write(render_card(profile))
+        print(f"nabokov: profile written to {out_path}", file=sys.stderr)
+        return EXIT_ERROR if had_missing else EXIT_OK
 
     # Import the engine lazily so --help / --version / --list-rules stay instant.
     from .analyzer import Engine

@@ -44,6 +44,9 @@ class Config:
     doc_stats: bool = False
     adverbs_all_pos: bool = False
     stdin_display_name: str = "-"
+    # Author style profile: a bundled name ("paulgraham") or a .json path.
+    # Activates the NB7xx style-drift rules.
+    style: str | None = None
     # Per-1000-word style budgets (code -> rate), overriding the target's defaults.
     budgets: dict[str, float] = field(default_factory=dict)
 
@@ -71,6 +74,7 @@ _SCALAR_KEYS = {
     "statistics",
     "doc_stats",
     "adverbs_all_pos",
+    "style",
 }
 
 
