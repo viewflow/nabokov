@@ -184,6 +184,14 @@ Then ask your agent to de-slop a file, or to make copy land. Skill details live 
 [skills/nabokov-editor/SKILL.md](skills/nabokov-editor/SKILL.md) and
 [skills/nabokov-copywriter/SKILL.md](skills/nabokov-copywriter/SKILL.md).
 
+## The Telegram bot
+
+The linter also lives in Telegram: [@nabokov_editor_bot](https://t.me/nabokov_editor_bot).
+Behind it is a DeepSeek-powered editor that keeps your voice. It cuts the slop,
+restores the rhythm, and asks when a fact is missing. The reply carries the
+AI-likeness score before and after. Editor and copywriter modes; first three
+texts free. The code lives in [`bot/`](bot/).
+
 ## Configuration
 
 Put settings under `[tool.nabokov]` in `pyproject.toml`, or in a `.nabokov.toml`.
