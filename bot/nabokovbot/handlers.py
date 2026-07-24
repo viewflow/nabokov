@@ -60,13 +60,10 @@ def _settings_keyboard(mode: str, creative: int) -> InlineKeyboardMarkup:
                 ),
             ],
             [
+                # one toggle: shows the current value, tap to switch
                 InlineKeyboardButton(
-                    text=f"{mark(creative == 0)}Creativity: normal",
-                    callback_data="temp:0",
-                ),
-                InlineKeyboardButton(
-                    text=f"{mark(creative == 1)}Raised",
-                    callback_data="temp:1",
+                    text=f"🎨 Creativity: {'raised' if creative else 'normal'}",
+                    callback_data=f"temp:{0 if creative else 1}",
                 ),
             ],
             [InlineKeyboardButton(text="▶️ Go", callback_data="run")],
