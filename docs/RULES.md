@@ -137,6 +137,7 @@ report.md:12:1: NB201 very hard to read (grade 17)
 | `NB308` | condescending | blue | A word claiming the task takes no effort — the ease adverbs (`simply`, `easily`, `merely`) on an instruction, the presupposition adverbs (`obviously`, `clearly`) opening a sentence, `easy`/`trivial`/`simple` predicated of the task, and the shared-knowledge phrases (`of course`, `as you know`). Guarded hard: the descriptive senses never fire — "the function **simply** returns null", "a **simple** object", "**Simply put**, …". Outranks NB301/NB510 on the same word. Off for ESSAY and SOCIAL. | "**Simply** run the migration.", "Installation is **easy**." |
 | `NB309` | undefined-acronym | blue | An acronym no part of the document expands (advisory). A gloss counts in any of three forms and anywhere in the file, including a glossary below first use: `Fully Qualified Domain Name (FQDN)`, `MATTR (moving-average type-token ratio)`, `**PAS** — Problem, Agitate, Solution`. Exempt: the ~120-entry allowlist in `data/acronyms.json`, all-caps words that are ordinary English (`SOCIAL`, `GET` — config values and HTTP methods, checked against the concreteness dictionary), anything the file also writes in lower case, and single letters. Reported once per acronym. Extend with `known_acronyms` in config. Off for SOCIAL. | "Configure the **FQDN** in the settings." |
 | `NB310` | directional-language | blue | Orienting the reader by position (advisory): a document element followed by a bare `above`/`below` ("the diagram above", "check the table below"), or a bare reference idiom ("see above", "as shown below"). Position does not survive reflow, pagination, screen readers, or the next editor reordering the page. A real preposition with a real object is untouched — "above 50 percent", "above the intake manifold" — and so is a non-document noun ("the shelf above"). Left and right are deliberately absent: "the right-hand side" usually describes a UI, where position is the content. Off for SOCIAL. | "In the **diagram above**, clients run jobs." → "In the preceding diagram…" |
+| `NB311` | image-no-alt | blue | An image whose alt text is empty or missing (advisory), in Markdown `![](x.png)` or a raw `<img>` tag, in `.md` and `.html` alike. Images inside a code fence are showing the syntax, not using it, and never fire. Precision is capped by the standard: Google says to mark a *decorative* image with empty alt text, so an empty alt is either that or an oversight and the source cannot say which — hence info, and a message that names the case. | `![](chart.png)` |
 | `NB401` | complex-phrase | magenta | A wordy phrase with a simpler alternative (`replace`, capitalization matched to the span). | "**in order to**" → "to" |
 
 ```
@@ -340,6 +341,30 @@ budget and `warning` over it (see *Style budgets*); `NB202` drops to `info`
 when the whole document reads fine for its target; the advisory `NB5xx` checks are
 `info`. Exit `0` = clean, `1` = findings (`--exit-zero` to soften), `2` = usage
 error.
+
+## The markup index
+
+For `.md` and `.html`, blanking records **what** it erased as well as where:
+a list of typed `MarkupSpan(start, end, kind)` on the source. Without it the
+knowledge is lost — after blanking, every erased region is identical spaces, and
+a heading's text is indistinguishable from body prose.
+
+Kinds: `frontmatter`, `fence`, `inline-code`, `html`, `ref-def`, `citation`,
+`image`, `image-alt`, `link-text`, `link-url`, `url`, `heading-marker`,
+`heading`, `table-row`, `blockquote`, `list-marker`, `emphasis`, `rule`.
+
+Two properties make it usable:
+
+- **It indexes structure, not just erasure.** `link-text` marks words that
+  *survive* into the analysis text and get read as prose. A rule asking "was this
+  phrase link text?" cannot answer that from the blanked-text diff.
+- **Order still does the filtering.** Fenced code is blanked first, so a link or
+  an `<img>` inside a code block is never recorded as markup — showing the syntax
+  is not using it.
+
+Recording spans does not touch the text, so the length-preserving invariant and
+every offset are unchanged. `NB311` is the first rule to use it; the heading and
+fence kinds are recorded and not yet consumed.
 
 ## Data
 

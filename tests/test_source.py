@@ -156,3 +156,78 @@ def test_bare_url_blanked():
     blanked = blank_markdown("See https://example.com/really-long-slug for details.\n")
     assert "http" not in blanked
     assert "details" in blanked
+
+
+# --- markup span index --------------------------------------------------------
+# The blanking pass knows what it is erasing; the index keeps that knowledge.
+# Without it every blanked region is just spaces and a heading's text is
+# indistinguishable from body prose.
+
+from nabokov.source import MARKUP_KINDS  # noqa: E402
+
+
+def _kinds(source, kind):
+    return [source.span_text(s) for s in source.spans(kind)]
+
+
+def test_index_records_only_known_kinds():
+    source = SourceFile.from_text(
+        "# Title\n\nSee [docs](x.md) and `code`.\n\n![alt](i.png)\n",
+        "t.md",
+        is_markdown=True,
+    )
+    assert {s.kind for s in source.markup} <= MARKUP_KINDS
+
+
+def test_heading_span_is_the_text_not_the_marker():
+    source = SourceFile.from_text("## Getting started\n\nBody.\n", "t.md", is_markdown=True)
+    assert _kinds(source, "heading") == ["Getting started"]
+    assert _kinds(source, "heading-marker") == ["## "]
+
+
+def test_link_text_and_url_are_separate_kinds():
+    """The distinction exists for one function call in _blank and was unrecoverable."""
+    source = SourceFile.from_text("See [the docs](https://x.dev/a).\n", "t.md", is_markdown=True)
+    assert _kinds(source, "link-text") == ["the docs"]
+    assert _kinds(source, "link-url") == ["https://x.dev/a"]
+
+
+def test_image_alt_is_recorded_even_when_empty():
+    source = SourceFile.from_text("![](x.png)\n", "t.md", is_markdown=True)
+    assert _kinds(source, "image") == ["![](x.png)"]
+    assert _kinds(source, "image-alt") == [""]
+
+
+def test_raw_img_tag_indexed_in_markdown():
+    """READMEs reach for a raw tag as soon as Markdown's syntax runs out."""
+    source = SourceFile.from_text('<img src="a.png" alt="A chart">\n', "t.md", is_markdown=True)
+    assert _kinds(source, "image-alt") == ["A chart"]
+
+
+def test_img_tag_without_alt_records_an_empty_span():
+    source = SourceFile.from_text('<img src="a.png">\n', "t.html", is_html=True)
+    assert _kinds(source, "image-alt") == [""]
+
+
+def test_markup_inside_a_fence_is_not_indexed():
+    """Fences are blanked first, so their contents are never mistaken for markup."""
+    source = SourceFile.from_text("```\n![](x.png)\n[a](b.md)\n```\n", "t.md", is_markdown=True)
+    assert source.spans("image") == []
+    assert source.spans("link-text") == []
+
+
+def test_indexing_does_not_disturb_the_length_invariant():
+    """The whole design rests on this: recording spans must not touch the text."""
+    text = "# T\n\n![](x.png) and [a](b.md) and `c`.\n\n> quote\n\n- item\n"
+    source = SourceFile.from_text(text, "t.md", is_markdown=True)
+    assert len(source.analysis_text) == len(source.original_text)
+
+
+def test_spans_are_returned_in_source_order():
+    source = SourceFile.from_text("# A\n\n## B\n\n### C\n", "t.md", is_markdown=True)
+    assert _kinds(source, "heading") == ["A", "B", "C"]
+
+
+def test_plain_text_has_no_index():
+    source = SourceFile.from_text("# not markdown\n", "t.txt")
+    assert source.markup == []

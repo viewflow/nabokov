@@ -152,6 +152,7 @@ Run `nabokov --list-rules` to see them all. The full reference lives in
 | `NB308` | Claiming the task takes no effort: "**simply** run", "Installation is **easy**". |
 | `NB309` | Acronyms nothing expands: "configure the **FQDN**" (advisory). |
 | `NB310` | Orienting by position: "the diagram **above**", "see **below**" (advisory). |
+| `NB311` | Images with no alt text (advisory). |
 | `NB401` | Wordy phrases, with a simpler suggestion. |
 | `NB601` | Abstract, "empty prose" paragraphs, scored against the Brysbaert concreteness norms (advisory). |
 | `NB101` | The document grade, reported with `--max-grade`. |
