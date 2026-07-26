@@ -49,6 +49,7 @@ from .concreteness import ConcretenessRule
 from .condescension import CondescensionRule
 from .direction import DirectionalLanguageRule
 from .images import ImageAltRule
+from .links import VagueLinkTextRule
 from .passive import PassiveRule
 from .phrases import ComplexPhraseRule, QualifierRule
 from .sentences import PeriodicSentenceRule, SentenceRule
@@ -75,6 +76,7 @@ ALL_RULES: list[Rule] = [
     UndefinedAcronymRule(),
     DirectionalLanguageRule(),
     ImageAltRule(),
+    VagueLinkTextRule(),
     ConcretenessRule(),
     # NB5xx — signs of AI writing (off by default; enable with --select/--extend-select NB5)
     NegationContrastRule(),
@@ -134,6 +136,7 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB309": ("undefined-acronym", "Acronym used before anything expands it"),
     "NB310": ("directional-language", "Orienting the reader by position ('the diagram above')"),
     "NB311": ("image-no-alt", "Image with no alt text (accessibility)"),
+    "NB312": ("vague-link-text", "Link text that does not say where it goes"),
     "NB401": ("complex-phrase", "Complex / wordy phrase with a simpler alternative"),
     "NB501": ("ai-negation-contrast", "AI tell: 'it's not X, it's Y' negation-contrast"),
     "NB502": ("ai-puffery", "AI tell: puffery / buzzword vocabulary"),

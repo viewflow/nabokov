@@ -138,6 +138,7 @@ report.md:12:1: NB201 very hard to read (grade 17)
 | `NB309` | undefined-acronym | blue | An acronym no part of the document expands (advisory). A gloss counts in any of three forms and anywhere in the file, including a glossary below first use: `Fully Qualified Domain Name (FQDN)`, `MATTR (moving-average type-token ratio)`, `**PAS** — Problem, Agitate, Solution`. Exempt: the ~120-entry allowlist in `data/acronyms.json`, all-caps words that are ordinary English (`SOCIAL`, `GET` — config values and HTTP methods, checked against the concreteness dictionary), anything the file also writes in lower case, and single letters. Reported once per acronym. Extend with `known_acronyms` in config. Off for SOCIAL. | "Configure the **FQDN** in the settings." |
 | `NB310` | directional-language | blue | Orienting the reader by position (advisory): a document element followed by a bare `above`/`below` ("the diagram above", "check the table below"), or a bare reference idiom ("see above", "as shown below"). Position does not survive reflow, pagination, screen readers, or the next editor reordering the page. A real preposition with a real object is untouched — "above 50 percent", "above the intake manifold" — and so is a non-document noun ("the shelf above"). Left and right are deliberately absent: "the right-hand side" usually describes a UI, where position is the content. Off for SOCIAL. | "In the **diagram above**, clients run jobs." → "In the preceding diagram…" |
 | `NB311` | image-no-alt | blue | An image whose alt text is empty or missing (advisory), in Markdown `![](x.png)` or a raw `<img>` tag, in `.md` and `.html` alike. Images inside a code fence are showing the syntax, not using it, and never fire. Precision is capped by the standard: Google says to mark a *decorative* image with empty alt text, so an empty alt is either that or an oversight and the source cannot say which — hence info, and a message that names the case. | `![](chart.png)` |
+| `NB312` | vague-link-text | blue | A link whose visible text could point anywhere — `click here`, `here`, `this`, `read more`, `learn more`. Screen readers can list a page's links stripped of their sentences, and a list of identical "here" entries points nowhere (WCAG 2.4.4, Level A). Matching is on the *whole* link text, so "Read the installation guide" is fine, and it reads the `link-text` span rather than the prose — the same words in a sentence about a button are untouched. The message names the target so the writer need not go and look. | "For the options, [**click here**](/config)." |
 | `NB401` | complex-phrase | magenta | A wordy phrase with a simpler alternative (`replace`, capitalization matched to the span). | "**in order to**" → "to" |
 
 ```
@@ -363,8 +364,12 @@ Two properties make it usable:
   is not using it.
 
 Recording spans does not touch the text, so the length-preserving invariant and
-every offset are unchanged. `NB311` is the first rule to use it; the heading and
-fence kinds are recorded and not yet consumed.
+every offset are unchanged. `NB311` and `NB312` use it today. `NB312` is the clearest case for the index
+existing: without `link-text` spans the check can only phrase-match "click
+here" anywhere in the prose, which misses the bare `[here](url)` — the
+commonest form by far — and cannot tell a link from someone writing the words
+*click here* about a button. The `heading`, `fence` and `table-row` kinds are
+recorded and not yet consumed.
 
 ## Data
 
