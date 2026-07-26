@@ -93,7 +93,7 @@ from the reading-level target (`--target`):
 - `ACCESSIBLE`
 - `TECHNICAL`
 - `ESSAY` — voice-friendly: tolerates the longer sentences literary prose sustains
-  deliberately, and carries the loosest style budgets (see below)
+  deliberately, and carries the loosest style budgets (see *Style budgets*)
 - `SOCIAL` — short-form posts: plain-language thresholds. The genre's own devices
   (staccato fragments, repeated openers, flat-rhythm and periodic-sentence checks)
   are switched off, since they are the register there, not tells
@@ -136,6 +136,7 @@ report.md:12:1: NB201 very hard to read (grade 17)
 | `NB307` | uncomparable | blue | (`replace`) A degree word on an absolute adjective — the quality either holds or it doesn't. Approximators stay legal ("almost impossible"), and soft absolutes (essential, universal, ideal, ultimate, absolute) accept comparison — "the most essential feature" is ordinary prose; only intensifiers fire on them ("really essential"). | "**very unique**", "**most perfect**" |
 | `NB308` | condescending | blue | A word claiming the task takes no effort — the ease adverbs (`simply`, `easily`, `merely`) on an instruction, the presupposition adverbs (`obviously`, `clearly`) opening a sentence, `easy`/`trivial`/`simple` predicated of the task, and the shared-knowledge phrases (`of course`, `as you know`). Guarded hard: the descriptive senses never fire — "the function **simply** returns null", "a **simple** object", "**Simply put**, …". Outranks NB301/NB510 on the same word. Off for ESSAY and SOCIAL. | "**Simply** run the migration.", "Installation is **easy**." |
 | `NB309` | undefined-acronym | blue | An acronym no part of the document expands (advisory). A gloss counts in any of three forms and anywhere in the file, including a glossary below first use: `Fully Qualified Domain Name (FQDN)`, `MATTR (moving-average type-token ratio)`, `**PAS** — Problem, Agitate, Solution`. Exempt: the ~120-entry allowlist in `data/acronyms.json`, all-caps words that are ordinary English (`SOCIAL`, `GET` — config values and HTTP methods, checked against the concreteness dictionary), anything the file also writes in lower case, and single letters. Reported once per acronym. Extend with `known_acronyms` in config. Off for SOCIAL. | "Configure the **FQDN** in the settings." |
+| `NB310` | directional-language | blue | Orienting the reader by position (advisory): a document element followed by a bare `above`/`below` ("the diagram above", "check the table below"), or a bare reference idiom ("see above", "as shown below"). Position does not survive reflow, pagination, screen readers, or the next editor reordering the page. A real preposition with a real object is untouched — "above 50 percent", "above the intake manifold" — and so is a non-document noun ("the shelf above"). Left and right are deliberately absent: "the right-hand side" usually describes a UI, where position is the content. Off for SOCIAL. | "In the **diagram above**, clients run jobs." → "In the preceding diagram…" |
 | `NB401` | complex-phrase | magenta | A wordy phrase with a simpler alternative (`replace`, capitalization matched to the span). | "**in order to**" → "to" |
 
 ```
@@ -335,7 +336,7 @@ read as a mention rather than a use. Where that reads badly, an inline
 
 `NB101` (over `--max-grade`) is the only error. `NB2xx` and the confident `NB5xx`
 tells are warnings; `NB301`/`NB302`/`NB303`/`NB401` are `info` within their style
-budget and `warning` over it (see *Style budgets* above); `NB202` drops to `info`
+budget and `warning` over it (see *Style budgets*); `NB202` drops to `info`
 when the whole document reads fine for its target; the advisory `NB5xx` checks are
 `info`. Exit `0` = clean, `1` = findings (`--exit-zero` to soften), `2` = usage
 error.

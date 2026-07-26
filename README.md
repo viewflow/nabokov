@@ -151,6 +151,7 @@ Run `nabokov --list-rules` to see them all. The full reference lives in
 | `NB307` | Uncomparables: "very unique", "most perfect". |
 | `NB308` | Claiming the task takes no effort: "**simply** run", "Installation is **easy**". |
 | `NB309` | Acronyms nothing expands: "configure the **FQDN**" (advisory). |
+| `NB310` | Orienting by position: "the diagram **above**", "see **below**" (advisory). |
 | `NB401` | Wordy phrases, with a simpler suggestion. |
 | `NB601` | Abstract, "empty prose" paragraphs, scored against the Brysbaert concreteness norms (advisory). |
 | `NB101` | The document grade, reported with `--max-grade`. |
@@ -178,7 +179,7 @@ nabokov --target essay draft.md
 Each target also carries style budgets, counted per 1000 words. Adverbs, passive
 voice, qualifiers, and wordy phrases stay `info` within budget. Over budget, they
 become warnings. To make a target stick, set `target` in your
-config instead of passing the flag each run (see below).
+config instead of passing the flag each run (see [Configuration](#configuration)).
 
 ## Signs of AI writing (opt-in)
 
