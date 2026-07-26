@@ -149,6 +149,7 @@ Run `nabokov --list-rules` to see them all. The full reference lives in
 | `NB305` | Dummy subjects: "There are many resorts in Colorado" → "Colorado has…". |
 | `NB306` | Repeated words: "Paris in the the spring". |
 | `NB307` | Uncomparables: "very unique", "most perfect". |
+| `NB308` | Telling the reader the task is easy: "**simply** run", "Installation is **easy**". |
 | `NB401` | Wordy phrases, with a simpler suggestion. |
 | `NB601` | Abstract, "empty prose" paragraphs, scored against the Brysbaert concreteness norms (advisory). |
 | `NB101` | The document grade, reported with `--max-grade`. |

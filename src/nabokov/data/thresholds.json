@@ -33,26 +33,100 @@
   },
   "default_target": "NORMAL",
   "target_rules": {
-    "_note": "Per-target genre suppression: codes listed under 'off' are not tells in that register (staccato fragments and repeated openers ARE the social-post genre). Pick another target to get them back. NB509 is not off here — it is threshold-controlled per target under 'burstiness'.",
-    "SOCIAL": {"off": ["NB203", "NB507", "NB512", "NB529", "NB530"]}
+    "_note": "Per-target genre suppression: codes listed under 'off' are not tells in that register (staccato fragments and repeated openers ARE the social-post genre). Pick another target to get them back. NB509 is not off here — it is threshold-controlled per target under 'burstiness'. NB308 (condescension) is off wherever the writer is speaking in their own voice rather than instructing: an essayist's 'Obviously' is a rhetorical move they own, and the rule's premise — a reader stuck on a step — does not apply outside documentation.",
+    "SOCIAL": {
+      "off": [
+        "NB203",
+        "NB507",
+        "NB512",
+        "NB529",
+        "NB530",
+        "NB308"
+      ]
+    },
+    "ESSAY": {
+      "off": [
+        "NB308"
+      ]
+    }
   },
   "burstiness": {
     "_note": "NB509 per-target sentence-length CV thresholds. cv below 'min' is advisory (info); below 'flat' it is a confident tell (warning). Short-form registers tolerate flatter rhythm. Calibrated so the essayist corpus (lowest CV 0.44) never fires, and the warning only lands on genuinely robotic uniformity.",
-    "ACCESSIBLE": {"min": 0.32, "flat": 0.20},
-    "NORMAL": {"min": 0.40, "flat": 0.28},
-    "TECHNICAL": {"min": 0.40, "flat": 0.28},
-    "ESSAY": {"min": 0.40, "flat": 0.28},
-    "SOCIAL": {"min": 0.30, "flat": 0.20},
-    "EMAIL": {"min": 0.38, "flat": 0.25}
+    "ACCESSIBLE": {
+      "min": 0.32,
+      "flat": 0.2
+    },
+    "NORMAL": {
+      "min": 0.4,
+      "flat": 0.28
+    },
+    "TECHNICAL": {
+      "min": 0.4,
+      "flat": 0.28
+    },
+    "ESSAY": {
+      "min": 0.4,
+      "flat": 0.28
+    },
+    "SOCIAL": {
+      "min": 0.3,
+      "flat": 0.2
+    },
+    "EMAIL": {
+      "min": 0.38,
+      "flat": 0.25
+    }
   },
   "style_budgets": {
     "_note": "per-1000-word budgets for the style checks; within budget the findings are info, over it they are warnings. ESSAY is calibrated so the Paul Graham corpus stays advisory.",
-    "ACCESSIBLE": {"NB301": 10, "NB302": 5, "NB303": 8, "NB304": 2, "NB305": 2, "NB401": 2},
-    "NORMAL": {"NB301": 15, "NB302": 8, "NB303": 10, "NB304": 2, "NB305": 5, "NB401": 3},
-    "TECHNICAL": {"NB301": 10, "NB302": 15, "NB303": 8, "NB304": 3, "NB305": 4, "NB401": 3},
-    "ESSAY": {"NB301": 25, "NB302": 15, "NB303": 15, "NB304": 3, "NB305": 6, "NB401": 6},
-    "SOCIAL": {"NB301": 15, "NB302": 5, "NB303": 10, "NB304": 2, "NB305": 4, "NB401": 3},
-    "EMAIL": {"NB301": 10, "NB302": 5, "NB303": 8, "NB304": 2, "NB305": 3, "NB401": 2}
+    "ACCESSIBLE": {
+      "NB301": 10,
+      "NB302": 5,
+      "NB303": 8,
+      "NB304": 2,
+      "NB305": 2,
+      "NB401": 2
+    },
+    "NORMAL": {
+      "NB301": 15,
+      "NB302": 8,
+      "NB303": 10,
+      "NB304": 2,
+      "NB305": 5,
+      "NB401": 3
+    },
+    "TECHNICAL": {
+      "NB301": 10,
+      "NB302": 15,
+      "NB303": 8,
+      "NB304": 3,
+      "NB305": 4,
+      "NB401": 3
+    },
+    "ESSAY": {
+      "NB301": 25,
+      "NB302": 15,
+      "NB303": 15,
+      "NB304": 3,
+      "NB305": 6,
+      "NB401": 6
+    },
+    "SOCIAL": {
+      "NB301": 15,
+      "NB302": 5,
+      "NB303": 10,
+      "NB304": 2,
+      "NB305": 4,
+      "NB401": 3
+    },
+    "EMAIL": {
+      "NB301": 10,
+      "NB302": 5,
+      "NB303": 8,
+      "NB304": 2,
+      "NB305": 3,
+      "NB401": 2
+    }
   },
   "ari": {
     "coef_letters_per_word": 4.71,

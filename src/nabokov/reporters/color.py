@@ -30,6 +30,13 @@ _STYLE = {
     "NB301": "blue",
     "NB302": "green",
     "NB303": "blue",
+    # The rest of the word-category rules; docs/RULES.md documents them all blue,
+    # and without an entry here they rendered white.
+    "NB304": "blue",
+    "NB305": "blue",
+    "NB306": "blue",
+    "NB307": "blue",
+    "NB308": "blue",
     "NB401": "magenta",
     "NB501": "cyan",
     "NB502": "cyan",

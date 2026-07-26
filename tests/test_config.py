@@ -22,6 +22,7 @@ def test_select_prefix():
         "NB305",
         "NB306",
         "NB307",
+        "NB308",
     }
 
 

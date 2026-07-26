@@ -206,7 +206,7 @@ class Engine:
         issues = _apply_target_rules(issues, self.config)
         issues = _apply_noqa(issues, source)
         issues = _drop_quoted(issues, source)
-        issues = _dedup_adverbs(issues)
+        issues = _dedup_spans(issues)
         stats = _document_stats(doc, self.config.target, issues)
         issues = _apply_budgets(issues, stats.words, self.config)
         issues = _demote_hard_sentences(issues, stats)
@@ -348,23 +348,36 @@ def _apply_target_rules(issues: list[Issue], config: Config) -> list[Issue]:
     return [issue for issue in issues if issue.code not in off]
 
 
-# NB301 defers to a qualifier/intensifier/hedge-stack finding on the same words:
-# "probably" is a hedge, not a manner adverb, and one finding per span is enough.
-_DEDUP_WINNERS = {"NB303", "NB510", "NB520"}
+# One finding per span: when two rules land on the same words, the more specific
+# reading wins. NB301 defers to a qualifier/intensifier/hedge-stack — "probably"
+# is a hedge, not a manner adverb. NB510 in turn defers to NB308: "simply" and
+# "obviously" sit on the intensifier list, but in an instruction the condescension
+# is the point, and NB308 is the rule that knows that from the parse.
+# loser code -> the codes that outrank it on an overlapping span
+_SPAN_PRECEDENCE = {
+    "NB301": frozenset({"NB303", "NB308", "NB510", "NB520"}),
+    "NB510": frozenset({"NB308"}),
+}
 
 
-def _dedup_adverbs(issues: list[Issue]) -> list[Issue]:
-    """Drop NB301 issues whose span is already covered by NB303/NB510."""
-    winners = [
-        ((i.line, i.col), (i.end_line, i.end_col)) for i in issues if i.code in _DEDUP_WINNERS
-    ]
-    if not winners:
-        return issues
+def _dedup_spans(issues: list[Issue]) -> list[Issue]:
+    """Drop a finding whose span a higher-precedence rule already reported."""
+    spans_by_code: dict[str, list] = {}
+    for issue in issues:
+        spans_by_code.setdefault(issue.code, []).append(
+            ((issue.line, issue.col), (issue.end_line, issue.end_col))
+        )
     kept = []
     for issue in issues:
-        if issue.code == "NB301":
+        winners = _SPAN_PRECEDENCE.get(issue.code)
+        if winners:
             start, end = (issue.line, issue.col), (issue.end_line, issue.end_col)
-            if any(w_start < end and start < w_end for w_start, w_end in winners):
+            covered = any(
+                w_start < end and start < w_end
+                for code in winners
+                for w_start, w_end in spans_by_code.get(code, ())
+            )
+            if covered:
                 continue
         kept.append(issue)
     return kept
