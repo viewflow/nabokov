@@ -220,6 +220,11 @@ Stop and ask before anything that changes the piece's shape or substance:
 
 ## Guardrails
 
+- **A call to action names the action.** "Click here" and "Learn more" are weak
+  CTAs for the same reason they fail a screen reader: the words carry nothing.
+  `NB312` flags them and prints the target URL. Say where the click goes —
+  "See the pricing" beats "Learn more". If the piece has images, `NB311` asks
+  for alt text; you cannot see the image, so ask the user what it shows.
 - **Craft, not fabrication.** Restated because it's the whole game: enliven
   the user's facts, never manufacture facts to enliven. No invented metrics,
   testimonials, outcomes, or biography. A missing detail is a question, not

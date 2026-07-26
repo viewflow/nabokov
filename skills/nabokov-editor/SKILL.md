@@ -216,14 +216,23 @@ profile never supplies facts.
 
 ## Fix playbook — static
 
-Findings not listed here carry their fix in the message (NB304 names the verb,
-NB401 the simpler phrase).
+Findings not listed here carry their fix in the `suggestion` field (NB304 names the verb,
+NB401 the simpler phrase). The rows below are the ones where the fix needs a
+judgment the field cannot hold.
 
 | Code | Fix |
 |------|-----|
 | NB201/NB202 | Split into shorter sentences. Long sentences are half of burstiness, so never split them all. Vary the new openers (a time phrase, an object, a clause) so splits don't create "We did X. We did Y." chains. |
 | NB301/NB302/NB303/NB510 | Act only at warning level. Thin, don't remove all. Fold weak adverbs into stronger verbs. Rewrite the weakest passives; passive that keeps the known topic in front is fine. Keep hedges that do work. |
 | NB305 | Name the real subject. Keep "there is no X" when existence itself is the point. |
+| NB308 | "Simply", "obviously" — cut the word. But "Installation is easy" is not fixed by cutting "easy": say what the task takes, or drop the claim. Ask for the step count or the timing; don't guess it. |
+| NB309 | An acronym nothing expands. Two honest fixes: expand it on first use, or add it to `known_acronyms` in the project config when the audience knows it. **Never guess the expansion** — a wrong one is worse than none. Ask the user. |
+| NB310 | "The diagram above" has an exact fix; apply it. "See above" does not — replace it with a real cross-reference that names the section. If you can't tell which section, ask. |
+| NB311 | An image with no alt text. **Never invent alt text.** You cannot see the image. Ask the user what it shows, or leave it and report it. If the image is decorative, empty alt is already correct. |
+| NB312 | Vague link text. The message names the target URL — use it to write text that says where the link goes. Read the target if it's a local file. Don't relabel every link "the docs". |
+| NB314 | A step naming the reader. The draft is usually right, but check what the subject took with it: "you will *then* restart" loses "then", which may have been doing work. |
+| NB315 | Off unless `--terminology` is passed, so you will not normally see it. Where a term has two replacements ("denylist, blocklist"), pick the one that fits the sentence. |
+| NB801 | The README never says what the project is. **Never invent it.** Ask the user for one sentence: what it is, who it's for. |
 | NB501–NB508 | Rewrite the tell: drop the not-X-but-Y shape, cut puffery, trim em-dashes/emoji, break the triple. |
 | NB502/NB503 | Deleting the buzzword treats the symptom. Put the concrete case first — then the claim can arrive plain. |
 | NB509 | Vary sentence length — mix short and long. Working range: short is 3–8 words, long is 25–40. Ends of a range to visit, not a pattern to alternate. The finding points at the flattest run — start there. |
@@ -276,7 +285,11 @@ asking. Ask first — as one batch — before a change that:
   success is warnings fixed with the voice intact.
 - **Clean slop is still slop.** The linter can't tell "clean and concrete"
   from "clean and interchangeable" — that judgment is yours alone.
-- **Never invent** facts, examples, or numbers to satisfy a check.
+- **Never invent** facts, examples, or numbers to satisfy a check. Four rules ask
+  for something only the author knows: NB601 wants a concrete detail, NB309 an
+  acronym's expansion, NB311 what an image shows, NB801 what the project is. All
+  four are questions for the user, never gaps for you to fill. A plausible
+  invention is the worst outcome here — it is wrong and it looks right.
 - **Never fake imperfection.** Don't add spelling or grammar mistakes to look
   human — detectors don't reward broken English, and readers notice. Human
   texture means variety and voice, not errors.

@@ -149,3 +149,17 @@ def test_a_real_acronym_is_still_caught_beside_them(analyze):
     """The English-word guard must not swallow the genuine case."""
     result = analyze("Set the target to SOCIAL and check the FQDN.")
     assert [i.text for i in _found(result)] == ["FQDN"]
+
+
+def test_readme_is_on_the_allowlist(analyze):
+    """Found by running NB309 over this repo's own skill files.
+
+    "README" is as universally known as any entry on the list, and its absence
+    is the kind of miss that gets a rule disabled rather than reported.
+    """
+    assert not _found(analyze("Add the badge to the README first."))
+
+
+@pytest.mark.parametrize("acronym", ["FIXME", "WIP", "TBD", "STDIN", "STDERR", "EOF"])
+def test_everyday_developer_shorthand_allowed(analyze, acronym):
+    assert not _found(analyze(f"Leave a {acronym} marker in the file."))
