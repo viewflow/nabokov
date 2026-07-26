@@ -134,7 +134,10 @@ class QualifierRule(_PhraseDictRule):
             return True
         if nxt is None:
             return True
-        restrictive = nxt.pos_ in ("DET", "NUM", "NOUN", "PROPN")
+        # A preposition next means the restrictive reading too: "win just by being
+        # long" is "win *merely* by", the same device as "just one insight". Found
+        # by this rule misfiring on nabokov's own README.
+        restrictive = nxt.pos_ in ("DET", "NUM", "NOUN", "PROPN", "ADP")
         imperative = tok.is_sent_start and nxt.tag_ == "VB"
         temporal = prev is not None and prev.pos_ == "AUX" and nxt.tag_ in ("VBN", "VBD")
         return not (restrictive or imperative or temporal)

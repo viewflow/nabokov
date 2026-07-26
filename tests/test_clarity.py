@@ -326,3 +326,24 @@ def test_short_snippet_never_scored(analyze):
     # under the minimum rated-token sample, no judgment is made
     result = analyze("The belief in progress requires patience.")
     assert not _found(result, "NB601")
+
+
+# --- NB303: the restrictive "just" -------------------------------------------
+
+
+def test_restrictive_just_before_a_preposition_not_flagged(analyze):
+    """"win just by being long" is "merely by" — the same device as "just one".
+
+    Found by NB303 misfiring on nabokov's own README.
+    """
+    result = analyze("A long paragraph does not win just by being long.")
+    assert not _found(result, "NB303")
+
+
+def test_hedging_just_still_flagged(analyze):
+    """The fix must not blind the rule to the minimizer it exists for."""
+    assert _found(analyze("I just want to help you with it."), "NB303")
+
+
+def test_restrictive_just_before_a_number_still_skipped(analyze):
+    assert not _found(analyze("We shipped just one useful feature."), "NB303")

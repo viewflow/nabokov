@@ -71,6 +71,12 @@ def known_acronyms() -> frozenset[str]:
 
 
 @lru_cache(maxsize=1)
+def terminology() -> dict[str, list[str]]:
+    """NB315: exclusionary term (lowercased) -> agreed replacements."""
+    return {k.lower(): v for k, v in _load("terminology.json")["terms"].items()}
+
+
+@lru_cache(maxsize=1)
 def thresholds() -> dict[str, Any]:
     """ARI constants + hard/very-hard reading-level thresholds per target."""
     return _load("thresholds.json")

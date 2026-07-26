@@ -100,6 +100,13 @@ def build_parser() -> argparse.ArgumentParser:
     # `--hotspots draft.md` from a count and eats the path.  Set `hotspots = N`
     # in the config to see more than the default three.
     parser.add_argument(
+        "--terminology",
+        action="store_true",
+        default=None,
+        help="also check inclusive terminology (shorthand for --extend-select NB315); "
+        "off by default because it is a project policy, not a defect",
+    )
+    parser.add_argument(
         "--hotspots",
         action="store_true",
         default=None,
@@ -221,6 +228,8 @@ def main(argv: list[str] | None = None) -> int:
         select = (*select, "NB5")
     if args.ai or args.score:
         extend_select = (*extend_select, "NB5")
+    if args.terminology:
+        extend_select = (*extend_select, "NB315")
 
     overrides = {
         "fmt": args.fmt,

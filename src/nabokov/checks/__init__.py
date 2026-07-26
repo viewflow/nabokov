@@ -53,13 +53,16 @@ from .images import ImageAltRule
 from .links import VagueLinkTextRule
 from .passive import PassiveRule
 from .phrases import ComplexPhraseRule, QualifierRule
+from .readme import ReadmeDescriptionRule
 from .sentences import PeriodicSentenceRule, SentenceRule
+from .steps import NonImperativeStepRule
 from .style import (
     StyleAuthorshipRule,
     StyleConnectorRule,
     StylePunctuationRule,
     StyleRhythmRule,
 )
+from .terminology import TerminologyRule
 from .usage import RepeatedWordRule, UncomparableRule
 
 ALL_RULES: list[Rule] = [
@@ -79,7 +82,11 @@ ALL_RULES: list[Rule] = [
     ImageAltRule(),
     VagueLinkTextRule(),
     HeadingPunctuationRule(),
+    ReadmeDescriptionRule(),
+    NonImperativeStepRule(),
     ConcretenessRule(),
+    # NB315 — inclusive terminology (off by default; enable with --terminology)
+    TerminologyRule(),
     # NB5xx — signs of AI writing (off by default; enable with --select/--extend-select NB5)
     NegationContrastRule(),
     PufferyRule(),
@@ -140,6 +147,8 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB311": ("image-no-alt", "Image with no alt text (accessibility)"),
     "NB312": ("vague-link-text", "Link text that does not say where it goes"),
     "NB313": ("heading-punctuation", "Heading ends in sentence punctuation"),
+    "NB314": ("non-imperative-step", "List step names the reader instead of using the imperative"),
+    "NB315": ("exclusionary-term", "Exclusionary term with a settled replacement (opt-in)"),
     "NB401": ("complex-phrase", "Complex / wordy phrase with a simpler alternative"),
     "NB501": ("ai-negation-contrast", "AI tell: 'it's not X, it's Y' negation-contrast"),
     "NB502": ("ai-puffery", "AI tell: puffery / buzzword vocabulary"),
@@ -173,6 +182,7 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB530": ("ai-fragment-density", "AI tell: verbless label fragments crowd the piece"),
     "NB531": ("ai-bolted-connector", "AI tell: paragraph opens with a bolted-on associative connector"),
     "NB532": ("ai-asserted-unity", "AI tell: claims the parts are 'all the same thing' without showing it"),
+    "NB801": ("readme-no-description", "README never says what the project is"),
     "NB601": ("low-concreteness", "Abstract paragraph — no lived detail (advisory)"),
     "NB701": ("style-connector", "Style drift: connector the author profile never uses"),
     "NB702": ("style-rhythm", "Style drift: rhythm flatter than the author's baseline"),

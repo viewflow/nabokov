@@ -1,0 +1,25 @@
+{
+  "_note": "NB315: exclusionary technical terms that have a settled replacement. Off by default — this is a policy a project adopts, not a defect nabokov gets to assert on someone's behalf. Enable with --terminology.",
+  "_source": "IETF draft-knodel-terminology (Terminology, Power, and Exclusionary Language in Internet-Drafts and RFCs) for the master/slave and whitelist/blacklist pairs and their recommended replacements; the remainder are terms the same discussion settled across the Linux kernel, Python, Git and the major cloud vendors.",
+  "_scope": "An entry earns its place by having an AGREED replacement, not by someone having objected to the word. Terms whose alternative is still argued over are left out on purpose — 'crazy', 'insane' and 'blind spot' were drafted here and removed, because a linter proposing a substitution nobody has settled on spends the user's trust for nothing, and those are the entries that get a whole rule switched off. Add them locally if your project has decided.",
+  "_master": "'master' alone is deliberately absent. It is a master's degree, a master copy, mastering an API, and a Git branch name that millions of scripts hard-code. Only the slave-paired sense is listed, because only that sense is unambiguous.",
+  "terms": {
+    "whitelist": ["allowlist"],
+    "whitelisted": ["allowlisted"],
+    "whitelisting": ["allowlisting"],
+    "blacklist": ["denylist", "blocklist"],
+    "blacklisted": ["denylisted", "blocklisted"],
+    "blacklisting": ["denylisting", "blocklisting"],
+    "master/slave": ["primary/replica"],
+    "master-slave": ["primary-replica"],
+    "slave node": ["replica node"],
+    "slave server": ["replica server"],
+    "slave database": ["replica database"],
+    "sanity check": ["quick check", "confidence check"],
+    "dummy value": ["placeholder value"],
+    "grandfathered": ["legacy", "exempt"],
+    "man hours": ["person hours"],
+    "man-hours": ["person-hours"],
+    "manpower": ["staffing", "workforce"]
+  }
+}

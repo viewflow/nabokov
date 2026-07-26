@@ -78,7 +78,7 @@ attempted before it.
   ([repo](https://github.com/errata-ai/Microsoft))
 - **alex** — gendered work-titles, gendered proverbs, ableist language,
   condescending language ("obviously", "everyone knows"), intolerant phrasing
-  (master/slave), profanities. Its own README concedes "alex isn't very smart"
+  ("master/slave"), profanities. Its own README concedes "alex isn't very smart"
   ([repo](https://github.com/get-alex/alex))
 - **proselint** — **not syntax-aware**, so it fires inside code blocks; inactive
   since 2018; LWN's Grumpy Editor likened it to "one of the world's worst
@@ -174,7 +174,7 @@ Flags an acronym used before it is expanded.
 
 Flags a numbered/bulleted instruction that is not in the imperative.
 
-- **Fires:** "1. You should click Save." / "1. The user clicks Save."
+- **Fires:** `1. You should click Save.` / `1. The user clicks Save.`
 - **Must not fire:** "1. Click **Save**."; a bulleted list of *facts* rather than
   actions ("- Requires Python 3.12").
 - **Detection:** list item whose sentence root is a finite verb with an explicit

@@ -140,6 +140,7 @@ report.md:12:1: NB201 very hard to read (grade 17)
 | `NB311` | image-no-alt | blue | An image whose alt text is empty or missing (advisory), in Markdown `![](x.png)` or a raw `<img>` tag, in `.md` and `.html` alike. Images inside a code fence are showing the syntax, not using it, and never fire. Precision is capped by the standard: Google says to mark a *decorative* image with empty alt text, so an empty alt is either that or an oversight and the source cannot say which — hence info, and a message that names the case. | `![](chart.png)` |
 | `NB312` | vague-link-text | blue | A link whose visible text could point anywhere — `click here`, `here`, `this`, `read more`, `learn more`. Screen readers can list a page's links stripped of their sentences, and a list of identical "here" entries points nowhere (WCAG 2.4.4, Level A). Matching is on the *whole* link text, so "Read the installation guide" is fine, and it reads the `link-text` span rather than the prose — the same words in a sentence about a button are untouched. The message names the target so the writer need not go and look. | "For the options, [**click here**](/config)." |
 | `NB313` | heading-punctuation | blue | A heading ending in `.`, `,`, `;` or `:` — a heading is a label, not a sentence (advisory). Question marks and ellipses stay legal, and only *trailing* punctuation counts, so "Step 1: Install" is untouched. Setext headings (underlined with `===`) are not indexed as headings and so are invisible here. Prior art: `HeadingPunctuation` in both Vale styles. | "## Requirements**:**" |
+| `NB314` | non-imperative-step | blue | A list step whose subject is the reader — "1. **You should** click Save", "1. **The user** clicks Save" — where the imperative says it shorter and in the mood Google and Diátaxis both ask instructions to use (advisory). The subject must *open* the item: a reader pronoun deeper in the sentence belongs to a subordinate clause ("add detail you don't have") and is ordinary writing. Restricted to list items, since outside one the second person is Google's own recommended phrasing. Fact lists are untouched — they have no subject, or the software is the subject. Off for ESSAY and SOCIAL. | "1. **You should** click Save." → "Click Save" |
 | `NB401` | complex-phrase | magenta | A wordy phrase with a simpler alternative (`replace`, capitalization matched to the span). | "**in order to**" → "to" |
 
 ```
@@ -284,6 +285,44 @@ detector verdict**: a low score does not mean a trained classifier will read
 the text as human. Texts under 25 words or 3 sentences are not scored.
 (Adapted from lakshitha-dev/ai-humanizer-skill's estimator, MIT; rebuilt on
 nabokov's own signals.)
+
+## Inclusive terminology (NB3) — opt-in
+
+| Code | Name | Flags |
+|------|------|-------|
+| `NB315` | exclusionary-term | An exclusionary term with a settled replacement: `whitelist` → `allowlist`, `blacklist` → `denylist`/`blocklist`, `master/slave` → `primary/replica`, `sanity check`, `dummy value`, `grandfathered`, `man hours`. `REPLACE` tier — single tokens, same part of speech, no reordering — with inflected forms listed rather than stemmed, since a substitution that guesses at morphology is not one. |
+
+Off by default; enable with `--terminology` (or `--extend-select NB315`). Every
+other rule here points at something that makes prose harder to read. This one
+points at a choice a project makes about its own language, so it waits to be
+asked.
+
+An entry earns its place by having an **agreed** replacement, not by someone
+having objected to the word. `crazy`, `insane` and `blind spot` were drafted into
+`data/terminology.json` and removed: no settled alternative, and entries like them
+are what get a whole rule switched off. `master` alone is absent for the same
+reason — a master's degree, a master copy, mastering an API, a branch name
+hard-coded in a million scripts. Only the slave-paired sense is unambiguous.
+
+Source: [IETF draft-knodel-terminology](https://datatracker.ietf.org/doc/draft-knodel-terminology/06/).
+
+## README structure (NB8)
+
+| Code | Name | Flags |
+|------|------|-------|
+| `NB801` | readme-no-description | A README whose opening region — up to the third heading — holds no sentence of prose saying what the project is. Badge rows, code fences and images are already blanked, and heading text is masked out, because a title is a label: "# nabokov" does not describe nabokov. Only files actually named `README.*` are judged. |
+
+This is the **only** README-structure rule the evidence supports. Prana et al.
+hand-annotated 4,226 sections across 393 randomly sampled repositories: 97.0% of
+READMEs contain a section describing the *what* of the project, so demanding one
+fires on about three repositories in a hundred.
+
+The same table is why the obvious siblings do not exist. Contribution appears in
+27.8% of READMEs, Why in 25.7%, When in 21.4% — a "missing Contributing section"
+check would fire on 72% of real-world READMEs, which is not a defect rate but the
+norm. Popular checklist advice, contradicted by the only measurement of it. A test
+in `tests/test_readme.py` pins their absence. See
+[rule-research.md](rule-research.md).
 
 ## Semantic density (NB6) — empty prose
 

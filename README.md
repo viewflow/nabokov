@@ -155,8 +155,10 @@ Run `nabokov --list-rules` to see them all. The full reference lives in
 | `NB311` | Images with no alt text (advisory). |
 | `NB312` | Link text that says nothing: "[**click here**](/config)". |
 | `NB313` | Headings ending in sentence punctuation: "## Requirements**:**". |
+| `NB314` | List steps that name the reader: "1. **You should** click Save" → "Click Save". |
 | `NB401` | Wordy phrases, with a simpler suggestion. |
 | `NB601` | Abstract, "empty prose" paragraphs, scored against the Brysbaert concreteness norms (advisory). |
+| `NB801` | A README that never says what the project is. |
 | `NB101` | The document grade, reported with `--max-grade`. |
 
 ## Reading-level targets
@@ -203,6 +205,18 @@ nabokov --ai-only essay.md    # only the AI-writing checks
 ```
 
 `--ai` is shorthand for `--extend-select NB5`, and `--ai-only` for `--select NB5`.
+
+## Inclusive terminology (opt-in)
+
+`--terminology` adds `NB315`: exclusionary terms that have a settled replacement —
+`whitelist` → `allowlist`, `master/slave` → `primary/replica`, `sanity check`,
+`man hours`. Off by default, because this is a policy a project adopts rather than
+a defect nabokov gets to assert on your behalf.
+
+An entry earns its place by having an *agreed* replacement, not by someone having
+objected to the word. `crazy` and `blind spot` were drafted and cut for that reason.
+`master` on its own is absent too: it is a master's degree, a master copy, and a
+branch name hard-coded in a million scripts. Only the slave-paired sense is listed.
 
 ## Pair it with the agent skills
 
