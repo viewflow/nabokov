@@ -91,8 +91,8 @@ Run them in order. Each pass hands a better draft to the next.
    Ration the figures the same way — one not-X-but-Y hits, three are a tic
    (NB501 flags each). And know the trap in this very pass: the Provost
    cadence *executed too cleanly* is now itself a machine signature. Trained
-   detectors flag copy where every beat lands — anaphora runs ("The career
-   that… The income that… The lifestyle that…"), balanced two-clause
+   detectors flag copy where every beat lands. The tells: anaphora runs ("The
+   career that… The income that… The lifestyle that…"), balanced two-clause
    aphorisms, a fragment couplet at every hinge. Caps per piece: one fragment
    couplet, one aphorism, at most one anaphora run — and don't let the hook,
    the hinge, *and* the close all land on beats. Watch the commas too:
@@ -155,10 +155,14 @@ rate. Use it in this order:
    first: `uvx nabokov --build-profile author.style.json their-posts/` —
    that profile beats any bundled one.
 2. Otherwise propose the closest bundled profile by genre and **confirm with
-   the user** before using it: idea essays → `paulgraham`; plain-style
-   opinion → `orwell`; finance/investing → `housel`; business/tech deep
-   dives → `patio11`; long argumentative essays → `scottalexander`; short
-   personal notes → `sivers`; literary prose → `nabokov`.
+   the user** before using it:
+   - idea essays → `paulgraham`
+   - plain-style opinion → `orwell`
+   - finance/investing → `housel`
+   - business/tech deep dives → `patio11`
+   - long argumentative essays → `scottalexander`
+   - short personal notes → `sivers`
+   - literary prose → `nabokov`
 3. Read the card (`--profile-card <name>`) before rewriting, and rewrite
    *into* that distribution — its connectors, punctuation rates, and rhythm
    are the register to match. The minimal-paraphrase rule still wins:

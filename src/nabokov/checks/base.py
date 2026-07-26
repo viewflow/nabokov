@@ -9,13 +9,30 @@ issues down to the enabled set.
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from ..issue import Severity
 
+if TYPE_CHECKING:
+    from spacy.language import Language
+    from spacy.tokens import Doc, Span
+
+    from ..config import Config
+    from ..issue import Issue
+    from ..source import SourceFile
+
 _PARA_BREAK = re.compile(r"\n[ \t]*\n\s*")
+
+
+def span_sents(span: Span) -> Iterator[Span]:
+    """Sentences inside a Span.
+
+    Span.sents is real at runtime but missing from spaCy's type stubs, so the
+    ignore lives here once instead of at every paragraph-walking call site.
+    """
+    return span.sents  # pyright: ignore[reportAttributeAccessIssue]
 
 
 def paragraph_ranges(text: str) -> list[tuple[int, int]]:
@@ -29,15 +46,6 @@ def paragraph_ranges(text: str) -> list[tuple[int, int]]:
     if start < len(text):
         ranges.append((start, len(text)))
     return ranges
-
-
-if TYPE_CHECKING:
-    from spacy.language import Language
-    from spacy.tokens import Doc
-
-    from ..config import Config
-    from ..issue import Issue
-    from ..source import SourceFile
 
 
 @dataclass

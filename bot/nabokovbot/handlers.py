@@ -1,8 +1,8 @@
 """Telegram handlers: text intake, settings keyboard, run, payments, ask_user."""
 
 import asyncio
-import html
 import logging
+from contextlib import suppress
 
 from aiogram import Bot, F, Router
 from aiogram.exceptions import TelegramBadRequest
@@ -29,17 +29,13 @@ SKIP = "⏭ Skip"
 
 START_TEXT = (
     "Hi! I'm an editor built on the nabokov prose linter.\n\n"
-    "Send me a text (up to {max_words} words). I cut the AI slop and "
+    f"Send me a text (up to {config.MAX_WORDS} words). I cut the AI slop and "
     "restore the rhythm, or punch it up in copywriter mode. English texts "
     "get the AI-likeness score before and after. The linter is "
     "English-only, so other languages get the edit without the score.\n\n"
-    "First {free} texts are free, then {pack} texts for {stars} ⭐ (/buy). "
+    f"First {config.FREE_TEXTS} texts are free, then {config.PACK_TEXTS} texts "
+    f"for {config.PACK_STARS} ⭐ (/buy). "
     "Check your balance with /balance."
-).format(
-    max_words=config.MAX_WORDS,
-    free=config.FREE_TEXTS,
-    pack=config.PACK_TEXTS,
-    stars=config.PACK_STARS,
 )
 
 
@@ -172,12 +168,10 @@ async def _refresh_settings(query: CallbackQuery) -> None:
     (Telegram rejects an edit with identical markup)."""
     pending = db.get_pending(query.from_user.id)
     if pending:
-        try:
+        with suppress(TelegramBadRequest):
             await query.message.edit_reply_markup(
                 reply_markup=_settings_keyboard(pending["mode"], pending["creative"])
             )
-        except TelegramBadRequest:
-            pass
 
 
 @router.callback_query(F.data.startswith("mode:"))
@@ -206,10 +200,8 @@ async def cb_answer(query: CallbackQuery) -> None:
     answer = SKIP if idx >= len(options) else options[idx]
     if not future.done():
         future.set_result(answer)
-    try:
+    with suppress(TelegramBadRequest):
         await query.message.edit_text(f"{query.message.text}\n→ {answer}")
-    except TelegramBadRequest:
-        pass
     await query.answer()
 
 
@@ -267,10 +259,8 @@ async def cb_run(query: CallbackQuery, bot: Bot) -> None:
         return
 
     await query.answer()
-    try:
+    with suppress(TelegramBadRequest):
         await query.message.edit_reply_markup(reply_markup=None)
-    except TelegramBadRequest:
-        pass
 
     text, mode, creative = pending["text"], pending["mode"], bool(pending["creative"])
     _running.add(tg_id)
@@ -291,10 +281,8 @@ async def cb_run(query: CallbackQuery, bot: Bot) -> None:
             after and after["score"],
         )
 
-        try:
+        with suppress(TelegramBadRequest):
             await status.edit_text("✅ Done:")
-        except TelegramBadRequest:
-            pass
         await _send_result(status, result)
         summary = []
         if before and after and before["score"] is not None and after["score"] is not None:

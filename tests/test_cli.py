@@ -172,7 +172,9 @@ def test_score_ranks_slop_above_human_prose(tmp_path, capsys):
     def score_of(out):
         import re
 
-        return int(re.search(r"AI-likeness (\d+)/100", out).group(1))
+        match = re.search(r"AI-likeness (\d+)/100", out)
+        assert match, f"no AI-likeness line in:\n{out}"
+        return int(match.group(1))
 
     assert score_of(slop_out) > score_of(human_out)
 

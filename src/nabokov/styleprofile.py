@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import statistics
 from collections import Counter
+from collections.abc import Sequence
 from functools import lru_cache
 from itertools import pairwise
 from pathlib import Path
@@ -95,7 +96,7 @@ def load_profile(spec: str) -> dict:
     )
 
 
-def _cv(values: list[int | float]) -> float:
+def _cv(values: Sequence[float]) -> float:
     if len(values) < 2:
         return 0.0
     mean = sum(values) / len(values)
@@ -105,7 +106,7 @@ def _cv(values: list[int | float]) -> float:
 def build_profile(sources: list[SourceFile], name: str) -> dict:
     """Extract the signature from a corpus of one author's texts."""
     from .analyzer import load_nlp
-    from .checks.base import paragraph_ranges
+    from .checks.base import paragraph_ranges, span_sents
 
     nlp = load_nlp()
 
@@ -190,7 +191,9 @@ def build_profile(sources: list[SourceFile], name: str) -> dict:
             if span is None:
                 continue
             sents = [
-                n for s in span.sents if (n := sum(1 for t in s if not (t.is_punct or t.is_space)))
+                n
+                for s in span_sents(span)
+                if (n := sum(1 for t in s if not (t.is_punct or t.is_space)))
             ]
             if not sents:
                 continue

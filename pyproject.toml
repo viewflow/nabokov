@@ -80,7 +80,7 @@ packages = ["src/nabokov"]
 
 [tool.ruff]
 line-length = 100
-src = ["src", "tests"]
+src = ["src", "tests", "bot"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "UP", "B", "S", "SIM", "RUF"]
@@ -88,10 +88,16 @@ ignore = ["E501", "S101", "RUF012"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S"]
-# en/em dashes in the AI-tell regexes are intentional, not typos
-"src/nabokov/checks/ai_writing.py" = ["RUF001"]
-# curly quotes/apostrophes in quoted-material fixtures are the point of the tests
+# This linter's whole subject is punctuation and script tells, so the "ambiguous
+# character" rules fire on the very things the code exists to detect: en/em dashes
+# in the AI-tell regexes, Cyrillic look-alikes in the NB519 homoglyph tables and
+# their fixtures, the × in the color reporter's multiplier.
+# SIM905: the motion-verb list stays a readable word blob, not a 30-item literal.
+"src/nabokov/checks/ai_writing.py" = ["RUF001", "RUF002", "RUF003", "SIM905"]
+"src/nabokov/reporters/color.py" = ["RUF001"]
+"src/nabokov/score.py" = ["RUF002"]
 "tests/test_budgets.py" = ["RUF001", "RUF003"]
+"tests/test_clarity.py" = ["RUF001", "RUF003"]
 # Django's wsgi/manage boilerplate sets DJANGO_SETTINGS_MODULE before importing
 "web/**" = ["E402"]
 "tests/test_web.py" = ["E402"]

@@ -47,12 +47,16 @@ def test_delta_lower_for_own_prose():
     sources = [SourceFile.from_text(PLAIN * 8, f"d{i}.txt") for i in range(2)]
     own = build_profile(sources, name="own")
     doc = _doc(PLAIN)
-    assert delta_distance(own, doc) < delta_distance(load_profile("paulgraham"), doc)
+    mine = delta_distance(own, doc)
+    graham = delta_distance(load_profile("paulgraham"), doc)
+    assert mine is not None and graham is not None
+    assert mine < graham
 
 
 def test_pos_divergence_bounded():
     p = load_profile("paulgraham")
     j = pos_divergence(p, _doc(PLAIN))
+    assert j is not None
     assert 0.0 <= j <= 1.0
 
 

@@ -4,6 +4,7 @@ import json
 import os
 import sys
 from pathlib import Path
+from typing import cast
 
 import pytest
 
@@ -13,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "web"))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "nabokov_web.settings")
 django.setup()
 
+from django.http import HttpResponse
 from django.test import Client
 
 SLOP = (
@@ -20,9 +22,20 @@ SLOP = (
     "by the team in order to fully polish the launch."
 )
 
+# The test Client inherits RequestFactory, whose get/post are typed as returning
+# a WSGIRequest; at runtime the Client returns the response. Cast once, here.
+
+
+def _get(path: str) -> HttpResponse:
+    return cast(HttpResponse, Client().get(path))
+
+
+def _post_body(body: str) -> HttpResponse:
+    return cast(HttpResponse, Client().post("/api/lint", body, content_type="application/json"))
+
 
 def _post(payload: dict) -> tuple[int, dict]:
-    response = Client().post("/api/lint", json.dumps(payload), content_type="application/json")
+    response = _post_body(json.dumps(payload))
     return response.status_code, json.loads(response.content)
 
 
@@ -61,16 +74,16 @@ def test_rejects_oversized_text():
 
 
 def test_rejects_non_json():
-    response = Client().post("/api/lint", "not json", content_type="application/json")
+    response = _post_body("not json")
     assert response.status_code == 400
 
 
 def test_get_not_allowed():
-    assert Client().get("/api/lint").status_code == 405
+    assert _get("/api/lint").status_code == 405
 
 
 def test_health():
-    response = Client().get("/api/health")
+    response = _get("/api/health")
     assert response.status_code == 200
     assert json.loads(response.content) == {"status": "ok"}
 
@@ -103,7 +116,7 @@ def test_rejects_style_path_traversal():
 
 
 def test_profiles_endpoint():
-    response = Client().get("/api/profiles")
+    response = _get("/api/profiles")
     assert response.status_code == 200
     names = json.loads(response.content)["profiles"]
     assert "paulgraham" in names and "mikhail" in names

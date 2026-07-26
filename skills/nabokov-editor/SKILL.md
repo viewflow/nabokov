@@ -143,10 +143,10 @@ bundled author profiles; `--style <name-or-json>` adds NB7xx drift findings
 (foreign connectors, flat rhythm, punctuation off the author's rate) to any
 lint run. Prefer a personal profile built from the author's other texts
 (`--build-profile out.json their-posts/`); otherwise suggest the closest
-bundled one by genre and confirm before using it. Read the voice card first
-and pull rewritten lines toward its connectors, rhythm, and punctuation — the
-author's surviving words still beat any profile-guided rewrite, and a profile
-never supplies facts.
+bundled one by genre and confirm before using it. Read the voice card first.
+Pull rewritten lines toward its connectors, rhythm, and punctuation. The
+author's surviving words still beat any rewrite a profile guides, and a
+profile never supplies facts.
 
 ## Workflow
 
@@ -157,10 +157,10 @@ never supplies facts.
 3. **Fix, keeping the meaning** — playbooks below. Keep the author's intent,
    facts, links, code, structure. Never invent content. **Minimal
    paraphrase:** a line that nothing flagged — linter, detector, judgment
-   pass — keeps its original wording, word for word. Every gratuitous
-   paraphrase swaps author idiolect for model idiolect, the exact
-   distribution trained classifiers detect; the author's surviving words are
-   the one human signal a rewrite cannot synthesize. **Patch or rebuild?**
+   pass — keeps its original wording, word for word. Every needless
+   paraphrase trades author idiolect for model idiolect. That swap is the
+   exact pattern trained detectors hunt for. The author's surviving words are
+   the one human signal a rewrite cannot fake. **Patch or rebuild?**
    When vocabulary hits span 3+ categories *and* the rhythm is flat (NB509),
    the structure itself is generated. Propose a rebuild from the piece's
    one-sentence core (needs approval).

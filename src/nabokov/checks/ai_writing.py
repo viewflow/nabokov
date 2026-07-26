@@ -24,6 +24,7 @@ import bisect
 import re
 from collections import Counter
 from collections.abc import Iterable
+from itertools import pairwise
 from typing import Any
 
 from ..data_loader import ai_writing, concreteness
@@ -33,9 +34,8 @@ from ..readability import (
     burstiness_thresholds,
     content_tokens,
     mattr,
-    sentence_lengths,
 )
-from .base import CheckContext, Rule
+from .base import CheckContext, Rule, span_sents
 from .phrases import _resolve_overlaps
 
 _NEGATION_PATTERNS = [
@@ -775,7 +775,9 @@ class UniformParagraphRule(Rule):
             if span is None:
                 continue
             n = sum(
-                1 for s in span.sents if sum(1 for t in s if not (t.is_punct or t.is_space)) >= 3
+                1
+                for s in span_sents(span)
+                if sum(1 for t in s if not (t.is_punct or t.is_space)) >= 3
             )
             if n:
                 counts.append(n)
@@ -1653,7 +1655,7 @@ class HookQuestionRule(Rule):
     def check(self, ctx: CheckContext) -> Iterable[Issue]:
         text = ctx.doc.text
         sents = list(ctx.doc.sents)
-        for sent, nxt in zip(sents, sents[1:]):
+        for sent, nxt in pairwise(sents):
             stripped = sent.text.strip()
             if not stripped.endswith("?"):
                 continue
@@ -1774,7 +1776,7 @@ class PunchlineEndingRule(Rule):
                 continue
             sents = [
                 (s, n)
-                for s in span.sents
+                for s in span_sents(span)
                 if (n := sum(1 for t in s if not (t.is_punct or t.is_space)))
             ]
             if not sents:
