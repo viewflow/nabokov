@@ -149,7 +149,8 @@ Run `nabokov --list-rules` to see them all. The full reference lives in
 | `NB305` | Dummy subjects: "There are many resorts in Colorado" → "Colorado has…". |
 | `NB306` | Repeated words: "Paris in the the spring". |
 | `NB307` | Uncomparables: "very unique", "most perfect". |
-| `NB308` | Telling the reader the task is easy: "**simply** run", "Installation is **easy**". |
+| `NB308` | Claiming the task takes no effort: "**simply** run", "Installation is **easy**". |
+| `NB309` | Acronyms nothing expands: "configure the **FQDN**" (advisory). |
 | `NB401` | Wordy phrases, with a simpler suggestion. |
 | `NB601` | Abstract, "empty prose" paragraphs, scored against the Brysbaert concreteness norms (advisory). |
 | `NB101` | The document grade, reported with `--max-grade`. |
@@ -243,6 +244,7 @@ nabokov walks up from the current directory to find one. CLI flags win.
 [tool.nabokov]
 target = "NORMAL"       # ACCESSIBLE | NORMAL | TECHNICAL | ESSAY | SOCIAL | EMAIL
 ignore = ["NB301"]      # e.g. stop flagging adverbs
+known_acronyms = ["CRD", "RBAC"]   # NB309: your own everyday abbreviations
 
 [tool.nabokov.budgets]  # optional: per-1000-word style budgets (see docs/RULES.md)
 NB301 = 20              # adverbs stay advisory (info) up to this density

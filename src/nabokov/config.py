@@ -51,6 +51,9 @@ class Config:
     style: str | None = None
     # Per-1000-word style budgets (code -> rate), overriding the target's defaults.
     budgets: dict[str, float] = field(default_factory=dict)
+    # Extra acronyms NB309 should treat as known — a project's own domain terms,
+    # which no shipped list can enumerate.
+    known_acronyms: tuple[str, ...] = ()
 
     def enabled_codes(self) -> set[str]:
         """Resolve the active rule codes from select/ignore, flake8-style."""
@@ -66,7 +69,7 @@ class Config:
         return _match(code, self.ignore) or _match(code, self.extend_ignore)
 
 
-_LIST_KEYS = {"select", "ignore", "extend_select", "extend_ignore"}
+_LIST_KEYS = {"select", "ignore", "extend_select", "extend_ignore", "known_acronyms"}
 _SCALAR_KEYS = {
     "target",
     "max_grade",

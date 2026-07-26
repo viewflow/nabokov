@@ -96,8 +96,10 @@ ignore = ["E501", "S101", "RUF012"]
 "src/nabokov/checks/ai_writing.py" = ["RUF001", "RUF002", "RUF003", "SIM905"]
 "src/nabokov/reporters/color.py" = ["RUF001"]
 # The en dash belongs to the punctuation a deletion would strand; the × is the
-# hotspot report's multiplier, same as the color reporter's.
+# hotspot report's multiplier, same as the color reporter's. NB309 must match the
+# en-dash gloss form and the curly-apostrophe possessive it strips.
 "src/nabokov/checks/base.py" = ["RUF001"]
+"src/nabokov/checks/acronyms.py" = ["RUF001"]
 "src/nabokov/hotspots.py" = ["RUF001"]
 "src/nabokov/score.py" = ["RUF002"]
 "tests/test_budgets.py" = ["RUF001", "RUF003"]
@@ -129,5 +131,11 @@ target = "TECHNICAL"       # ACCESSIBLE | NORMAL | TECHNICAL
 # staccato reference/marketing register — the fragment-density and
 # punchline-ending cadence checks are genre there, not tells.
 extend_ignore = ["NB529", "NB530"]
+# NB309: this project's own domain vocabulary. The copywriting formula names are
+# standard in that field and expanded in references/formulas.md, but the skill
+# files that *use* them are separate documents, and nabokov lints one file at a
+# time. Extending the list is the intended response to that — not disabling the
+# rule (see data/acronyms.json).
+known_acronyms = ["PAS", "AIDA", "ODC", "BAB", "PMHS", "QUEST", "CTA", "SMM", "CV", "MATTR"]
 # select = ["NB"]
 # ignore = []

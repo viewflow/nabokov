@@ -65,6 +65,12 @@ def complex_phrases() -> dict[str, list[str]]:
 
 
 @lru_cache(maxsize=1)
+def known_acronyms() -> frozenset[str]:
+    """Acronyms NB309 assumes a developer audience already knows (uppercase)."""
+    return frozenset(a.upper() for a in _load("acronyms.json")["known"])
+
+
+@lru_cache(maxsize=1)
 def thresholds() -> dict[str, Any]:
     """ARI constants + hard/very-hard reading-level thresholds per target."""
     return _load("thresholds.json")

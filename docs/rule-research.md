@@ -6,7 +6,7 @@ a primary source I actually read. Where I could not read a source, I say so.
 **Method caveat.** The `/deep-research` workflow failed twice on API 529s before
 any agent ran, so this was gathered single-threaded. It has real citations but
 **not** the 3-vote adversarial verification the workflow would have applied.
-Treat the FP-risk judgments as mine, not as verified findings.
+Treat the false-positive risk judgments as mine, not as verified findings.
 
 ---
 
@@ -100,13 +100,13 @@ Ranked by (value × precision) / cost.
 
 ### A1. NB308 `condescending-simplifier` — **build this first**
 
-Flags words that tell the reader a task is easy: `simply`, `easily`, `obvious(ly)`,
+Flags words that tell the reader a task takes no effort: `simply`, `easily`, `obvious(ly)`,
 `of course`, `trivial(ly)`, `merely`, `straightforward`, `everyone knows`.
 
 - **Fires:** "Simply run the migration and you're done."
 - **Must not fire:** "The API returns a simple object." (adjective, not a claim
   about the reader's effort); "We chose the simplest of the three designs."
-- **Detection:** closed word list + POS. Only flag `simply`/`easily` as ADV
+- **Detection:** closed word list + part-of-speech tag. Only flag `simply`/`easily` as `ADV`
   modifying an imperative or a verb of user action; only flag `simple`/
   `straightforward` when they modify the *task*, not a thing.
 - **Fix tier:** REPLACE-delete when adverbial and position-safe (reuse
@@ -114,10 +114,10 @@ Flags words that tell the reader a task is easy: `simply`, `easily`, `obvious(ly
   leaves a broken clause.
 - **Severity:** warning. **Targets:** off for SOCIAL/ESSAY (voice), on for TECHNICAL.
 - **Prior art:** alex (condescending), Microsoft `Avoid`.
-- **FP risk:** collision with NB303 on `just` — needs adding to `_DEDUP_WINNERS`
+- **False-positive risk:** collision with NB303 on `just` — needs a span-precedence entry
   or it double-reports. This is the single highest-value rule here: it is
   well-supported by both major style guides, and the failure it names (telling a
-  stuck reader the thing is easy) is a real harm, not a stylistic preference.
+  stuck reader the thing is no trouble) is a real harm, not a stylistic preference.
 
 ### A2. NB309 `vague-link-text`
 
@@ -134,7 +134,7 @@ link text.
 - **Severity:** warning for `click here`, info for bare `here`.
 - **Prior art:** Google, WCAG 2.4.4.
 - **Source:** [Google — Write accessible documentation](https://developers.google.com/style/accessibility)
-- **FP risk:** bare `here` is far too common in ordinary prose — ship only the
+- **False-positive risk:** bare `here` is far too common in ordinary prose — ship only the
   closed multi-word phrases until the markup index lands.
 
 ### A3. NB310 `directional-language`
@@ -144,7 +144,7 @@ Flags `above`, `below`, `right-hand side`, `as shown above` used to orient the r
 - **Fires:** "In the diagram above, clients run jobs on clusters."
 - **Must not fire:** "values above 50%"; "the panel on the left" in a doc genuinely
   describing spatial UI layout.
-- **Detection:** spaCy — `above`/`below` as ADV/ADP attached to a noun like
+- **Detection:** spaCy — `above`/`below` as `ADV`/`ADP` attached to a noun like
   diagram/table/section/example. Guard against numeric comparison.
 - **Fix tier:** **REWRITE, not REPLACE** — and this is the instructive case.
   Google's fix is "the diagram above" → "the **preceding** diagram", which *moves
@@ -167,7 +167,7 @@ Flags an acronym used before it is expanded.
 - **Severity:** info. **Targets:** on for TECHNICAL/ACCESSIBLE, off for SOCIAL.
 - **Prior art:** both Vale Google and Microsoft ship `Acronyms`; Microsoft's is a
   *conditional* check, i.e. exactly this definition-before-use pattern.
-- **FP risk:** the allowlist *is* the rule. Ship it generous and let config extend
+- **False-positive risk:** the allowlist *is* the rule. Ship it generous and let config extend
   it. Fits nabokov's closed-list philosophy perfectly.
 
 ### A5. NB313 `non-imperative-step`
@@ -188,7 +188,7 @@ Flags a numbered/bulleted instruction that is not in the imperative.
   digression, explanation, teaching");
   [Google — person](https://developers.google.com/style/person) (imperative with
   implied "you": "Click **Submit**").
-- **FP risk:** distinguishing an action list from a fact list is the hard part.
+- **False-positive risk:** distinguishing an action list from a fact list is the hard part.
   Prototype before committing.
 
 ### A6. NB314 `exclusionary-terminology` — **opt-in family, like NB5**
@@ -223,7 +223,7 @@ Flags `will` + verb in reference documentation.
 - **Why low priority:** `will` is *correct* for genuinely future events ("the
   deprecation will land in v3"). Static analysis cannot separate "describes
   current behavior in the future tense" from "describes a future event". Medium-
-  to-high FP rate on a rule whose payoff is small.
+  to-high false-positive rate on a rule whose payoff is small.
 
 ### A8. NB312 `first-person-plural` — **recommend NOT building**
 

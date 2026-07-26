@@ -7,6 +7,7 @@ False so they stay opt-in). ``DEFAULT_CODES`` is derived from ``default_on``.
 
 from __future__ import annotations
 
+from .acronyms import UndefinedAcronymRule
 from .adverbs import AdverbRule
 from .ai_writing import (
     AdjectiveTriadRule,
@@ -69,6 +70,7 @@ ALL_RULES: list[Rule] = [
     RepeatedWordRule(),
     UncomparableRule(),
     CondescensionRule(),
+    UndefinedAcronymRule(),
     ConcretenessRule(),
     # NB5xx — signs of AI writing (off by default; enable with --select/--extend-select NB5)
     NegationContrastRule(),
@@ -125,6 +127,7 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB306": ("repeated-word", "The same word twice in a row ('the the')"),
     "NB307": ("uncomparable", "Degree word on an absolute adjective ('very unique')"),
     "NB308": ("condescending", "Telling the reader the task is easy ('simply', 'obviously')"),
+    "NB309": ("undefined-acronym", "Acronym used before anything expands it"),
     "NB401": ("complex-phrase", "Complex / wordy phrase with a simpler alternative"),
     "NB501": ("ai-negation-contrast", "AI tell: 'it's not X, it's Y' negation-contrast"),
     "NB502": ("ai-puffery", "AI tell: puffery / buzzword vocabulary"),

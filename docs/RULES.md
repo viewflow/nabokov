@@ -134,7 +134,8 @@ report.md:12:1: NB201 very hard to read (grade 17)
 | `NB305` | dummy-subject | blue | An expletive subject burying the real one (spaCy `expl`). Locative "there" is untouched. | "**There are** many resorts in Colorado." → "Colorado has…" |
 | `NB306` | repeated-word | blue | (`replace`) The same word twice in a row — the lexical illusion that hides on a line wrap. Grammatical doubles ("had had", "that that"), proper-noun pairs ("Pago Pago"), and emphasis runs of 3+ ("no no no") are skipped. | "Paris in **the the** spring" |
 | `NB307` | uncomparable | blue | (`replace`) A degree word on an absolute adjective — the quality either holds or it doesn't. Approximators stay legal ("almost impossible"), and soft absolutes (essential, universal, ideal, ultimate, absolute) accept comparison — "the most essential feature" is ordinary prose; only intensifiers fire on them ("really essential"). | "**very unique**", "**most perfect**" |
-| `NB308` | condescending | blue | A word telling the reader the task is easy — the ease adverbs (`simply`, `easily`, `merely`) on an instruction, the presupposition adverbs (`obviously`, `clearly`) opening a sentence, `easy`/`trivial`/`simple` predicated of the task, and the shared-knowledge phrases (`of course`, `as you know`). Guarded hard: the descriptive senses never fire — "the function **simply** returns null", "a **simple** object", "**Simply put**, …". Outranks NB301/NB510 on the same word. Off for ESSAY and SOCIAL. | "**Simply** run the migration.", "Installation is **easy**." |
+| `NB308` | condescending | blue | A word claiming the task takes no effort — the ease adverbs (`simply`, `easily`, `merely`) on an instruction, the presupposition adverbs (`obviously`, `clearly`) opening a sentence, `easy`/`trivial`/`simple` predicated of the task, and the shared-knowledge phrases (`of course`, `as you know`). Guarded hard: the descriptive senses never fire — "the function **simply** returns null", "a **simple** object", "**Simply put**, …". Outranks NB301/NB510 on the same word. Off for ESSAY and SOCIAL. | "**Simply** run the migration.", "Installation is **easy**." |
+| `NB309` | undefined-acronym | blue | An acronym no part of the document expands (advisory). A gloss counts in any of three forms and anywhere in the file, including a glossary below first use: `Fully Qualified Domain Name (FQDN)`, `MATTR (moving-average type-token ratio)`, `**PAS** — Problem, Agitate, Solution`. Exempt: the ~120-entry allowlist in `data/acronyms.json`, all-caps words that are ordinary English (`SOCIAL`, `GET` — config values and HTTP methods, checked against the concreteness dictionary), anything the file also writes in lower case, and single letters. Reported once per acronym. Extend with `known_acronyms` in config. Off for SOCIAL. | "Configure the **FQDN** in the settings." |
 | `NB401` | complex-phrase | magenta | A wordy phrase with a simpler alternative (`replace`, capitalization matched to the span). | "**in order to**" → "to" |
 
 ```
@@ -231,7 +232,7 @@ calibration behind each threshold live in the rule docstrings in
 | `NB516` | ai-bold-listicle | info | A stack (≥ 3) of `**Label:**` bold-header bullets, or a bold label ended with a period. One finding per stack. | "- **First:** … - **Second:** …" |
 | `NB517` | ai-vocab-cluster | info | Generic-praise words that are normal alone but cluster: 2+ *distinct* list words in one paragraph. | "our **significant** and **innovative** platform" |
 | `NB518` | ai-adjective-triad | info | Balanced adjective triples at 1.5+/1000 words (min 2) — the tricolon is legitimate rhetoric, so only the density is the tell. A copula-colon launch ("…is: X, Y, and Z") fires alone. | "**innovative, transformative, and groundbreaking**" |
-| `NB519` | ai-artifact | warning | Fingerprints: chat citation tokens, AI-tool URL parameters, unfilled placeholders, knowledge-cutoff disclaimers, invisible characters (zero-width space/joiners, mid-text BOM), and mixed-script homoglyph swaps ("dеtection" with a Cyrillic е). Ordinary multilingual text is exempt: NBSP, whole-script words, and Cyrillic suffixes on Latin brands don't fire. No density gating. | "**citeturn0search0**", "**[Your Name]**" |
+| `NB519` | ai-artifact | warning | Fingerprints: chat citation tokens, AI-tool URL parameters, unfilled placeholders, knowledge-cutoff disclaimers, invisible characters (zero-width space/joiners, mid-text BOM), and mixed-script homoglyph swaps ("dеtection" with a Cyrillic е). Ordinary multilingual text is exempt: the non-breaking space (NBSP), whole-script words, and Cyrillic suffixes on Latin brands don't fire. No density gating. | "**citeturn0search0**", "**[Your Name]**" |
 | `NB520` | ai-hedge-stack | warning | A modal stacked with a hedge adverb — the two hedges cancel out; keep one (`replace`, collapsing to the modal). | "**could potentially** create" |
 | `NB521` | ai-paragraph-opener | warning | The same coordinating conjunction opening 3+ paragraphs (and ≥ 10% of them). | "**And** … ¶ **And** … ¶ **And** …" |
 | `NB522` | ai-engagement-bait | info | A closing second-person superlative question — reply bait. Flags *bait*, not AI: humans growth-hack too. | "**What's the most unexpected place you've found genuine customer insight?**" |
@@ -284,7 +285,7 @@ nabokov's own signals.)
 
 | Code | Name | Sev | Flags | Example |
 |------|------|-----|-------|---------|
-| `NB601` | low-concreteness | info | A paragraph whose nouns and verbs average far toward the abstract end of the Brysbaert et al. (2014) concreteness norms (~37k lemmas, rated 1 = abstract … 5 = concrete by thousands of raters). Grammatical prose that names nothing you can see or touch — corporate mush and LLM filler score here. Calibrated on the essayist corpus: all 810 paragraphs of PG, Orwell, Housel, Sivers, SSC, V. Nabokov, and patio11 score above the threshold. Needs ≥ 12 rated words to judge. | "The strategic integration of innovative paradigms requires the optimization of dynamic synergies…" (2.1/5) |
+| `NB601` | low-concreteness | info | A paragraph whose nouns and verbs average far toward the abstract end of the Brysbaert et al. (2014) concreteness norms (~37k lemmas, rated 1 = abstract … 5 = concrete by thousands of raters). Grammatical prose that names nothing you can see or touch — corporate mush and LLM filler score here. Calibrated on the essayist corpus: all 810 paragraphs of Paul Graham, Orwell, Housel, Sivers, Slate Star Codex, V. Nabokov, and patio11 score above the threshold. Needs ≥ 12 rated words to judge. | "The strategic integration of innovative paradigms requires the optimization of dynamic synergies…" (2.1/5) |
 
 The fix is never mechanical: add a concrete example, number, or image, or ask the
 author for one. The [nabokov-editor skill](../skills/nabokov-editor/SKILL.md) treats
@@ -322,6 +323,14 @@ author's *words*, never invent facts or opinions on their behalf.
 
 ---
 
+Writing about a style rule
+
+A document that *discusses* these words trips the rules that flag them — this
+reference did, on its own NB308 row. nabokov already drops a finding when the
+quote holds nothing but the flagged term, so `"simply"` in straight quotes is
+read as a mention rather than a use. Where that reads badly, an inline
+`<!-- nabokov: ignore NB308 -->` is the escape hatch.
+
 ## Severities & exit codes
 
 `NB101` (over `--max-grade`) is the only error. `NB2xx` and the confident `NB5xx`
@@ -336,6 +345,11 @@ error.
 The word lists, complex-phrase dictionary, and readability thresholds live in
 `../src/nabokov/data/`. The AI-writing signal lists live in
 `../src/nabokov/data/ai_writing.json`.
+
+NB309's acronym allowlist is `acronyms.json`; `known_acronyms` in config extends
+it per project, which is the intended answer to a noisy run on domain vocabulary.
+The English-word guard reuses `concreteness.json` — the Brysbaert norms NB601
+already needs — rather than shipping a second dictionary.
 
 The fix data lives beside the terms it annotates: `puffery_alternatives` in
 `ai_writing.json`, the `cut`/`replace`/`rewrite` groups in `qualifiers.json`, the
