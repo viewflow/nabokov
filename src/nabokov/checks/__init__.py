@@ -43,6 +43,7 @@ from .ai_writing import (
     UniformParagraphRule,
     VocabClusterRule,
 )
+from .authority import NamelessAuthorityRule
 from .base import CheckContext, Rule
 from .clarity import DummySubjectRule, NominalizationRule
 from .concreteness import ConcretenessRule
@@ -84,6 +85,7 @@ ALL_RULES: list[Rule] = [
     HeadingPunctuationRule(),
     ReadmeDescriptionRule(),
     NonImperativeStepRule(),
+    NamelessAuthorityRule(),
     ConcretenessRule(),
     # NB315 — inclusive terminology (off by default; enable with --terminology)
     TerminologyRule(),
@@ -149,6 +151,7 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB313": ("heading-punctuation", "Heading ends in sentence punctuation"),
     "NB314": ("non-imperative-step", "List step names the reader instead of using the imperative"),
     "NB315": ("exclusionary-term", "Exclusionary term with a settled replacement (opt-in)"),
+    "NB316": ("nameless-authority", "Claim attributed to nobody ('studies show', 'experts agree')"),
     "NB401": ("complex-phrase", "Complex / wordy phrase with a simpler alternative"),
     "NB501": ("ai-negation-contrast", "AI tell: 'it's not X, it's Y' negation-contrast"),
     "NB502": ("ai-puffery", "AI tell: puffery / buzzword vocabulary"),

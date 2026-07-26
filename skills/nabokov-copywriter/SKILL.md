@@ -229,6 +229,15 @@ Stop and ask before anything that changes the piece's shape or substance:
   the user's facts, never manufacture facts to enliven. No invented metrics,
   testimonials, outcomes, or biography. A missing detail is a question, not
   a guess.
+- **Borrowed authority is not proof.** `NB316` flags a claim with nobody behind
+  it: "studies show", "experts agree", "it is widely believed that". In copy that
+  is worse than vague. It is the shape of a false claim, and the fix is never to
+  invent the study. Two real fixes: name the source the user gave you, or drop
+  the frame and let the claim stand on the user's own evidence.
+  "Studies show teams ship faster" becomes
+  "Three of our customers cut release time in half".
+  The second is stronger copy anyway — a named specific outsells an appeal to
+  nobody. With no evidence behind it, the claim doesn't ship.
 - **Minimal paraphrase.** Never rewrite a line that nothing flagged — not the
   linter, not a detector, not your own judgment pass. Every gratuitous
   paraphrase swaps the author's idiolect for model idiolect, which is exactly

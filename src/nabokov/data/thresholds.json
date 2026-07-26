@@ -33,7 +33,7 @@
   },
   "default_target": "NORMAL",
   "target_rules": {
-    "_note": "Per-target genre suppression: codes listed under 'off' are not tells in that register (staccato fragments and repeated openers ARE the social-post genre). Pick another target to get them back. NB509 is not off here — it is threshold-controlled per target under 'burstiness'. NB308 (condescension) is off wherever the writer is speaking in their own voice rather than instructing: an essayist's 'Obviously' is a rhetorical move they own, and the rule's premise — a reader stuck on a step — does not apply outside documentation.",
+    "_note": "Per-target genre suppression: codes listed under 'off' are not tells in that register (staccato fragments and repeated openers ARE the social-post genre). Pick another target to get them back. NB509 is not off here — it is threshold-controlled per target under 'burstiness'. NB308 (condescension) is off wherever the writer is speaking in their own voice rather than instructing: an essayist's 'Obviously' is a rhetorical move they own, and the rule's premise — a reader stuck on a step — does not apply outside documentation. NB316 (nameless authority) is off for ESSAY for the same reason: naming a view in order to argue against it is the essay's basic move. Orwell opens 'Politics and the English Language' with 'it is generally assumed that we cannot by conscious action do anything about it' — the whole essay exists to refute that assumption. Documentation has no equivalent use, so the rule stays on everywhere else.",
     "SOCIAL": {
       "off": [
         "NB203",
@@ -50,7 +50,8 @@
     "ESSAY": {
       "off": [
         "NB308",
-        "NB314"
+        "NB314",
+        "NB316"
       ]
     }
   },

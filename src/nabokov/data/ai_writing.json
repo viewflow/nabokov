@@ -1,173 +1,550 @@
 {
   "_source": "https://en.wikipedia.org/wiki/Wikipedia:Signs_of_AI_writing (retrieved 2026-07-21)",
   "_note": "Signal lists for the NB5xx 'signs of AI writing' rules. Curated to favor precision; these are tells, not proof.",
+  "_moved_to_authority": "'studies show', 'research suggests', 'experts argue', 'observers note' and 'industry leaders agree' left the editorializing list for data/authority.json (NB316). They are not primarily machine tells — people have written them forever — so they belong to a default-on rule rather than one that needs --ai. Do not add them back here: NB316 generalizes them by lemma, so a duplicate would fire twice on the same span. 'a leading expert in' and 'industry reports' stayed, because those read as puffery describing a named person or thing rather than an appeal to an unnamed source.",
   "_updated": "2026-07-23 — tells migrate with each model generation; a frozen list scans for last season's patterns. Refresh against the detection literature (and re-run the corpus calibration) every release or two.",
   "_credits": "Several entries adapted from conorbronsdon/avoid-ai-writing (MIT), which in turn credits blader/humanizer, Aboudjem/humanizer-skill, brandonwise/humanizer, and tropes.fyi. Vocab additions 2026-07-23 cross-checked against lynote-ai/humanize-text (MIT) postprocess word list.",
   "_exceptions": "The *_exceptions lists suppress matches inside fixed expressions ('quite a few', 'test harness'). When adding a new term to a list, check its idioms and literal senses — add them to the matching *_exceptions list and cover both directions in tests/test_ai_writing.py (see test_puffery_still_flags_verb_sense).",
   "puffery": [
-    "delve", "tapestry", "testament", "realm", "landscape", "boast", "showcase",
-    "underscore", "garner", "foster", "cultivate", "leverage", "robust", "vibrant",
-    "meticulous", "pivotal", "profound", "intricate", "nestled", "renowned",
-    "groundbreaking", "seamless", "bustling", "myriad", "plethora", "elevate",
-    "harness", "resonate", "exemplify", "embody", "epitomize", "multifaceted",
-    "embark", "metropolis", "labyrinth", "labyrinthine", "gossamer", "enigma",
-    "metamorphosis", "indelible", "reverberate", "revolutionize", "virtuoso",
-    "symphony", "keen", "pesky", "unleash", "unlock", "navigate",
-    "synergy", "paradigm", "unprecedented", "unparalleled", "transformative",
-    "innovative", "empower", "streamline", "optimize", "supercharge", "turbocharge",
-    "interplay", "breathtaking", "stunning", "must-visit",
-    "watershed", "learnings", "deep dive", "thought leader", "thought leadership",
+    "delve",
+    "tapestry",
+    "testament",
+    "realm",
+    "landscape",
+    "boast",
+    "showcase",
+    "underscore",
+    "garner",
+    "foster",
+    "cultivate",
+    "leverage",
+    "robust",
+    "vibrant",
+    "meticulous",
+    "pivotal",
+    "profound",
+    "intricate",
+    "nestled",
+    "renowned",
+    "groundbreaking",
+    "seamless",
+    "bustling",
+    "myriad",
+    "plethora",
+    "elevate",
+    "harness",
+    "resonate",
+    "exemplify",
+    "embody",
+    "epitomize",
+    "multifaceted",
+    "embark",
+    "metropolis",
+    "labyrinth",
+    "labyrinthine",
+    "gossamer",
+    "enigma",
+    "metamorphosis",
+    "indelible",
+    "reverberate",
+    "revolutionize",
+    "virtuoso",
+    "symphony",
+    "keen",
+    "pesky",
+    "unleash",
+    "unlock",
+    "navigate",
+    "synergy",
+    "paradigm",
+    "unprecedented",
+    "unparalleled",
+    "transformative",
+    "innovative",
+    "empower",
+    "streamline",
+    "optimize",
+    "supercharge",
+    "turbocharge",
+    "interplay",
+    "breathtaking",
+    "stunning",
+    "must-visit",
+    "watershed",
+    "learnings",
+    "deep dive",
+    "thought leader",
+    "thought leadership",
     "encompass"
   ],
   "puffery_exceptions": [
-    "test harness", "leverage ratio", "keen eye",
-    "landscape orientation", "landscape mode",
-    "navigate to", "navigates to", "navigated to", "navigating to"
+    "test harness",
+    "leverage ratio",
+    "keen eye",
+    "landscape orientation",
+    "landscape mode",
+    "navigate to",
+    "navigates to",
+    "navigated to",
+    "navigating to"
   ],
   "_puffery_alternatives_note": "NB502: the plain word the buzzword is standing in for. A closed set — every key is a term already on the 'puffery' list, so this adds suggestions without widening what gets flagged. Deliberately NOT a general thesaurus: a broad synonym source returns the wrong sense and the wrong register, and one bad suggestion costs more trust than a missing one buys. Matching is by lemma, so the rule only offers these as a drop-in substitution when the writer used the base form verbatim ('delve' → 'examine'); an inflected hit ('delved') becomes a rewrite, because the alternatives are listed uninflected.",
   "puffery_alternatives": {
-    "delve": ["examine", "dig into"],
-    "tapestry": ["mix", "range"],
-    "testament": ["proof", "evidence"],
-    "realm": ["area", "field"],
-    "landscape": ["field", "market"],
-    "boast": ["have", "offer"],
-    "showcase": ["show"],
-    "underscore": ["show", "stress"],
-    "garner": ["get", "win"],
-    "foster": ["encourage", "help"],
-    "cultivate": ["build", "grow"],
-    "leverage": ["use"],
-    "robust": ["strong", "reliable"],
-    "vibrant": ["lively"],
-    "meticulous": ["careful"],
-    "pivotal": ["central", "decisive"],
-    "profound": ["deep", "far-reaching"],
-    "intricate": ["complex", "detailed"],
-    "nestled": ["set", "sits"],
-    "renowned": ["well-known", "famous"],
-    "groundbreaking": ["new", "first"],
-    "seamless": ["smooth"],
-    "bustling": ["busy"],
-    "myriad": ["many"],
-    "plethora": ["many", "too many"],
-    "elevate": ["raise", "improve"],
-    "harness": ["use"],
-    "resonate": ["connect", "ring true"],
-    "exemplify": ["show", "illustrate"],
-    "embody": ["show", "be"],
-    "epitomize": ["typify", "sum up"],
-    "multifaceted": ["many-sided", "complex"],
-    "embark": ["start", "begin"],
-    "metropolis": ["city"],
-    "labyrinth": ["maze"],
-    "labyrinthine": ["tangled", "maze-like"],
-    "gossamer": ["thin", "delicate"],
-    "enigma": ["puzzle", "mystery"],
-    "metamorphosis": ["change"],
-    "indelible": ["lasting", "permanent"],
-    "reverberate": ["echo", "spread"],
-    "revolutionize": ["change", "overhaul"],
-    "virtuoso": ["expert", "master"],
-    "symphony": ["mix", "blend"],
-    "keen": ["sharp", "eager"],
-    "pesky": ["annoying"],
-    "unleash": ["release", "start"],
-    "unlock": ["open", "allow"],
-    "navigate": ["handle", "work through"],
-    "synergy": ["cooperation", "fit"],
-    "paradigm": ["model", "pattern"],
-    "unprecedented": ["first", "new"],
-    "unparalleled": ["best"],
-    "transformative": ["major"],
-    "innovative": ["new"],
-    "empower": ["let", "help"],
-    "streamline": ["simplify", "speed up"],
-    "optimize": ["improve", "tune"],
-    "supercharge": ["speed up"],
-    "turbocharge": ["speed up"],
-    "interplay": ["interaction"],
-    "breathtaking": ["striking"],
-    "stunning": ["striking"],
-    "must-visit": ["worth visiting"],
-    "watershed": ["turning point"],
-    "learnings": ["lessons", "findings"],
-    "deep dive": ["close look", "study"],
-    "thought leader": ["expert"],
-    "thought leadership": ["expertise"],
-    "encompass": ["cover", "include"]
+    "delve": [
+      "examine",
+      "dig into"
+    ],
+    "tapestry": [
+      "mix",
+      "range"
+    ],
+    "testament": [
+      "proof",
+      "evidence"
+    ],
+    "realm": [
+      "area",
+      "field"
+    ],
+    "landscape": [
+      "field",
+      "market"
+    ],
+    "boast": [
+      "have",
+      "offer"
+    ],
+    "showcase": [
+      "show"
+    ],
+    "underscore": [
+      "show",
+      "stress"
+    ],
+    "garner": [
+      "get",
+      "win"
+    ],
+    "foster": [
+      "encourage",
+      "help"
+    ],
+    "cultivate": [
+      "build",
+      "grow"
+    ],
+    "leverage": [
+      "use"
+    ],
+    "robust": [
+      "strong",
+      "reliable"
+    ],
+    "vibrant": [
+      "lively"
+    ],
+    "meticulous": [
+      "careful"
+    ],
+    "pivotal": [
+      "central",
+      "decisive"
+    ],
+    "profound": [
+      "deep",
+      "far-reaching"
+    ],
+    "intricate": [
+      "complex",
+      "detailed"
+    ],
+    "nestled": [
+      "set",
+      "sits"
+    ],
+    "renowned": [
+      "well-known",
+      "famous"
+    ],
+    "groundbreaking": [
+      "new",
+      "first"
+    ],
+    "seamless": [
+      "smooth"
+    ],
+    "bustling": [
+      "busy"
+    ],
+    "myriad": [
+      "many"
+    ],
+    "plethora": [
+      "many",
+      "too many"
+    ],
+    "elevate": [
+      "raise",
+      "improve"
+    ],
+    "harness": [
+      "use"
+    ],
+    "resonate": [
+      "connect",
+      "ring true"
+    ],
+    "exemplify": [
+      "show",
+      "illustrate"
+    ],
+    "embody": [
+      "show",
+      "be"
+    ],
+    "epitomize": [
+      "typify",
+      "sum up"
+    ],
+    "multifaceted": [
+      "many-sided",
+      "complex"
+    ],
+    "embark": [
+      "start",
+      "begin"
+    ],
+    "metropolis": [
+      "city"
+    ],
+    "labyrinth": [
+      "maze"
+    ],
+    "labyrinthine": [
+      "tangled",
+      "maze-like"
+    ],
+    "gossamer": [
+      "thin",
+      "delicate"
+    ],
+    "enigma": [
+      "puzzle",
+      "mystery"
+    ],
+    "metamorphosis": [
+      "change"
+    ],
+    "indelible": [
+      "lasting",
+      "permanent"
+    ],
+    "reverberate": [
+      "echo",
+      "spread"
+    ],
+    "revolutionize": [
+      "change",
+      "overhaul"
+    ],
+    "virtuoso": [
+      "expert",
+      "master"
+    ],
+    "symphony": [
+      "mix",
+      "blend"
+    ],
+    "keen": [
+      "sharp",
+      "eager"
+    ],
+    "pesky": [
+      "annoying"
+    ],
+    "unleash": [
+      "release",
+      "start"
+    ],
+    "unlock": [
+      "open",
+      "allow"
+    ],
+    "navigate": [
+      "handle",
+      "work through"
+    ],
+    "synergy": [
+      "cooperation",
+      "fit"
+    ],
+    "paradigm": [
+      "model",
+      "pattern"
+    ],
+    "unprecedented": [
+      "first",
+      "new"
+    ],
+    "unparalleled": [
+      "best"
+    ],
+    "transformative": [
+      "major"
+    ],
+    "innovative": [
+      "new"
+    ],
+    "empower": [
+      "let",
+      "help"
+    ],
+    "streamline": [
+      "simplify",
+      "speed up"
+    ],
+    "optimize": [
+      "improve",
+      "tune"
+    ],
+    "supercharge": [
+      "speed up"
+    ],
+    "turbocharge": [
+      "speed up"
+    ],
+    "interplay": [
+      "interaction"
+    ],
+    "breathtaking": [
+      "striking"
+    ],
+    "stunning": [
+      "striking"
+    ],
+    "must-visit": [
+      "worth visiting"
+    ],
+    "watershed": [
+      "turning point"
+    ],
+    "learnings": [
+      "lessons",
+      "findings"
+    ],
+    "deep dive": [
+      "close look",
+      "study"
+    ],
+    "thought leader": [
+      "expert"
+    ],
+    "thought leadership": [
+      "expertise"
+    ],
+    "encompass": [
+      "cover",
+      "include"
+    ]
   },
   "intensifiers": [
-    "very", "really", "quite", "extremely", "incredibly", "truly", "highly",
-    "actually", "basically", "literally", "simply", "absolutely", "utterly",
-    "totally", "completely", "genuinely", "remarkably", "undeniably", "undoubtedly",
-    "clearly", "obviously"
+    "very",
+    "really",
+    "quite",
+    "extremely",
+    "incredibly",
+    "truly",
+    "highly",
+    "actually",
+    "basically",
+    "literally",
+    "simply",
+    "absolutely",
+    "utterly",
+    "totally",
+    "completely",
+    "genuinely",
+    "remarkably",
+    "undeniably",
+    "undoubtedly",
+    "clearly",
+    "obviously"
   ],
   "intensifier_exceptions": [
-    "quite a few", "quite a bit", "quite a while", "quite some time",
+    "quite a few",
+    "quite a bit",
+    "quite a while",
+    "quite some time",
     "simply put"
   ],
   "editorializing": [
-    "plays a crucial role", "plays a vital role", "plays a significant role",
-    "plays a key role", "plays a pivotal role", "plays an important role",
-    "rich cultural heritage", "rich history", "rich tapestry", "cultural tapestry",
-    "lasting impact", "enduring legacy", "deeply rooted", "stands as a testament",
-    "a testament to", "in the heart of", "natural beauty", "diverse array",
-    "indelible mark", "continues to thrive", "it's important to note",
-    "it is important to note", "it's worth noting", "it is worth noting",
-    "important to remember", "when it comes to", "in today's world",
-    "in the world of", "the world of", "in today's digital era",
-    "in today's society", "navigating the complexities", "navigating the landscape",
-    "delving into", "embark on a journey", "it's essential to", "it is essential to",
-    "game changer", "game-changer", "hustle and bustle", "align with", "aligns with",
-    "various factors", "a range of considerations", "a wide range of", "serves as",
-    "stands as", "leaves an indelible mark", "marks a pivotal moment",
-    "a leading expert in", "active social media presence", "experts argue",
-    "observers note", "industry reports", "evolving landscape", "key turning point",
+    "plays a crucial role",
+    "plays a vital role",
+    "plays a significant role",
+    "plays a key role",
+    "plays a pivotal role",
+    "plays an important role",
+    "rich cultural heritage",
+    "rich history",
+    "rich tapestry",
+    "cultural tapestry",
+    "lasting impact",
+    "enduring legacy",
+    "deeply rooted",
+    "stands as a testament",
+    "a testament to",
+    "in the heart of",
+    "natural beauty",
+    "diverse array",
+    "indelible mark",
+    "continues to thrive",
+    "it's important to note",
+    "it is important to note",
+    "it's worth noting",
+    "it is worth noting",
+    "important to remember",
+    "when it comes to",
+    "in today's world",
+    "in the world of",
+    "the world of",
+    "in today's digital era",
+    "in today's society",
+    "navigating the complexities",
+    "navigating the landscape",
+    "delving into",
+    "embark on a journey",
+    "it's essential to",
+    "it is essential to",
+    "game changer",
+    "game-changer",
+    "hustle and bustle",
+    "align with",
+    "aligns with",
+    "various factors",
+    "a range of considerations",
+    "a wide range of",
+    "serves as",
+    "stands as",
+    "leaves an indelible mark",
+    "marks a pivotal moment",
+    "a leading expert in",
+    "active social media presence",
+    "industry reports",
+    "evolving landscape",
+    "key turning point",
     "represents a shift",
-    "at the intersection of", "sits at the intersection",
-    "this paper proceeds", "this article proceeds", "this essay proceeds",
-    "only time will tell", "the future looks bright", "the future is bright",
-    "at the end of the day", "when all is said and done", "exciting times ahead",
+    "at the intersection of",
+    "sits at the intersection",
+    "this paper proceeds",
+    "this article proceeds",
+    "this essay proceeds",
+    "only time will tell",
+    "the future looks bright",
+    "the future is bright",
+    "at the end of the day",
+    "when all is said and done",
+    "exciting times ahead",
     "the possibilities are endless",
-    "studies show", "research suggests", "industry leaders agree",
-    "one thing is certain", "as we move forward", "whether you're a",
-    "emerged as", "a wealth of", "fast-paced world", "comes with trade-offs",
-    "innermost thoughts", "putting pen to paper", "journey of self-discovery"
+    "one thing is certain",
+    "as we move forward",
+    "whether you're a",
+    "emerged as",
+    "a wealth of",
+    "fast-paced world",
+    "comes with trade-offs",
+    "innermost thoughts",
+    "putting pen to paper",
+    "journey of self-discovery"
   ],
   "vocab_tier2": [
-    "significant", "innovative", "effective", "dynamic", "scalable",
-    "compelling", "strategic", "versatile", "impactful", "streamlined",
-    "paramount", "commendable", "cutting-edge"
+    "significant",
+    "innovative",
+    "effective",
+    "dynamic",
+    "scalable",
+    "compelling",
+    "strategic",
+    "versatile",
+    "impactful",
+    "streamlined",
+    "paramount",
+    "commendable",
+    "cutting-edge"
   ],
   "filler": [
-    "i hope this helps", "let me know if", "would you like me to",
-    "don't hesitate to", "great question", "excellent question", "good question",
-    "you're absolutely right", "as an ai", "certainly !", "happy to help",
-    "thank you for asking", "great point", "please let me know",
-    "would you like to hear more", "here's why that matters", "here's the thing",
-    "here's the truth", "the takeaway", "let me explain", "hope that helps",
-    "here's the kicker", "and the best part", "the quiet part out loud",
-    "saying the quiet part out loud", "this changes everything", "let that sink in",
+    "i hope this helps",
+    "let me know if",
+    "would you like me to",
+    "don't hesitate to",
+    "great question",
+    "excellent question",
+    "good question",
+    "you're absolutely right",
+    "as an ai",
+    "certainly !",
+    "happy to help",
+    "thank you for asking",
+    "great point",
+    "please let me know",
+    "would you like to hear more",
+    "here's why that matters",
+    "here's the thing",
+    "here's the truth",
+    "the takeaway",
+    "let me explain",
+    "hope that helps",
+    "here's the kicker",
+    "and the best part",
+    "the quiet part out loud",
+    "saying the quiet part out loud",
+    "this changes everything",
+    "let that sink in",
     "the smoking gun",
-    "let me walk you through", "full stop", "let's dive in", "let's explore",
-    "let's break this down", "without further ado", "here's what you need to know",
-    "the real question is", "what really matters", "the heart of the matter",
-    "real talk", "let's be honest",
-    "let me think step by step", "here's my thought process",
-    "to approach this systematically", "working through this logically",
-    "the catch?", "the kicker?",
+    "let me walk you through",
+    "full stop",
+    "let's dive in",
+    "let's explore",
+    "let's break this down",
+    "without further ado",
+    "here's what you need to know",
+    "the real question is",
+    "what really matters",
+    "the heart of the matter",
+    "real talk",
+    "let's be honest",
+    "let me think step by step",
+    "here's my thought process",
+    "to approach this systematically",
+    "working through this logically",
+    "the catch?",
+    "the kicker?",
     "i recently had the pleasure of"
   ],
   "filler_exceptions": [
-    "a great question", "a good question", "an excellent question",
-    "the great question", "the good question",
-    "a full stop", "the full stop"
+    "a great question",
+    "a good question",
+    "an excellent question",
+    "the great question",
+    "the good question",
+    "a full stop",
+    "the full stop"
   ],
   "transitions": [
-    "moreover", "furthermore", "additionally", "notably", "importantly",
-    "subsequently", "consequently", "firstly",
-    "in conclusion", "in summary", "to sum up", "generally speaking",
-    "in essence", "at its core", "feel free to", "ultimately"
+    "moreover",
+    "furthermore",
+    "additionally",
+    "notably",
+    "importantly",
+    "subsequently",
+    "consequently",
+    "firstly",
+    "in conclusion",
+    "in summary",
+    "to sum up",
+    "generally speaking",
+    "in essence",
+    "at its core",
+    "feel free to",
+    "ultimately"
   ]
 }

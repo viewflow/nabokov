@@ -92,3 +92,9 @@ class DocumentStats:
     mattr: float  # moving-average TTR (window 100); high = varied vocabulary, low = repetitive
     counts: dict[str, int]  # per-category highlight counts
     seg_burstiness: float = 0.0  # punctuation-segment length CV; low = metronome commas
+    # Register metrics — reported, never scored. No rule reads these and none feeds
+    # --score: the research behind them gives directions without thresholds. See the
+    # "register metrics" block in readability.py.
+    nominal_density: float = 0.0  # nouns / content words; high = noun-heavy, flat
+    pronoun_density: float = 0.0  # pronouns per 100 words; low = re-names, rarely refers
+    temporal_ratio: float = 0.0  # temporal / (temporal + additive) connectives

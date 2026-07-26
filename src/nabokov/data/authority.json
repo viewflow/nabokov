@@ -1,0 +1,129 @@
+{
+  "_source": "WP:WEASEL (Wikipedia MOS), Vale's Microsoft and Google rulesets, proselint",
+  "_note": "NB316 data. Two halves: generic SUBJECT + reporting VERB matched by lemma (so one entry covers show/shows/showed/have shown), and fixed phrases the patterns cannot reach. The subject list is deliberately short — every noun here points OUTSIDE the document, which is what makes the claim uncheckable. 'data' and 'the table' are absent on purpose: in technical prose they usually point at something in the same document.",
+  "_declined": "'many developers believe', 'users report' and friends are not here. A noun with a quantifier ('many users say') is caught by the crowd pattern only when the quantifier stands alone as the subject ('Many say'). Naming the group at all is already better than not, and 'many users report faster builds' is an honest summary of feedback that a rule cannot separate from a weasel.",
+  "_declined_evidence": "'evidence' was in the research subjects and dogfooding removed it. Paul Graham's 'He was exonerated after new evidence proved he was not even at the scene' refers to specific evidence in a story being told, not to an unnamed body of research — and narrative, legal and incident-report prose do that constantly. Same reason 'data' never went in.",
+  "families": {
+    "research": {
+      "severity": "warning",
+      "fix": "name the study — author and year, or a link",
+      "subjects": ["study", "research", "science", "statistic", "survey", "experiment"],
+      "verbs": [
+        "show",
+        "suggest",
+        "indicate",
+        "prove",
+        "demonstrate",
+        "confirm",
+        "reveal",
+        "find",
+        "conclude",
+        "tell"
+      ]
+    },
+    "experts": {
+      "severity": "warning",
+      "fix": "name who — the person, the org, or a link",
+      "subjects": [
+        "expert",
+        "scientist",
+        "researcher",
+        "analyst",
+        "specialist",
+        "authority",
+        "academic",
+        "economist",
+        "historian",
+        "doctor",
+        "physician"
+      ],
+      "verbs": [
+        "agree",
+        "say",
+        "argue",
+        "believe",
+        "claim",
+        "note",
+        "recommend",
+        "warn",
+        "suggest",
+        "estimate",
+        "insist",
+        "concede",
+        "point"
+      ]
+    },
+    "crowd": {
+      "severity": "info",
+      "fix": "name who, or say how many and where that count comes from",
+      "subjects": ["critic", "observer", "commentator", "pundit", "detractor", "proponent"],
+      "verbs": [
+        "say",
+        "argue",
+        "note",
+        "claim",
+        "believe",
+        "contend",
+        "point",
+        "charge",
+        "counter"
+      ]
+    }
+  },
+  "_belief_note": "The impersonal-belief pattern ('it is widely believed that ...') is built in code, not from a list: it needs the passive shape plus a 'that' complement, and a bare word list cannot express that.",
+  "belief_verbs": [
+    "believe",
+    "know",
+    "accept",
+    "say",
+    "argue",
+    "think",
+    "regard",
+    "consider",
+    "understand",
+    "assume",
+    "hold",
+    "acknowledge",
+    "report",
+    "rumor",
+    "rumour",
+    "suppose",
+    "presume"
+  ],
+  "_crowd_pronoun_note": "Standalone quantifier subjects — 'Many argue that ...', 'Some say ...'. Only when the quantifier IS the subject; 'many users' names its group and is left alone.",
+  "crowd_quantifiers": ["many", "most", "some", "few", "several"],
+  "crowd_pronoun_verbs": [
+    "say",
+    "argue",
+    "believe",
+    "think",
+    "agree",
+    "claim",
+    "feel",
+    "contend",
+    "insist",
+    "suggest",
+    "note",
+    "worry",
+    "wonder"
+  ],
+  "_phrase_note": "Fixed expressions with no generic-subject shape to match. Kept exact because each one is idiomatic.",
+  "phrases": {
+    "warning": [
+      "industry leaders agree",
+      "conventional wisdom holds",
+      "conventional wisdom says",
+      "the consensus is that",
+      "the scientific consensus is",
+      "everyone in the industry",
+      "the literature shows",
+      "the literature suggests"
+    ],
+    "info": [
+      "popular opinion holds",
+      "the general view is",
+      "public opinion holds",
+      "word on the street"
+    ]
+  }
+}

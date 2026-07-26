@@ -313,3 +313,106 @@ Skip A8 entirely. Treat A7 as optional.
 - **proselint's 1:10 false-discovery claim**: self-reported by its authors.
 - Google, Microsoft, and Diátaxis **agree** on imperative mood for instructions,
   second person, and descriptive link text. Those three are the safest ground here.
+
+---
+
+# Appendix: a second source, and what it did not support
+
+Added 2026-07-26, same day. A user-supplied Russian-language synthesis report on
+the quality of AI-generated text — reading comprehension, linguistic features,
+cognitive load, pedagogy, UX, and evaluation metrics. Assessed for new rules.
+
+**Verdict: one rule and three stats, not nine.** Recorded here mainly so the
+reasons stay findable, because most of what the report describes nabokov already
+has.
+
+## Why this source got much less build than Prana et al.
+
+The Prana table above gave hand-annotated percentages, which is what let it both
+*justify* NB801 and *kill* three proposed siblings. This report gives almost no
+number a threshold can be set from, and its 2025 citations are not verifiable.
+Worse, it contradicts itself on the central linguistic claim:
+
+- Its "linguistic features" section: AI prose has **higher** ARI (19 vs 18) and
+  longer, denser sentences.
+- Its Beier et al. eye-tracking summary, two sections earlier: AI prose had
+  **shorter** sentences and a **lower** Flesch Reading Ease.
+
+Both cannot hold. Any rule built on AI sentence length would rest on a coin flip.
+And 19 vs 18 is inside the noise of the grade nabokov already computes.
+
+## Already covered
+
+| Report finding | Existing |
+|---|---|
+| Low lexical diversity | NB528 (MATTR) |
+| Repeated phrasing | NB512, NB521, NB528 |
+| Training-data clichés ("in today's world", "it should be noted") | NB503 — both already in the data |
+| Formal, impersonal register with no author voice | NB7xx style profiles |
+| Readability / sentence complexity | NB101, NB201, NB202 |
+| No concrete examples | NB601 |
+| Uniform paragraph blocks | NB527 |
+
+The pedagogical and eye-tracking sections (the 25.1% task-accuracy drop, shorter
+fixations, weaker retention) are findings about *readers*, not properties of a
+text a static tool can see. They justify rules that exist; they add none.
+
+## Built: NB316 nameless authority
+
+The report is right that unattributable claims destroy reader trust, and unlike
+hallucination itself, this **is** checkable. But the case for the rule is the
+independent prior art — WP:WEASEL, both Vale rulesets, proselint — not this
+report. See `checks/authority.py` for the design and the determiner guard.
+
+Dogfooding moved it twice: `evidence` came out of the subject list (Paul Graham's
+"exonerated after new evidence proved he was elsewhere" is narrative reference,
+not an appeal to research), and the rule went off for ESSAY after it fired on
+Orwell. His opening runs:
+
+> Most people who bother with the matter at all would admit that the English
+> language is in a bad way, but it is generally assumed that we cannot by
+> conscious action do anything about it.
+
+That is the assumption "Politics and the English Language" exists to refute.
+
+## Built: three register metrics, reported and not scored
+
+Nominal density, pronoun density, and the temporal share of connectives. The
+report gives all three as directions with no thresholds, so they are `--stats`
+numbers rather than findings.
+
+The Aimen et al. cohesion result is the clearest case. It reports that AI essays
+over-use temporal connectives and cataphora and under-use additive connectives
+and anaphora. That is n=100 essays in one paper. It also yields only a
+document-level ratio, with no per-sentence decision procedure — a stat, not a
+rule.
+
+They do separate genre cleanly: this repo's technical docs measure nominal
+0.57–0.58 with ~4 pronouns per 100 words; Paul Graham's essays 0.34 and 13.7.
+
+## Measured and killed: "unsourced statistic"
+
+The most attractive idea in the batch, since the only way a static tool can touch
+hallucination is to flag claims a reader cannot check. Prototyped against
+`docs/`, `skills/`, and `.corpus/mikhail-clean` **before** writing a rule module:
+
+| Trigger | Hits | Verdict |
+|---|---|---|
+| Any numeral, no link in the paragraph | **262** | dead — `Python 3.6`, `port 8080`, "open for over 15 years" |
+| Percentage or multiplier only | **69**, and 49 in three files | dead — the `top-100-django-packages` posts, where the percentages *are* the content |
+
+The narrow trigger does clear the config-number false positives. It lands on
+legitimate data journalism instead, and another 14 hits were nabokov's own docs
+quoting research percentages. Same shape as `missing-contributing`: a "defect
+rate" that is actually the norm. Ten minutes of measurement, one rule not written.
+
+## Declined
+
+- **Unstructured document** (long prose, zero headings) — the report's UX section
+  is assertion with no measurement, and heading-free long prose is exactly the
+  genre `--target essay` exists for.
+- **Impersonal register as a rule** — reference documentation is legitimately
+  impersonal.
+- **"No worked example anywhere"** — still the live candidate that would finally
+  read the unused `fence` span kind, but equally unevidenced here. It needs its
+  own measurement, not this report.

@@ -141,6 +141,7 @@ report.md:12:1: NB201 very hard to read (grade 17)
 | `NB312` | vague-link-text | blue | A link whose visible text could point anywhere — `click here`, `here`, `this`, `read more`, `learn more`. Screen readers can list a page's links stripped of their sentences, and a list of identical "here" entries points nowhere (WCAG 2.4.4, Level A). Matching is on the *whole* link text, so "Read the installation guide" is fine, and it reads the `link-text` span rather than the prose — the same words in a sentence about a button are untouched. The message names the target so the writer need not go and look. | "For the options, [**click here**](/config)." |
 | `NB313` | heading-punctuation | blue | A heading ending in `.`, `,`, `;` or `:` — a heading is a label, not a sentence (advisory). Question marks and ellipses stay legal, and only *trailing* punctuation counts, so "Step 1: Install" is untouched. Setext headings (underlined with `===`) are not indexed as headings and so are invisible here. Prior art: `HeadingPunctuation` in both Vale styles. | "## Requirements**:**" |
 | `NB314` | non-imperative-step | blue | A list step whose subject is the reader — "1. **You should** click Save", "1. **The user** clicks Save" — where the imperative says it shorter and in the mood Google and Diátaxis both ask instructions to use (advisory). The subject must *open* the item: a reader pronoun deeper in the sentence belongs to a subordinate clause ("add detail you don't have") and is ordinary writing. Restricted to list items, since outside one the second person is Google's own recommended phrasing. Fact lists are untouched — they have no subject, or the software is the subject. Off for ESSAY and SOCIAL. | "1. **You should** click Save." → "Click Save" |
+| `NB316` | nameless-authority | blue | A claim whose source is never named — "**Studies show** that adoption grew", "**Experts agree**", "**It is widely believed that** scale matters", "**Many argue** that…", "**Conventional wisdom holds** that…". The reader cannot check it and the writer cannot be wrong. Prior art: WP:WEASEL, both Vale styles, proselint. The guard is the **determiner**: a bare generic subject points outside the document at nobody, while a definite or possessive one refers — "**studies** show" fires, "**the** study shows" and "**our** research shows" do not, and an adjective is not a reference ("**recent studies** show" still fires). A paragraph containing a link, URL, or citation is skipped entirely. Warning for the research and expert families, info for the vague crowd ("some say" is common rhetorical setup). Always `rewrite`: only the author knows which source they meant. Off for ESSAY — naming a view to argue against it is the essay's basic move. | "**Studies show** adoption grew." → name the study |
 | `NB401` | complex-phrase | magenta | A wordy phrase with a simpler alternative (`replace`, capitalization matched to the span). | "**in order to**" → "to" |
 
 ```
@@ -286,6 +287,43 @@ the text as human. Texts under 25 words or 3 sentences are not scored.
 (Adapted from lakshitha-dev/ai-humanizer-skill's estimator, MIT; rebuilt on
 nabokov's own signals.)
 
+### Register metrics — reported, never scored
+
+`--stats` prints a second line per file with three numbers that no rule reads and
+nothing scores:
+
+```
+  draft.md: grade=8 level=normal words=4775 ... burstiness=0.74 diversity=0.73
+    register: nominal=0.57 pronouns=3.9/100w temporal_connectives=0.18
+```
+
+- **nominal** — nouns as a share of content words. High means meaning is packed
+  into noun phrases rather than verbs, which reads dense and flat. The lexical
+  version of this is `NB304`; this is the overall balance.
+- **pronouns** — pronouns per 100 words, a rough stand-in for how often the text
+  refers back instead of re-naming. Rough on purpose: real anaphora needs
+  coreference, which the small spaCy model has not got.
+- **temporal_connectives** — temporal connectives as a share of temporal plus
+  additive ones. High means the text sequences ("then", "next", "finally"); low
+  means it relates ideas ("however", "because", "instead"). The weakest of the
+  three: "and", "but", "so" and "or" dominate the additive side by frequency, so
+  real documents cluster narrowly — every sample in this repo, technical docs and
+  essays alike, lands between 0.14 and 0.20.
+
+They separate genre cleanly — technical docs in this repo measure nominal
+0.57–0.58 with ~4 pronouns per 100 words, Paul Graham's essays 0.34 and 13.7 —
+which makes them useful for comparing two drafts of the same text and useless as
+absolute targets.
+
+**Why they are not rules.** They come from a 2025 synthesis on AI prose that
+gives directions without thresholds ("AI text is noun-heavier", "AI under-uses
+anaphoric reference"), and the one effect size it quotes is an ARI difference of
+19 vs 18 — inside the noise of the grade nabokov already computes. A direction
+with no threshold is worth showing a writer and not worth a finding. Wiring any
+of them into `--score` or a rule needs a calibrated threshold first;
+`tests/test_register_metrics.py::test_no_rule_and_no_score_reads_them` is there
+to stop it happening by accident.
+
 ## Inclusive terminology (NB3) — opt-in
 
 | Code | Name | Flags |
@@ -373,6 +411,15 @@ reference did, on its own NB308 row. nabokov already drops a finding when the
 quote holds nothing but the flagged term, so `"simply"` in straight quotes is
 read as a mention rather than a use. Where that reads badly, an inline
 `<!-- nabokov: ignore NB308 -->` is the escape hatch.
+
+One trap worth knowing when writing these examples: the straight-quote mention
+rule **does not span a line break**. `"studies\nshow"` wrapped across two lines
+of hard-wrapped source is not seen as quoted, so NB316 fires on it — which is how
+both skill files first tripped their own new rule. The restriction is deliberate:
+letting a straight quote pair across lines would let an inch mark (`15"`) reach a
+closing quote on the next line and swallow every finding between them, which
+`test_straight_quote_does_not_span_lines` pins. Keep a quoted example on one line,
+or use curly quotes, which are unambiguous and may wrap.
 
 ## Severities & exit codes
 

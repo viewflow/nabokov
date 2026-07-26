@@ -143,6 +143,136 @@ def mattr(tokens: list[str], window: int = 100) -> float:
     return total / (n - window + 1)
 
 
+# --- register metrics ---------------------------------------------------------
+#
+# Three numbers reported next to burstiness and diversity, and deliberately NOT
+# scored. They come out of a 2025 synthesis on AI prose (see docs/rule-research.md)
+# that gives directions without thresholds — "AI text is noun-heavier", "AI text
+# under-uses anaphoric reference", "AI text skews to temporal connectives" — and the
+# one effect size it does quote is an ARI difference of 19 vs 18, inside the noise
+# of the grade metric nabokov already computes. A direction with no threshold is a
+# number worth showing a writer and a terrible thing to build a finding on, so none
+# of these three feeds --score or emits a code.
+
+# Connectives that order events in time. Aimen et al. report AI essays leaning on
+# these; a human writer more often links back to what was just said instead.
+_TEMPORAL_CONNECTIVES = frozenset(
+    {
+        "then",
+        "next",
+        "afterwards",
+        "afterward",
+        "subsequently",
+        "later",
+        "finally",
+        "eventually",
+        "meanwhile",
+        "thereafter",
+        "previously",
+        "initially",
+        "first",
+        "second",
+        "third",
+        "lastly",
+        "before",
+        "after",
+        "until",
+        "when",
+        "while",
+        "once",
+    }
+)
+
+# Connectives that add, contrast, or explain rather than sequence.
+_ADDITIVE_CONNECTIVES = frozenset(
+    {
+        "and",
+        "also",
+        "besides",
+        "moreover",
+        "furthermore",
+        "additionally",
+        "but",
+        "however",
+        "yet",
+        "though",
+        "although",
+        "whereas",
+        "nevertheless",
+        "nonetheless",
+        "instead",
+        "rather",
+        "because",
+        "so",
+        "therefore",
+        "thus",
+        "hence",
+        "or",
+        "nor",
+    }
+)
+
+# The two sets must stay disjoint; test_the_connective_sets_are_disjoint pins it.
+# "since" was briefly in both — it is genuinely causal ("since it failed, retry") and
+# temporal ("since 2020") — and counting it on both sides does NOT cancel out of the
+# ratio, as an earlier comment here claimed. With B words in both lists the value
+# becomes (T+B)/(T+A+2B), which drags every document toward 0.5. A word that needs
+# disambiguation before it can be classified is left out of both lists instead.
+
+
+def nominal_density(doc) -> float:
+    """Share of content words that are nouns (NOUN + PROPN), 0.0-1.0.
+
+    A proxy for the "information density" claim: prose that packs meaning into noun
+    phrases instead of verbs reads as denser and flatter. Related to NB304, which
+    catches the specific lexical shape (a nominalization behind a light verb) but says
+    nothing about the overall balance.
+    """
+    content = [t for t in doc if t.pos_ in ("NOUN", "PROPN", "VERB", "ADJ", "ADV")]
+    if not content:
+        return 0.0
+    nouns = sum(1 for t in content if t.pos_ in ("NOUN", "PROPN"))
+    return nouns / len(content)
+
+
+def pronoun_density(doc) -> float:
+    """Pronouns per 100 words — a rough anaphora proxy.
+
+    A pronoun usually points back at something already named, so a low rate means the
+    text keeps re-naming its subjects instead of referring to them. Rough on purpose:
+    real anaphora resolution needs coreference, which the small spaCy model has not
+    got, and this counts every pronoun including the "I" and "you" that carry voice
+    rather than reference.
+    """
+    words = [t for t in doc if not (t.is_punct or t.is_space)]
+    if not words:
+        return 0.0
+    return sum(1 for t in words if t.pos_ == "PRON") / len(words) * 100
+
+
+def temporal_ratio(doc) -> float:
+    """Temporal connectives as a share of temporal + additive ones, 0.0-1.0.
+
+    High means the text mostly sequences ("then", "next", "finally"); low means it
+    mostly relates ideas ("however", "because", "instead"). Returns 0.0 when the text
+    has no connectives at all, which is indistinguishable here from a purely additive
+    one — with nothing to divide, there is no ratio to report.
+
+    The weakest of the three register metrics, and worth knowing why: "and", "but",
+    "so" and "or" dominate the additive side by sheer frequency, so real documents
+    cluster in a narrow band (every sample in this repo, technical docs and essays
+    alike, lands between 0.14 and 0.20). It has far less spread than nominal or
+    pronoun density, which makes it the least informative to diff.
+    """
+    lowered = [t.lower_ for t in doc if t.is_alpha]
+    temporal = sum(1 for w in lowered if w in _TEMPORAL_CONNECTIVES)
+    additive = sum(1 for w in lowered if w in _ADDITIVE_CONNECTIVES)
+    total = temporal + additive
+    if not total:
+        return 0.0
+    return temporal / total
+
+
 def target_config(target: str) -> dict[str, int]:
     targets = thresholds()["readability_targets"]
     return targets.get(target.upper(), targets["NORMAL"])

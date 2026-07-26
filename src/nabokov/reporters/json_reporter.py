@@ -22,6 +22,10 @@ def result_payload(result: AnalysisResult, hotspots: int = 0) -> dict:
             "burstiness": result.stats.burstiness,
             "seg_burstiness": result.stats.seg_burstiness,
             "mattr": result.stats.mattr,
+            # Register metrics: reported, never scored — no thresholds behind them.
+            "nominal_density": result.stats.nominal_density,
+            "pronoun_density": result.stats.pronoun_density,
+            "temporal_ratio": result.stats.temporal_ratio,
             "reading_time_secs": round(result.stats.reading_time_secs, 1),
             "counts": result.stats.counts,
         },

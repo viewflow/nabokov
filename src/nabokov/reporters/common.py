@@ -56,6 +56,11 @@ def format_document_stats(results: list[AnalysisResult]) -> str:
 
     Burstiness is the sentence-length CV (higher = more varied rhythm); a drop
     between two versions of the same text is the polish-drift signal.
+
+    The second line carries the register metrics — noun share, pronoun rate, and the
+    temporal share of connectives. They have no thresholds and no rules behind them,
+    so they are worth comparing between two drafts of the same text and worth nothing
+    as absolute targets.
     """
     if not results:
         return ""
@@ -69,5 +74,10 @@ def format_document_stats(results: list[AnalysisResult]) -> str:
             f"sentences={s.sentences} avg_sentence={avg:.1f} "
             f"burstiness={s.burstiness:.2f} diversity={s.mattr:.2f} "
             f"read_secs={round(s.reading_time_secs)}"
+        )
+        lines.append(
+            f"    register: nominal={s.nominal_density:.2f} "
+            f"pronouns={s.pronoun_density:.1f}/100w "
+            f"temporal_connectives={s.temporal_ratio:.2f}"
         )
     return "\n".join(lines) + "\n"

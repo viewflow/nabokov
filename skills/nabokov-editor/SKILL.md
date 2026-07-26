@@ -200,6 +200,14 @@ profile never supplies facts.
      prints burstiness (sentence-length variety) and diversity (vocabulary
      variety, MATTR). Run it before and after. If your rewrite lowered either
      number, the text got flatter.
+   - *Denser* — `--stats` also prints a `register:` line: `nominal` (share of
+     content words that are nouns), `pronouns` per 100 words, and the temporal
+     share of connectives. Compare the two runs, never the absolute value —
+     these have no thresholds and no rules behind them, and technical prose is
+     legitimately noun-heavy. What matters is the direction. If `nominal` rose
+     and `pronouns` fell, you turned verbs into noun phrases and started
+     re-naming things instead of referring to them. That is how a rewrite reads
+     stiffer while every finding goes away.
    - *Blander* — slop became clean generic claims that fail the
      competitor-name test. No new concrete fact and no stance means the slop
      was paraphrased, not fixed.
@@ -232,6 +240,7 @@ judgment the field cannot hold.
 | NB312 | Vague link text. The message names the target URL — use it to write text that says where the link goes. Read the target if it's a local file. Don't relabel every link "the docs". |
 | NB314 | A step naming the reader. The draft is usually right, but check what the subject took with it: "you will *then* restart" loses "then", which may have been doing work. |
 | NB315 | Off unless `--terminology` is passed, so you will not normally see it. Where a term has two replacements ("denylist, blocklist"), pick the one that fits the sentence. |
+| NB316 | A claim attributed to nobody ("studies show", "experts agree"). Three honest fixes. Ask the author for the source and name it. Or drop the borrowed authority and let the claim stand in their own voice: "Studies show caching helps" → "Caching helps". Or cut the claim. **Never invent a citation** — see the guardrail below. The second fix is usually right and needs no new facts, because the sentence was never leaning on a real source. On an essay the rule stays quiet (`--target essay`): naming a view in order to refute it is the form working as intended. |
 | NB801 | The README never says what the project is. **Never invent it.** Ask the user for one sentence: what it is, who it's for. |
 | NB501–NB508 | Rewrite the tell: drop the not-X-but-Y shape, cut puffery, trim em-dashes/emoji, break the triple. |
 | NB502/NB503 | Deleting the buzzword treats the symptom. Put the concrete case first — then the claim can arrive plain. |
@@ -285,11 +294,15 @@ asking. Ask first — as one batch — before a change that:
   success is warnings fixed with the voice intact.
 - **Clean slop is still slop.** The linter can't tell "clean and concrete"
   from "clean and interchangeable" — that judgment is yours alone.
-- **Never invent** facts, examples, or numbers to satisfy a check. Four rules ask
-  for something only the author knows: NB601 wants a concrete detail, NB309 an
-  acronym's expansion, NB311 what an image shows, NB801 what the project is. All
-  four are questions for the user, never gaps for you to fill. A plausible
-  invention is the worst outcome here — it is wrong and it looks right.
+- **Never invent** facts, examples, or numbers to satisfy a check. Five rules ask
+  for something only the author knows. NB601 wants a concrete detail. NB309 wants
+  an acronym's expansion, NB311 what an image shows, NB801 what the project is,
+  and NB316 the source behind "studies show". All five are questions for the
+  user, never gaps for you to fill. A plausible invention is the worst outcome
+  here — it is wrong and it looks right. **NB316 is the most dangerous of the
+  five**: a fabricated citation is the one invention that makes the text look
+  *more* rigorous, so it survives review. Never supply an author, a year, a
+  percentage, or a study title. Ask, or cut the claim.
 - **Never fake imperfection.** Don't add spelling or grammar mistakes to look
   human — detectors don't reward broken English, and readers notice. Human
   texture means variety and voice, not errors.

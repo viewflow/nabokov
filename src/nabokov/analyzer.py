@@ -18,9 +18,12 @@ from .readability import (
     content_tokens,
     letters_in,
     mattr,
+    nominal_density,
+    pronoun_density,
     reading_level,
     segment_lengths,
     sentence_lengths,
+    temporal_ratio,
 )
 from .source import SourceFile
 
@@ -270,6 +273,15 @@ def _apply_noqa(issues: list[Issue], source: SourceFile) -> list[Issue]:
 # mention and the finding drops too. A hard-sentence finding whose span is mostly
 # quotation (an author's sentence framing a long citation) is demoted to info —
 # the grade belongs to the quoted prose, not the author's.
+#
+# The straight-quote alternative deliberately forbids newlines, so a quoted phrase
+# wrapped across two lines is NOT seen as quoted. That costs real recall in
+# hard-wrapped prose, and it is still the right trade: unpaired straight quotes are
+# everywhere (inch marks, apostrophes in code), and letting one pair across a line
+# break lets `15"` on one line reach a closing quote on the next and swallow every
+# finding between them. See test_straight_quote_does_not_span_lines. Curly pairs are
+# unambiguous, so those two alternatives may span lines. Write examples that must
+# read as quoted on a single line.
 _QUOTED_SPAN = re.compile(r"“[^“”]{1,2000}”|‘[^‘’]{1,2000}’|\"[^\"\n]{1,2000}\"")  # noqa: RUF001
 _QUOTED_MIN_WORDS = 2
 _QUOTED_MAJORITY = 0.5
@@ -355,7 +367,11 @@ def _apply_target_rules(issues: list[Issue], config: Config) -> list[Issue]:
 # is the point, and NB308 is the rule that knows that from the parse.
 # loser code -> the codes that outrank it on an overlapping span
 _SPAN_PRECEDENCE = {
-    "NB301": frozenset({"NB303", "NB308", "NB510", "NB520"}),
+    "NB301": frozenset({"NB303", "NB308", "NB316", "NB510", "NB520"}),
+    # "it is widely believed that" is a passive with an adverb in it. Both readings
+    # are true and only NB316's is useful: the defect is the missing source, not the
+    # voice. Reporting all three would triple-bill one span.
+    "NB302": frozenset({"NB316"}),
     "NB510": frozenset({"NB308"}),
 }
 
@@ -461,4 +477,7 @@ def _document_stats(doc, target: str, issues: list[Issue]) -> DocumentStats:
         mattr=round(diversity, 2),
         counts=counts,
         seg_burstiness=round(seg_cv, 2),
+        nominal_density=round(nominal_density(doc), 2),
+        pronoun_density=round(pronoun_density(doc), 2),
+        temporal_ratio=round(temporal_ratio(doc), 2),
     )

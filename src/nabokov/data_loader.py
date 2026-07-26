@@ -77,6 +77,13 @@ def terminology() -> dict[str, list[str]]:
 
 
 @lru_cache(maxsize=1)
+def authority() -> dict[str, Any]:
+    """NB316 data: generic subject/verb families, belief verbs, and fixed phrases."""
+    data = _load("authority.json")
+    return {k: v for k, v in data.items() if not k.startswith("_")}
+
+
+@lru_cache(maxsize=1)
 def thresholds() -> dict[str, Any]:
     """ARI constants + hard/very-hard reading-level thresholds per target."""
     return _load("thresholds.json")

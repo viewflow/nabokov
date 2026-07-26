@@ -77,6 +77,12 @@ Burstiness is the sentence-length coefficient of variation. High means varied,
 human rhythm. Low means flat and machine-uniform. Diff it between two drafts to
 catch a rewrite that got polished flat.
 
+A second `register:` line reports three more numbers — noun share, pronoun rate,
+and the temporal share of connectives. No rule reads them and `--score` ignores
+them: the research behind them gives directions without thresholds, so they are
+worth diffing between two drafts and worthless as targets. See
+[docs/RULES.md](docs/RULES.md#register-metrics--reported-never-scored).
+
 nabokov reads plain text, Markdown, and HTML. For `.md` and `.html` it blanks the
 markup: code, tags, and link URLs. It then checks only the visible prose, so findings
 point at real writing. For stdin, `--stdin-display-name draft.md` sets the type.
@@ -156,6 +162,7 @@ Run `nabokov --list-rules` to see them all. The full reference lives in
 | `NB312` | Link text that says nothing: "[**click here**](/config)". |
 | `NB313` | Headings ending in sentence punctuation: "## Requirements**:**". |
 | `NB314` | List steps that name the reader: "1. **You should** click Save" → "Click Save". |
+| `NB316` | Claims attributed to nobody: "**Studies show**…", "**Experts agree**", "**It is widely believed that**…". |
 | `NB401` | Wordy phrases, with a simpler suggestion. |
 | `NB601` | Abstract, "empty prose" paragraphs, scored against the Brysbaert concreteness norms (advisory). |
 | `NB801` | A README that never says what the project is. |
