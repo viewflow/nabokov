@@ -14,8 +14,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, TextIO
 
+from ..issue import Applicability
 from ..readability import HARD, VERY_HARD
-from .common import total_issues
+from .common import format_suggestion, total_issues
 
 if TYPE_CHECKING:
     from ..analyzer import AnalysisResult
@@ -54,6 +55,10 @@ _NO_SNIPPET = {"NB101", "NB509"}
 _CONTEXT = 12  # chars of lead-in before the span
 _MARKUP = "grey42"
 
+# A substitution you can make reads green; a draft you still have to land reads
+# dim, so the two tiers stay apart at a glance.
+_FIX_STYLE = {Applicability.REPLACE: "green", Applicability.REWRITE: "dim italic"}
+
 
 def report(results: list[AnalysisResult], config: Config, out: TextIO) -> None:
     from rich.console import Console
@@ -80,6 +85,14 @@ def report(results: list[AnalysisResult], config: Config, out: TextIO) -> None:
         _print_summary(console, Text, result)
         console.print()
 
+    if config.hotspots:
+        from ..hotspots import format_hotspots
+
+        block = format_hotspots(results, config.hotspots).rstrip("\n")
+        if block:
+            console.print(Text(block, style="dim"))
+            console.print()
+
     total = total_issues(results)
     files = len(results)
     console.print(
@@ -105,6 +118,9 @@ def _print_finding(console, Text, source, issue, width) -> None:
     if issue.code not in _NO_SNIPPET:
         snippet = _snippet(Text, source, issue, style, width)
         console.print(Text.assemble(("      ", ""), snippet))
+    fix = format_suggestion(issue)
+    if fix:
+        console.print(Text(f"      {fix}", style=_FIX_STYLE[issue.applicability]))
     console.print()
 
 

@@ -4,6 +4,7 @@ NB517 vocab clusters, NB601 low concreteness."""
 from __future__ import annotations
 
 from nabokov.config import Config
+from nabokov.issue import Applicability
 
 AI = Config(extend_select=("NB5",))
 
@@ -25,7 +26,9 @@ def test_light_verb_nominalization_flagged(analyze):
 def test_nominalization_with_adjective_flagged(analyze):
     result = analyze("We conducted a thorough investigation of the incident.")
     issue = _found(result, "NB304")[0]
-    assert "investigate" in issue.message
+    # The verb rides in `suggestion`, not the message — the reporters render it.
+    assert issue.suggestion == "investigate"
+    assert issue.applicability is Applicability.REWRITE
 
 
 def test_plain_verb_not_flagged(analyze):
@@ -228,7 +231,9 @@ def test_plain_certainly_not_flagged(analyze):
 def test_despite_the_fact_that_flagged(analyze):
     result = analyze("Despite the fact that sales fell, the team stayed calm.")
     issue = _found(result, "NB401")[0]
-    assert "although" in issue.message
+    # Sentence-initial, so the replacement carries the sentence's capital.
+    assert issue.suggestion == "Although"
+    assert issue.applicability is Applicability.REPLACE
 
 
 # --- NB520 hedge stacks ------------------------------------------------------

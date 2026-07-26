@@ -17,7 +17,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from typing import Any
 
-from ..issue import Issue, Severity
+from ..issue import Applicability, Issue, Severity
 from .base import CheckContext, Rule
 from .clarity import _span_issue
 
@@ -105,6 +105,10 @@ class RepeatedWordRule(Rule):
                     end,
                     text,
                     Severity.WARNING,
+                    # One copy of the word replaces the pair. Take the first so a
+                    # capitalized opener ("The the spring") keeps its capital.
+                    suggestion=tok.text,
+                    applicability=Applicability.REPLACE,
                 )
             i = j + 1
 
@@ -143,6 +147,10 @@ class UncomparableRule(Rule):
         for _mid, start, end in self._matcher(ctx.doc):
             span = ctx.doc[start:end]
             degree, adj = span[0], span[-1]
+            # Dropping the degree word leaves the adjective standing alone. When
+            # the degree word opened the sentence, the adjective inherits its
+            # capital ("Very unique" -> "Unique").
+            replacement = adj.text.capitalize() if degree.is_sent_start else adj.text
             yield _span_issue(
                 ctx,
                 "NB307",
@@ -152,4 +160,6 @@ class UncomparableRule(Rule):
                 span.end_char,
                 span.text,
                 Severity.WARNING,
+                suggestion=replacement,
+                applicability=Applicability.REPLACE,
             )

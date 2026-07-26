@@ -42,6 +42,8 @@ class Config:
     color: str = "auto"  # auto | always | never
     statistics: bool = False
     doc_stats: bool = False
+    # Rank the worst paragraphs after the findings (0 = off).
+    hotspots: int = 0
     adverbs_all_pos: bool = False
     stdin_display_name: str = "-"
     # Author style profile: a bundled name ("paulgraham") or a .json path.
@@ -73,6 +75,7 @@ _SCALAR_KEYS = {
     "color",
     "statistics",
     "doc_stats",
+    "hotspots",
     "adverbs_all_pos",
     "style",
 }

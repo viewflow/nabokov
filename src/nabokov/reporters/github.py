@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, TextIO
 
 from ..issue import Severity
+from .common import format_suggestion
 
 if TYPE_CHECKING:
     from ..analyzer import AnalysisResult
@@ -23,5 +24,10 @@ def report(results: list[AnalysisResult], config: Config, out: TextIO) -> None:
         name = result.source.display_name
         for issue in result.issues:
             level = _LEVEL.get(issue.severity, "warning")
-            body = _escape(f"{issue.code} {issue.message}")
+            text = f"{issue.code} {issue.message}"
+            # Annotations render multiline, so the fix gets its own line.
+            fix = format_suggestion(issue)
+            if fix:
+                text = f"{text}\n{fix}"
+            body = _escape(text)
             out.write(f"::{level} file={name},line={issue.line},col={issue.col}::{body}\n")

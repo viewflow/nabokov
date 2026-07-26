@@ -28,8 +28,10 @@ its code plus a plain gloss: "NB302 (passive voice)", not linter jargon.
 ## Layer 1 — static
 
 ```sh
-uvx nabokov --format=flake8 <file>        # readability + style checks
-uvx nabokov --format=flake8 --ai <file>   # add the AI-writing / de-slop checks (NB5xx)
+uvx nabokov --format=flake8 <file>            # readability + style checks
+uvx nabokov --format=flake8 --ai <file>       # add the AI-writing / de-slop checks (NB5xx)
+uvx nabokov --format=json --ai <file>         # same findings, with fix + tier per finding
+uvx nabokov --format=flake8 --ai --hotspots <file>   # + the worst paragraphs, ranked
 ```
 
 (`uvx` needs no install; or `uv tool install nabokov && nabokov download-model`.)
@@ -44,6 +46,26 @@ posts. `email` fits business mail and is the strictest. Rule reference:
 - `warning` — a confident tell. Fix it with a small edit that keeps the meaning.
 - `info` — advisory. Change it only when the change helps the text; don't
   fight the author's voice.
+
+**Read the fix, and its tier.** Most findings now carry the fix. Severity says
+how much it matters; the tier says what you may do with it.
+
+- `→ to` (**replace**) — the tool checked the position. Apply it as written.
+  An empty one prints as `→ delete it`: cut the flagged span, nothing else.
+  Don't paraphrase around a replace; that is exactly the needless paraphrase
+  the minimal-paraphrase rule forbids.
+- `try: The team wrote the report` (**rewrite**) — a draft, not an answer. It
+  can reach past the flagged span or miss the tense. Read it, then write the
+  line yourself. **Never paste one unread.**
+- No fix shown (**advisory**) — the tool has no span-level answer. Your
+  judgment decides, or you leave it.
+
+In `--format=json` these are the `suggestion` and `applicability` fields on each
+diagnostic, which is the easier form to work through in bulk.
+
+A replace tier still doesn't override meaning. `NB303` on "probably" is a clean
+deletion mechanically, and still the wrong edit if the hedge is the author being
+honest. The tier answers "is this edit safe to type", never "is this edit right".
 
 The style checks (adverbs, passive, qualifiers, wordy phrases) start as `info`.
 They become `warning` when the document repeats the pattern too often for its
@@ -152,8 +174,14 @@ profile never supplies facts.
 
 1. **Static pass**: `nabokov --format=flake8 <file>`. Add `--ai` when the
    goal is de-slopping or humanizing — it usually is when this skill runs.
-   Skip it when the user asked for a plain readability lint.
-2. **Judgment pass** (+ macro pass for essays).
+   Skip it when the user asked for a plain readability lint. On anything
+   longer than a few paragraphs add `--hotspots`: it ranks the paragraphs
+   with the most findings per word, so you start where the trouble is instead
+   of walking the file top to bottom. A paragraph that tops the list with
+   findings across many codes is usually a rebuild, not a set of small fixes.
+2. **Judgment pass** (+ macro pass for essays). Read the whole piece, not only
+   the hotspots — a topic jump leaves no finding behind, and the flattest
+   writing in a draft is often the part that lints clean.
 3. **Fix, keeping the meaning** — playbooks below. Keep the author's intent,
    facts, links, code, structure. Never invent content. **Minimal
    paraphrase:** a line that nothing flagged — linter, detector, judgment
@@ -182,7 +210,9 @@ profile never supplies facts.
    anything the user declined. Remaining `info` is the author's call.
 8. **Verify & report.** Check that links, code, and structure are intact and
    the meaning held. Report in plain words: *N found → M fixed, K need your
-   approval*.
+   approval*. If you ran `--hotspots`, run it again and say whether the worst
+   paragraph moved off the top — that is the clearest evidence the edit landed
+   where it mattered.
 
 ## Fix playbook — static
 

@@ -68,6 +68,7 @@ nabokov --target essay draft.md  # judge against the ESSAY reading level
 nabokov --select NB302 x.md      # run one rule
 nabokov --ignore NB301 x.md      # skip a rule
 nabokov --stats x.md             # document metrics: grade, sentence length, burstiness
+nabokov --hotspots x.md          # rank the worst paragraphs, after the findings
 nabokov --list-rules             # print every code
 ```
 
@@ -91,6 +92,46 @@ Choose one with `--format`:
 - **Flake8** (`--format=flake8`) prints one finding per line, for editors and CI.
 - **JSON** (`--format=json`) returns diagnostics plus the document grade.
 - **GitHub** (`--format=github`) emits workflow annotations for GitHub Actions.
+
+## Suggested fixes
+
+Most findings come with the fix, tagged by how mechanically it applies. An arrow
+is a substitution you can make as-is; `try:` is a draft you still have to land.
+
+```
+$ nabokov --ai draft.md
+draft.md:1:18: NB401 wordy: 'in order to' → to
+draft.md:2:12: NB302 passive voice: 'was written by the team' try: The team wrote the report
+draft.md:3:20: NB510 AI tell: weak intensifier 'very' — cut it or be specific → delete it
+```
+
+Where the phrase sits decides the tier. Cut `Moreover,` off the front of a
+sentence and you strand the comma and lose the capital, so that one reports as a
+rewrite. Mid-sentence, the same cut is clean. `NB303` never offers to delete a
+negated hedge: dropping "I don't think" inverts the claim instead of softening it.
+
+Nothing here is a thesaurus. We wrote the alternatives by hand, over the closed
+sets nabokov already flags. A general synonym source returns the wrong sense and
+the wrong register. One bad suggestion costs more trust than a missing one buys.
+`--format json` carries `suggestion` and `applicability` on every diagnostic —
+the form the agent skills and the bot read.
+
+## Where to start: `--hotspots`
+
+The report tells you what is wrong. `--score` tells you how bad the whole draft
+is. Neither answers the question you have with ten minutes to spend.
+
+```
+$ nabokov --ai --hotspots draft.md
+Hotspots (draft.md) — worst paragraphs first:
+  1. line 5-7: 17 findings in 34 words (density 88.2)
+       NB502×11 NB201 NB302 NB401 NB505 NB510 NB520
+       Moreover, the platform leverages a robust tapestry of very…
+```
+
+It ranks by findings per word, not raw count, so a long paragraph doesn't win
+just by being long. No new signal goes into it — only the findings the rules
+already produced, weighted by severity.
 
 ## Rules
 

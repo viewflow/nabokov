@@ -61,11 +61,21 @@ Run them in order. Each pass hands a better draft to the next.
 
 1. **De-slop** — clear the machine tells first, so you enliven signal, not
    noise. This is the nabokov-editor job; run it, or run the linter directly:
-   `uvx nabokov --ai <file>`. Cut the confident tells — puffery, the
+   `uvx nabokov --ai --hotspots <file>`. Cut the confident tells — puffery, the
    not-X-but-Y shape, hollow endings. Thin em-dash pileups and triples under
    the editor's severity rules. Triples (NB507) are advisory on purpose:
    human staccato looks the same, so judge each one. A draft full of slop
    can't be made to flow — the flat rhythm *is* the slop.
+
+   Most findings arrive with the fix attached. An arrow (`→ many`) is checked
+   for position and safe to apply as written; `try:` is a draft to read and
+   land yourself. Take the arrows here — swapping `myriad` for `many` is the
+   whole job of this pass. Leave the `try:` drafts for pass 2, where you are
+   rewriting the sentence anyway and can do better than the tool's version.
+
+   `--hotspots` ranks the paragraphs with the most findings per word. That
+   ranking is also your enliven list: the paragraph that is densest in puffery
+   is, reliably, the one with no concrete detail in it at all.
 
 2. **Enliven** — the cinematic pass. Turn labels into scenes, weak verbs into
    strong ones, abstractions into something the reader can see — **all from
@@ -140,10 +150,18 @@ method and a ready Claude Code workflow for it.
 
 ## The linter is the floor, not the ceiling
 
-After enlivening, re-lint: `uvx nabokov --ai <file>`. Pick the target for the
-genre: `--target social` for a short post (staccato is native there),
+After enlivening, re-lint: `uvx nabokov --ai --hotspots <file>`. Pick the target
+for the genre: `--target social` for a short post (staccato is native there),
 `--target essay` for a long read, `--target email` for outreach. The linter
 keeps the polish honest: it catches you if a rewrite slid back into slop.
+
+Watch the hotspot list across passes, not just the total. A count that falls
+while the same paragraph stays at rank 1 means you tidied the easy parts and
+left the bad one standing. That paragraph needs rewriting, not fixing.
+
+Beware the opposite failure too: an empty hotspot list is not a good piece of
+copy. Findings per word only measures what the rules can see, and flat, generic,
+perfectly clean prose scores zero here. The linter is the floor.
 
 **Voice profiles.** nabokov can also lint against an author's style
 signature. `uvx nabokov --profile-card list` names the bundled profiles;

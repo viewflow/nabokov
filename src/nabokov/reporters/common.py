@@ -6,9 +6,26 @@ from collections import Counter
 from typing import TYPE_CHECKING
 
 from ..checks import RULE_META
+from ..issue import Applicability
 
 if TYPE_CHECKING:
     from ..analyzer import AnalysisResult
+    from ..issue import Issue
+
+
+def format_suggestion(issue: Issue) -> str | None:
+    """Render a finding's fix as one line, or None when it carries no fix.
+
+    Every reporter renders through here, so a rule states the fix once (in
+    ``suggestion`` + ``applicability``) and never formats it into its own
+    message. The wording separates the tiers on sight: an arrow is a
+    substitution you can make, "try:" is a draft you have to land yourself.
+    """
+    if issue.suggestion is None:
+        return None
+    if issue.applicability is Applicability.REPLACE:
+        return f"→ {issue.suggestion}" if issue.suggestion else "→ delete it"
+    return f"try: {issue.suggestion}"
 
 
 def total_issues(results: list[AnalysisResult]) -> int:

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, TextIO
 
-from .common import format_document_stats, format_statistics, total_issues
+from .common import format_document_stats, format_statistics, format_suggestion, total_issues
 
 if TYPE_CHECKING:
     from ..analyzer import AnalysisResult
@@ -16,11 +16,20 @@ def report(results: list[AnalysisResult], config: Config, out: TextIO) -> None:
         name = result.source.display_name
         for issue in result.issues:
             message = " ".join(issue.message.split())  # keep the record on one line
+            # Editors parse this format line by line, so the fix rides inside the
+            # message rather than on a second line they would fail to attach.
+            fix = format_suggestion(issue)
+            if fix:
+                message = f"{message} {fix}"
             out.write(f"{name}:{issue.line}:{issue.col}: {issue.code} {message}\n")
     if config.statistics:
         out.write(format_statistics(results))
     if config.doc_stats:
         out.write(format_document_stats(results))
+    if config.hotspots:
+        from ..hotspots import format_hotspots
+
+        out.write(format_hotspots(results, config.hotspots))
     total = total_issues(results)
     files = len(results)
     out.write(

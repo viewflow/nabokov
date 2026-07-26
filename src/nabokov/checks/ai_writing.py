@@ -28,14 +28,14 @@ from itertools import pairwise
 from typing import Any
 
 from ..data_loader import ai_writing, concreteness
-from ..issue import Issue, Severity
+from ..issue import Applicability, Issue, Severity
 from ..readability import (
     burstiness,
     burstiness_thresholds,
     content_tokens,
     mattr,
 )
-from .base import CheckContext, Rule, span_sents
+from .base import CheckContext, Rule, deletion_is_safe, match_case, span_sents
 from .phrases import _resolve_overlaps
 
 _NEGATION_PATTERNS = [
@@ -295,6 +295,8 @@ def _issue(
     end: int,
     text: str,
     severity: Severity = Severity.WARNING,
+    suggestion: str | None = None,
+    applicability: Applicability = Applicability.ADVISORY,
 ):
     line, col = ctx.source.linecol(start)
     end_line, end_col = ctx.source.linecol(end)
@@ -307,8 +309,22 @@ def _issue(
         end_line=end_line,
         end_col=end_col,
         severity=severity,
+        suggestion=suggestion,
+        applicability=applicability,
         text=text,
     )
+
+
+def _cut(span) -> tuple[str, Applicability]:
+    """The fix for a word that should simply come out.
+
+    Mid-sentence the deletion is mechanical; at a sentence start or against a
+    comma it needs a capital or a stranded mark cleaned up, so it becomes a
+    direction instead of a substitution.
+    """
+    if deletion_is_safe(span):
+        return "", Applicability.REPLACE
+    return "cut it", Applicability.REWRITE
 
 
 class NegationContrastRule(Rule):
@@ -590,12 +606,14 @@ class PredicateHyphenRule(Rule):
                 ctx,
                 "NB515",
                 "ai-predicate-hyphen",
-                f"drop the hyphen in predicate position: '{compound}' → "
-                f"'{compound.replace('-', ' ')}'",
+                f"drop the hyphen in predicate position: '{compound}'",
                 m.start(1),
                 m.end(1),
                 compound,
                 severity=self.severity,
+                # Purely orthographic: the same words, minus the hyphen.
+                suggestion=compound.replace("-", " "),
+                applicability=Applicability.REPLACE,
             )
 
 
@@ -1015,6 +1033,10 @@ class _ListRule(Rule):
     def _message(self, text: str) -> str:  # pragma: no cover - overridden
         raise NotImplementedError
 
+    def _suggestion(self, span) -> tuple[str | None, Applicability]:
+        """The fix for one matched span. Advisory unless a subclass says otherwise."""
+        return None, Applicability.ADVISORY
+
     def _build(self, nlp):
         from spacy.matcher import Matcher, PhraseMatcher
 
@@ -1055,6 +1077,7 @@ class _ListRule(Rule):
 
     def check(self, ctx: CheckContext) -> Iterable[Issue]:
         for span in self._spans(ctx):
+            suggestion, applicability = self._suggestion(span)
             yield _issue(
                 ctx,
                 self.code,
@@ -1064,6 +1087,8 @@ class _ListRule(Rule):
                 span.end_char,
                 span.text,
                 severity=self.severity,
+                suggestion=suggestion,
+                applicability=applicability,
             )
 
 
@@ -1094,6 +1119,23 @@ class PufferyRule(_ListRule):
     def _message(self, text: str) -> str:
         return f"AI tell: puffery '{text}'"
 
+    def _suggestion(self, span) -> tuple[str | None, Applicability]:
+        """The plain word the buzzword stands in for.
+
+        Matching is by lemma, so a hit can be inflected ("delved", "optimizing")
+        while the alternatives are listed in the base form. Substituting one for
+        the other would change the tense, so only a verbatim base-form match is
+        offered as a replacement; anything inflected becomes a direction the
+        writer conjugates.
+        """
+        alternatives = ai_writing()["puffery_alternatives"].get(self._lemma_key(span))
+        if not alternatives:
+            return None, Applicability.ADVISORY
+        suggestion = ", ".join(match_case(a, span) for a in alternatives)
+        surface = " ".join(span.text.lower().split())
+        inflected = surface != self._lemma_key(span)
+        return suggestion, Applicability.REWRITE if inflected else Applicability.REPLACE
+
     @classmethod
     def _noun_sense(cls, tok) -> bool:
         if tok.lemma_.lower() not in cls._VERB_ONLY:
@@ -1122,6 +1164,7 @@ class PufferyRule(_ListRule):
             message = self._message(span.text)
             if topical:
                 message += f" (used {count}× — likely topic vocabulary)"
+            suggestion, applicability = self._suggestion(span)
             yield _issue(
                 ctx,
                 self.code,
@@ -1131,6 +1174,8 @@ class PufferyRule(_ListRule):
                 span.end_char,
                 span.text,
                 severity=Severity.INFO if topical else self.severity,
+                suggestion=suggestion,
+                applicability=applicability,
             )
 
     @staticmethod
@@ -1184,6 +1229,12 @@ class TransitionRule(_ListRule):
     def _message(self, text: str) -> str:
         return f"AI tell: overused transition '{text}'"
 
+    def _suggestion(self, span) -> tuple[str | None, Applicability]:
+        # These transitions almost always open a sentence, where the comma after
+        # them and the capital on the next word both need attention — so in
+        # practice this reports a direction, not a substitution.
+        return _cut(span)
+
 
 class AiArtifactRule(Rule):
     """NB519 — AI artifacts: fingerprints, not tells.
@@ -1233,6 +1284,9 @@ class HedgeStackRule(Rule):
 
     def check(self, ctx: CheckContext) -> Iterable[Issue]:
         for m in _HEDGE_STACK.finditer(ctx.doc.text):
+            # Keep the modal, drop the adverb: the modal already carries the
+            # uncertainty, so the pair collapses to its first word.
+            modal = m.group(0).split()[0]
             yield _issue(
                 ctx,
                 "NB520",
@@ -1241,6 +1295,8 @@ class HedgeStackRule(Rule):
                 m.start(),
                 m.end(),
                 m.group(0),
+                suggestion=modal,
+                applicability=Applicability.REPLACE,
             )
 
 
@@ -1422,6 +1478,9 @@ class IntensifierRule(_ListRule):
 
     def _message(self, text: str) -> str:
         return f"AI tell: weak intensifier '{text}' — cut it or be specific"
+
+    def _suggestion(self, span) -> tuple[str | None, Applicability]:
+        return _cut(span)
 
     def _skip(self, tok) -> bool:
         # "Very" the emphatic adjective (= "exact") is not a degree word.

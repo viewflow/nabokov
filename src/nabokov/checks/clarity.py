@@ -21,7 +21,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 
 from ..data_loader import nominalizations
-from ..issue import Issue, Severity
+from ..issue import Applicability, Issue, Severity
 from .base import CheckContext, Rule
 
 # come/arrive reach their nominalization through a preposition: "come to a
@@ -30,7 +30,18 @@ _PREP_VERBS = {"come": {"to"}, "arrive": {"at"}}
 _OBJ_DEPS = {"dobj", "obj"}
 
 
-def _span_issue(ctx: CheckContext, code, name, message, start, end, text, severity):
+def _span_issue(
+    ctx: CheckContext,
+    code,
+    name,
+    message,
+    start,
+    end,
+    text,
+    severity,
+    suggestion=None,
+    applicability=Applicability.ADVISORY,
+):
     line, col = ctx.source.linecol(start)
     end_line, end_col = ctx.source.linecol(end)
     return Issue(
@@ -42,6 +53,8 @@ def _span_issue(ctx: CheckContext, code, name, message, start, end, text, severi
         end_line=end_line,
         end_col=end_col,
         severity=severity,
+        suggestion=suggestion,
+        applicability=applicability,
         text=text,
     )
 
@@ -78,11 +91,16 @@ class NominalizationRule(Rule):
                 ctx,
                 "NB304",
                 "nominalization",
-                f"nominalization '{flat}' — try the verb: {suggestion}",
+                f"nominalization '{flat}' — try the verb",
                 start,
                 end,
                 text,
                 Severity.WARNING,
+                # The verb replaces the whole light-verb construction, but it has
+                # to pick up the tense the light verb was carrying ("came to an
+                # agreement" -> "agreed"), which the map cannot supply.
+                suggestion=suggestion,
+                applicability=Applicability.REWRITE,
             )
 
 

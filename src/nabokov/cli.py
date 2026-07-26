@@ -15,6 +15,10 @@ from .source import _HTML_SUFFIXES, _MD_SUFFIXES, SourceFile
 
 TEXT_SUFFIXES = {".txt", ".text", ".rst"} | _MD_SUFFIXES | _HTML_SUFFIXES
 
+# How many hotspots `--hotspots` shows. A config `hotspots = N` sets any other
+# number; the flag itself takes no argument (see build_parser).
+DEFAULT_HOTSPOTS = 3
+
 EXIT_OK = 0
 EXIT_FINDINGS = 1
 EXIT_ERROR = 2
@@ -91,6 +95,16 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         default=None,
         help="print document metrics (grade, sentence length, burstiness) per file",
+    )
+    # A plain flag, not a count: with `nargs="?"` argparse cannot tell
+    # `--hotspots draft.md` from a count and eats the path.  Set `hotspots = N`
+    # in the config to see more than the default three.
+    parser.add_argument(
+        "--hotspots",
+        action="store_true",
+        default=None,
+        help="after the findings, rank the paragraphs carrying the most trouble "
+        "per word — where to spend the next ten minutes",
     )
     parser.add_argument(
         "--score",
@@ -220,6 +234,7 @@ def main(argv: list[str] | None = None) -> int:
         "color": args.color,
         "statistics": args.statistics,
         "doc_stats": args.doc_stats,
+        "hotspots": DEFAULT_HOTSPOTS if args.hotspots else None,
         "adverbs_all_pos": args.adverbs_all_pos,
         "stdin_display_name": args.stdin_display_name,
         "style": args.style,

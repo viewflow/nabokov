@@ -510,7 +510,13 @@ $ npx skills add viewflow/nabokov</code></pre>
       nodes.push(span("p", "yours.md:" + d.line + ":" + d.col + ": "));
       nodes.push(span(codeClass(d.code), d.code));
       let message = " " + d.message;
-      if (d.suggestion) message += " → " + d.suggestion;
+      // Mirror the CLI's wording: an arrow is a substitution you can make,
+      // "try:" is a draft you still have to land yourself.
+      if (d.suggestion !== null && d.suggestion !== undefined) {
+        message += d.applicability === "replace"
+          ? (d.suggestion ? " → " + d.suggestion : " → delete it")
+          : " try: " + d.suggestion;
+      }
       nodes.push(span("", message + "\n"));
     }
     const s = data.summary;

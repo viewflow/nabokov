@@ -10,9 +10,9 @@ if TYPE_CHECKING:
     from ..config import Config
 
 
-def result_payload(result: AnalysisResult) -> dict:
+def result_payload(result: AnalysisResult, hotspots: int = 0) -> dict:
     """One file's analysis as a JSON-ready dict (shared with the web API)."""
-    return {
+    payload = {
         "path": result.source.display_name,
         "summary": {
             "grade": result.stats.grade,
@@ -36,14 +36,20 @@ def result_payload(result: AnalysisResult) -> dict:
                 "end_line": issue.end_line,
                 "end_col": issue.end_col,
                 "suggestion": issue.suggestion,
+                "applicability": issue.applicability.value,
                 "text": issue.text,
             }
             for issue in result.issues
         ],
     }
+    if hotspots:
+        from ..hotspots import payload as hotspot_payload
+
+        payload["hotspots"] = hotspot_payload(result, hotspots)
+    return payload
 
 
 def report(results: list[AnalysisResult], config: Config, out: TextIO) -> None:
-    payload = [result_payload(result) for result in results]
+    payload = [result_payload(result, config.hotspots) for result in results]
     json.dump(payload, out, indent=2, ensure_ascii=False)
     out.write("\n")

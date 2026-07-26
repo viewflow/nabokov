@@ -9,9 +9,9 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from ..data_loader import complex_phrases, qualifiers
-from ..issue import Issue, Severity
-from .base import CheckContext, Rule
+from ..data_loader import complex_phrases, qualifier_fixes, qualifiers
+from ..issue import Applicability, Issue, Severity
+from .base import CheckContext, Rule, deletion_is_safe, match_case
 
 
 def _resolve_overlaps(matches: list[tuple[int, int]]) -> list[tuple[int, int]]:
@@ -54,7 +54,9 @@ class _PhraseDictRule(Rule):
             span = ctx.doc[start:end]
             if not self._keep(span):
                 continue
-            yield self._issue_for(ctx, span.text.lower(), span)
+            # Flatten the key: a span can wrap a line, and the dictionaries are
+            # written with single spaces.
+            yield self._issue_for(ctx, " ".join(span.text.lower().split()), span)
 
     def _keep(self, span) -> bool:
         """Hook for subclasses to veto a dictionary match from its context."""
@@ -72,24 +74,24 @@ class ComplexPhraseRule(_PhraseDictRule):
 
     def _issue_for(self, ctx: CheckContext, phrase: str, span) -> Issue:
         suggestions = complex_phrases().get(phrase, [])
-        suggestion = ", ".join(suggestions)
+        suggestion = ", ".join(match_case(s, span) for s in suggestions)
         start = span.start_char
         end = span.end_char
         line, col = ctx.source.linecol(start)
         end_line, end_col = ctx.source.linecol(end)
-        msg = f"wordy: '{' '.join(span.text.split())}'"
-        if suggestion:
-            msg += f" → {suggestion}"
         return Issue(
             code="NB401",
             name="complex-phrase",
-            message=msg,
+            message=f"wordy: '{' '.join(span.text.split())}'",
             line=line,
             col=col,
             end_line=end_line,
             end_col=end_col,
             severity=Severity.WARNING,
             suggestion=suggestion or None,
+            # The dictionary alternatives are drop-in substitutions for the whole
+            # phrase; where it lists several, the first is the default pick.
+            applicability=Applicability.REPLACE if suggestion else Applicability.ADVISORY,
             text=span.text,
         )
 
@@ -137,11 +139,34 @@ class QualifierRule(_PhraseDictRule):
         temporal = prev is not None and prev.pos_ == "AUX" and nxt.tag_ in ("VBN", "VBD")
         return not (restrictive or imperative or temporal)
 
+    @staticmethod
+    def _fix(phrase: str, span) -> tuple[str, Applicability]:
+        """The fix for one hedge: what replaces it, and how safely.
+
+        The negated hedges are the reason this is not a lookup. Cutting "I don't
+        think" out of "I don't think we should ship" does not remove a hedge, it
+        flips the claim — so those carry written guidance and never a
+        substitution. Everything else is a cut or a shorter form, downgraded to
+        REWRITE where the position makes the edit non-mechanical.
+        """
+        fixes = qualifier_fixes()
+        guidance = fixes["rewrite"].get(phrase)
+        if guidance is not None:
+            return guidance, Applicability.REWRITE
+        replacement = fixes["replace"].get(phrase)
+        if replacement is not None:
+            # Something takes the hedge's place, so only the capital is at stake.
+            return match_case(replacement, span), Applicability.REPLACE
+        if deletion_is_safe(span):
+            return "", Applicability.REPLACE
+        return "cut the hedge and keep the claim", Applicability.REWRITE
+
     def _issue_for(self, ctx: CheckContext, phrase: str, span) -> Issue:
         start = span.start_char
         end = span.end_char
         line, col = ctx.source.linecol(start)
         end_line, end_col = ctx.source.linecol(end)
+        suggestion, applicability = self._fix(phrase, span)
         return Issue(
             code="NB303",
             name="qualifier",
@@ -151,5 +176,7 @@ class QualifierRule(_PhraseDictRule):
             end_line=end_line,
             end_col=end_col,
             severity=Severity.WARNING,
+            suggestion=suggestion,
+            applicability=applicability,
             text=span.text,
         )

@@ -95,6 +95,10 @@ ignore = ["E501", "S101", "RUF012"]
 # SIM905: the motion-verb list stays a readable word blob, not a 30-item literal.
 "src/nabokov/checks/ai_writing.py" = ["RUF001", "RUF002", "RUF003", "SIM905"]
 "src/nabokov/reporters/color.py" = ["RUF001"]
+# The en dash belongs to the punctuation a deletion would strand; the × is the
+# hotspot report's multiplier, same as the color reporter's.
+"src/nabokov/checks/base.py" = ["RUF001"]
+"src/nabokov/hotspots.py" = ["RUF001"]
 "src/nabokov/score.py" = ["RUF002"]
 "tests/test_budgets.py" = ["RUF001", "RUF003"]
 "tests/test_clarity.py" = ["RUF001", "RUF003"]

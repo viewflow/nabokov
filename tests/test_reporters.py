@@ -82,3 +82,58 @@ def test_color_truncates_long_lines(analyze):
     # the long source line must be windowed with an ellipsis, never dumped whole
     assert "…" in text
     assert max(len(line) for line in text.splitlines()) < 120
+
+
+# --- fix suggestions ---------------------------------------------------------
+# One rule states a fix once; each reporter decides how to show it. These pin
+# the wording per format, because editors parse flake8 lines and the arrow-vs-
+# "try:" distinction is what tells a reader whether the fix is safe to paste.
+
+AI = Config(extend_select=("NB5",))
+WORDY = "We should use it in order to win."
+
+
+def test_flake8_appends_the_fix_to_the_message(analyze):
+    """Inline, not on a second line — editors attach one finding per line."""
+    text = _render("flake8", analyze(WORDY, name="a.txt"))
+    assert "a.txt:1:18: NB401 wordy: 'in order to' → to" in text
+
+
+def test_flake8_marks_a_rewrite_differently(analyze):
+    text = _render("flake8", analyze("The report was written by the team.", name="a.txt"))
+    assert "try: The team wrote the report" in text
+
+
+def test_color_puts_the_fix_on_its_own_line(analyze):
+    text = _render("color", analyze(WORDY), Config(color="never"))
+    assert "\n      → to\n" in text
+
+
+def test_github_puts_the_fix_on_a_second_line(analyze):
+    text = _render("github", analyze(WORDY))
+    assert "%0A→ to" in text  # %0A is the annotation newline escape
+
+
+def test_json_carries_the_applicability_tier(analyze):
+    payload = json.loads(_render("json", analyze(WORDY)))
+    entry = next(d for d in payload[0]["diagnostics"] if d["code"] == "NB401")
+    assert entry["suggestion"] == "to"
+    assert entry["applicability"] == "replace"
+
+
+def test_json_marks_a_finding_without_a_fix_advisory(analyze):
+    payload = json.loads(_render("json", analyze("He quickly ran to the store.")))
+    entry = next(d for d in payload[0]["diagnostics"] if d["code"] == "NB301")
+    assert entry["suggestion"] is None
+    assert entry["applicability"] == "advisory"
+
+
+def test_deletion_renders_as_delete_it(analyze):
+    text = _render("flake8", analyze("This is very fast today.", config=AI))
+    assert "→ delete it" in text
+
+
+def test_hotspots_absent_unless_requested(analyze):
+    result = analyze(WORDY)
+    assert "Hotspots" not in _render("flake8", result)
+    assert "Hotspots" in _render("flake8", result, Config(hotspots=3))

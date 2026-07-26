@@ -35,8 +35,19 @@ def lint(text: str) -> dict | None:
     source = SourceFile.from_text(text, "text.md", is_markdown=True)
     result = _engine().analyze(source)
     score = compute(result)
+    # The fix lives in `suggestion`, not the message, so it has to be carried
+    # across explicitly — the editor prompt is the main consumer of it.
     findings = [
-        {"line": i.line, "code": i.code, "message": i.message}
+        {
+            "line": i.line,
+            "code": i.code,
+            "message": i.message,
+            **(
+                {"suggestion": i.suggestion, "applicability": i.applicability.value}
+                if i.suggestion is not None
+                else {}
+            ),
+        }
         for i in result.issues
     ]
     return {

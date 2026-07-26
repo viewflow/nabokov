@@ -14,6 +14,75 @@ Run `nabokov --list-rules` to print this catalog from the tool itself.
 
 ---
 
+## Fix suggestions
+
+Many findings carry a fix as well as a diagnosis. Because a fix is only worth as
+much as a reader's willingness to trust it, every suggestion is tagged with how
+mechanically it applies:
+
+| Tier | Meaning | Shown as |
+|------|---------|----------|
+| `replace` | Substitutes for the flagged span verbatim. An empty suggestion means *delete the span*; where several alternatives are listed, the first is the default. | `→ to` |
+| `rewrite` | A drafted direction. It may reach outside the flagged span, or need tense and number agreement the parse cannot settle. Read it, don't paste it. | `try: the team wrote the report` |
+| `advisory` | No span-level fix exists. The message carries the direction and the suggestion is empty. | *(nothing)* |
+
+Severity says how much a finding matters; applicability says what you are allowed
+to *do* about it. They are independent — an `info` finding can be a clean
+`replace`, and a `warning` can be `advisory`.
+
+The line between `replace` and `rewrite` is position, not the dictionary. The same
+entry lands in different tiers depending on where it sits:
+
+- `Moreover, the team shipped it.` — cutting `Moreover` strands the comma and
+  takes the capital with it, so this is a `rewrite`.
+- `The build was moreover green.` — cutting mid-sentence is mechanical: `replace`.
+- `Despite the fact that sales fell…` → `Although` — a substitution, so only the
+  capital needs matching, and it stays `replace`.
+
+The same care governs the data:
+
+- `NB303` never offers to delete a negated hedge. Cutting "I don't think" out of
+  "I don't think we should ship" does not soften the claim, it flips it. Those
+  entries carry written guidance instead.
+- `NB502` offers a substitution only for a base-form match (`delve` →
+  `examine`). The alternatives are stored uninflected, so `delved` drops to
+  `rewrite`.
+- `NB302` drafts the active voice under three conditions: the parse names the
+  actor, the auxiliary is past tense, and the subject is not a relative
+  pronoun. Otherwise it reports the passive and stops.
+
+In `--format json` both fields ride on every diagnostic as `suggestion` and
+`applicability`. The flake8 format appends the fix to the message so editors keep
+one finding per line; the color and GitHub formats give it its own line.
+
+---
+
+## Hotspots
+
+`--hotspots` ranks the paragraphs carrying the most trouble *per word* and prints
+them after the findings. The report says what is wrong and `--score` says how bad
+the whole document is; this says where to start.
+
+```sh
+nabokov --ai --hotspots draft.md
+```
+
+```
+Hotspots (draft.md) — worst paragraphs first:
+  1. line 5-7: 17 findings in 34 words (density 88.2)
+       NB502×11 NB201 NB302 NB401 NB505 NB510 NB520
+       Moreover, the platform leverages a robust tapestry of very…
+```
+
+It adds no new signal: the inputs are the findings the rules already produced,
+weighted by severity (error 4, warning 2, info 1). Ranking is by density, not
+count — a long paragraph collects more findings just by being long. The divisor
+has a 25-word floor so a two-word heading with one finding cannot out-rank a
+dense paragraph. Set `hotspots = N` in the config to see more than the default
+three; the JSON format carries them under a `hotspots` key.
+
+---
+
 ## Readability (NB1–NB2)
 
 Readability uses the Automated Readability Index (ARI):
@@ -59,13 +128,13 @@ report.md:12:1: NB201 very hard to read (grade 17)
 | Code | Name | Color | Flags | Example |
 |------|------|-------|-------|---------|
 | `NB301` | adverb | blue | An `-ly` adverb spaCy confirms (POS = ADV), minus the exception list. | "He ran **quickly**." |
-| `NB302` | passive-voice | green | A passive construction, via spaCy dependency parse (`auxpass`), incl. the "by …" agent. | "The report **was written by the team**." |
-| `NB303` | qualifier | blue | A weakening/hedging phrase from the qualifier list. "just" is only flagged in hedge positions ("it's **just** a way to…") — restrictive "just one", the imperative opener "Just tell me…", and temporal "I'd just read" are precision devices and skipped. | "**I think** we should wait." |
-| `NB304` | nominalization | blue | The action hidden in a noun behind a light verb (dependency-matched, so articles/adjectives/inflection don't matter; the noun alone is never flagged). The message suggests the verb. | "**came to an agreement**" → agreed |
+| `NB302` | passive-voice | green | A passive construction, via spaCy dependency parse (`auxpass`), incl. the "by …" agent. Drafts the active voice (`rewrite`) when the agent is named and the auxiliary is past tense. | "The report **was written by the team**." |
+| `NB303` | qualifier | blue | A weakening/hedging phrase from the qualifier list. Suggests the cut where it is grammatical; the negated hedges get guidance instead, since deleting one inverts the claim. "just" is only flagged in hedge positions ("it's **just** a way to…") — restrictive "just one", the imperative opener "Just tell me…", and temporal "I'd just read" are precision devices and skipped. | "**I think** we should wait." |
+| `NB304` | nominalization | blue | The action hidden in a noun behind a light verb (dependency-matched, so articles/adjectives/inflection don't matter; the noun alone is never flagged). Suggests the verb (`rewrite` — it has to pick up the light verb's tense). | "**came to an agreement**" → agreed |
 | `NB305` | dummy-subject | blue | An expletive subject burying the real one (spaCy `expl`). Locative "there" is untouched. | "**There are** many resorts in Colorado." → "Colorado has…" |
-| `NB306` | repeated-word | blue | The same word twice in a row — the lexical illusion that hides on a line wrap. Grammatical doubles ("had had", "that that"), proper-noun pairs ("Pago Pago"), and emphasis runs of 3+ ("no no no") are skipped. | "Paris in **the the** spring" |
-| `NB307` | uncomparable | blue | A degree word on an absolute adjective — the quality either holds or it doesn't. Approximators stay legal ("almost impossible"), and soft absolutes (essential, universal, ideal, ultimate, absolute) accept comparison — "the most essential feature" is ordinary prose; only intensifiers fire on them ("really essential"). | "**very unique**", "**most perfect**" |
-| `NB401` | complex-phrase | magenta | A wordy phrase with a simpler alternative (the message shows the suggestion). | "**in order to**" → "to" |
+| `NB306` | repeated-word | blue | (`replace`) The same word twice in a row — the lexical illusion that hides on a line wrap. Grammatical doubles ("had had", "that that"), proper-noun pairs ("Pago Pago"), and emphasis runs of 3+ ("no no no") are skipped. | "Paris in **the the** spring" |
+| `NB307` | uncomparable | blue | (`replace`) A degree word on an absolute adjective — the quality either holds or it doesn't. Approximators stay legal ("almost impossible"), and soft absolutes (essential, universal, ideal, ultimate, absolute) accept comparison — "the most essential feature" is ordinary prose; only intensifiers fire on them ("really essential"). | "**very unique**", "**most perfect**" |
+| `NB401` | complex-phrase | magenta | A wordy phrase with a simpler alternative (`replace`, capitalization matched to the span). | "**in order to**" → "to" |
 
 ```
 report.md:3:8: NB302 passive voice: 'was written by the team'
@@ -144,7 +213,7 @@ calibration behind each threshold live in the rule docstrings in
 | Code | Name | Sev | Flags | Example |
 |------|------|-----|-------|---------|
 | `NB501` | ai-negation-contrast | warning / info | "it's not X, it's Y" / "not only X but Y" / "No X, no Y, just Z" (warning). Advisory reframes: "no longer" / "doesn't mean" / "more than just" / negation → role reveal / the appearance-verdict couplet. Bare negations, first person, questions, and spoken replies are exempt. | "This **isn't just fast, it's** transformative."; "**This feels pointless. It is not.**" |
-| `NB502` | ai-puffery | warning | Buzzword vocabulary (lemma-matched). A repeated lemma is topic vocabulary and drops to info; literal senses ("test harness") are exempt. | delve, tapestry, embark, synergy … |
+| `NB502` | ai-puffery | warning | Buzzword vocabulary (lemma-matched), with a plain-word alternative (`replace` on a base-form match, `rewrite` when inflected). A repeated lemma is topic vocabulary and drops to info; literal senses ("test harness") are exempt. | delve, tapestry, embark, synergy … |
 | `NB503` | ai-editorializing | info | Promotional / "importance" / vague-attribution phrases. | "**plays a crucial role**", "**experts argue**" |
 | `NB504` | ai-filler | warning | Chatbot filler, sycophancy, signposting. Reported speech ("asked **a** great question") is exempt. | "**Great question!**", "**let's dive in**" |
 | `NB505` | ai-transition | info | Overused formal transitions — human formal prose uses them too, so advisory. | "**Moreover**", "**In conclusion**" |
@@ -152,17 +221,17 @@ calibration behind each threshold live in the rule docstrings in
 | `NB507` | ai-rule-of-three | info | 3+ consecutive short *verbless* fragments on one line. Fragments with a verb are human staccato and exempt. | "The jokes. The wins. The team." |
 | `NB508` | ai-emoji | warning | Emoji as formatting (≥ 3 in the document). One finding per document. | "✅ fast ✅ safe 🚀 shipped" |
 | `NB509` | ai-monotonous-rhythm | info / warning | Flat sentence rhythm (low burstiness). Per-target threshold; robotic flatness escalates to warning. The finding anchors at the flattest run of near-equal sentences. See the CV with `--stats`. | uniform mid-length sentences throughout |
-| `NB510` | ai-intensifier | info | Weak intensifiers / weasel words. Emphatic "very" ("the very first time") and idioms ("quite a few") are exempt. | "**very**", "**really**", "**basically**" |
+| `NB510` | ai-intensifier | info | Weak intensifiers / weasel words; suggests the cut where it is grammatical. Emphatic "very" ("the very first time") and idioms ("quite a few") are exempt. | "**very**", "**really**", "**basically**" |
 | `NB511` | ai-participial-closer | info | Empty present-participle "significance" closer. | "…, **highlighting its importance**." |
 | `NB512` | ai-repeated-opener | info | 3+ sentences in a row opening with the same word. | "It … It … It …" |
 | `NB513` | ai-curly-quote | info | Curly quotes in the *minority* against straight quotes — a pasted-in snippet. All-curly typography is exempt. | straight text with a stray “curly” pair |
 | `NB514` | ai-title-case-heading | info | Title Case headings (a capitalized function word gives it away). | "## Getting Started **With** Django" |
-| `NB515` | ai-predicate-hyphen | info | A hyphenated compound used predicatively should drop the hyphen. | "the team is **cross-functional**" |
+| `NB515` | ai-predicate-hyphen | info | A hyphenated compound used predicatively should drop the hyphen (`replace`). | "the team is **cross-functional**" |
 | `NB516` | ai-bold-listicle | info | A stack (≥ 3) of `**Label:**` bold-header bullets, or a bold label ended with a period. One finding per stack. | "- **First:** … - **Second:** …" |
 | `NB517` | ai-vocab-cluster | info | Generic-praise words that are normal alone but cluster: 2+ *distinct* list words in one paragraph. | "our **significant** and **innovative** platform" |
 | `NB518` | ai-adjective-triad | info | Balanced adjective triples at 1.5+/1000 words (min 2) — the tricolon is legitimate rhetoric, so only the density is the tell. A copula-colon launch ("…is: X, Y, and Z") fires alone. | "**innovative, transformative, and groundbreaking**" |
 | `NB519` | ai-artifact | warning | Fingerprints: chat citation tokens, AI-tool URL parameters, unfilled placeholders, knowledge-cutoff disclaimers, invisible characters (zero-width space/joiners, mid-text BOM), and mixed-script homoglyph swaps ("dеtection" with a Cyrillic е). Ordinary multilingual text is exempt: NBSP, whole-script words, and Cyrillic suffixes on Latin brands don't fire. No density gating. | "**citeturn0search0**", "**[Your Name]**" |
-| `NB520` | ai-hedge-stack | warning | A modal stacked with a hedge adverb — the two hedges cancel out; keep one. | "**could potentially** create" |
+| `NB520` | ai-hedge-stack | warning | A modal stacked with a hedge adverb — the two hedges cancel out; keep one (`replace`, collapsing to the modal). | "**could potentially** create" |
 | `NB521` | ai-paragraph-opener | warning | The same coordinating conjunction opening 3+ paragraphs (and ≥ 10% of them). | "**And** … ¶ **And** … ¶ **And** …" |
 | `NB522` | ai-engagement-bait | info | A closing second-person superlative question — reply bait. Flags *bait*, not AI: humans growth-hack too. | "**What's the most unexpected place you've found genuine customer insight?**" |
 | `NB523` | ai-anaphora-triad | info | The same quantifier (more/every/each…) opening three coordinated phrases. A pair or a varied list is exempt. | "**more code reviews, more reports, and more style guides**" |
@@ -266,3 +335,15 @@ error.
 The word lists, complex-phrase dictionary, and readability thresholds live in
 `../src/nabokov/data/`. The AI-writing signal lists live in
 `../src/nabokov/data/ai_writing.json`.
+
+The fix data lives beside the terms it annotates: `puffery_alternatives` in
+`ai_writing.json`, the `cut`/`replace`/`rewrite` groups in `qualifiers.json`, the
+phrase alternatives in `complex_phrases.json`, the nominalization verbs in
+`nominalizations.json`, and the participle-to-past forms NB302 rewrites with in
+`passive_irregulars.json`.
+
+These are closed, hand-written sets over terms nabokov already flags, never a
+general thesaurus. A broad synonym source (WordNet, embeddings) returns the wrong
+sense and the wrong register, and one bad suggestion costs more trust than a
+missing one buys. Adding an alternative must not widen what gets flagged: the
+keys are checked against the term lists in `tests/test_suggestions.py`.
