@@ -18,14 +18,22 @@ class Applicability(StrEnum):
     """How mechanically an Issue's ``suggestion`` can be applied.
 
     Severity says how much a finding matters; applicability says what a consumer
-    is allowed to *do* with the fix. Without the split, a reporter, an agent, or
-    a future ``--fix`` cannot tell "paste this string" from "think about this".
+    is allowed to *do* with the fix. Without the split, a reporter or an agent
+    cannot tell "paste this string" from "think about this".
+
+    nabokov deliberately does not apply fixes itself. Editing prose needs the
+    judgment to know when a mechanically safe edit is still the wrong edit —
+    cutting a hedge that was doing honest work, deleting an adverb the sentence
+    needed — and that judgment belongs to the writer or to an agent reading the
+    whole draft, not to a linter reading one span. The tier is how nabokov hands
+    that decision over with the information needed to make it.
 
     REPLACE  — the suggestion substitutes for the flagged span verbatim. An empty
                suggestion means "delete the span". Where the suggestion offers
                several comma-separated alternatives, the first is the default.
                Markup blanking is length-preserving (see ``source``), so the span
-               offsets address the user's real file and a substitution is safe.
+               offsets address the user's real file and a caller can splice the
+               replacement in directly.
     REWRITE  — a drafted direction. It may reach outside the flagged span, or need
                tense and number agreement the parse cannot settle. Show it, never
                apply it blind.

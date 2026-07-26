@@ -2,8 +2,10 @@
 
 The tiers are a promise to consumers — a REPLACE suggestion substitutes for the
 flagged span verbatim, a REWRITE one does not. These tests pin the promise,
-because the cost of breaking it is a `--fix` that corrupts a file or an agent
-that pastes a tense error into someone's draft.
+because the consumers act on it: the cost of breaking it is an agent pasting a
+tense error into someone's draft, or the bot proposing an edit that inverts a
+claim. nabokov never applies a fix itself — the tier is how it hands that
+decision over.
 """
 
 from __future__ import annotations
@@ -74,7 +76,8 @@ def test_replace_suggestion_actually_substitutes(analyze):
     """Splice a REPLACE fix into the source and check the result reads right.
 
     Markup blanking preserves length, so an issue's offsets address the real
-    file — this is the property a future `--fix` rests on.
+    file. That is what makes a REPLACE suggestion usable by a caller: splice it
+    in at the span and the result reads correctly.
     """
     text = "We should use it in order to win."
     source_result = analyze(text, config=AI)
