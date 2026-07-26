@@ -48,6 +48,7 @@ from .clarity import DummySubjectRule, NominalizationRule
 from .concreteness import ConcretenessRule
 from .condescension import CondescensionRule
 from .direction import DirectionalLanguageRule
+from .headings import HeadingPunctuationRule
 from .images import ImageAltRule
 from .links import VagueLinkTextRule
 from .passive import PassiveRule
@@ -77,6 +78,7 @@ ALL_RULES: list[Rule] = [
     DirectionalLanguageRule(),
     ImageAltRule(),
     VagueLinkTextRule(),
+    HeadingPunctuationRule(),
     ConcretenessRule(),
     # NB5xx — signs of AI writing (off by default; enable with --select/--extend-select NB5)
     NegationContrastRule(),
@@ -137,6 +139,7 @@ RULE_META: dict[str, tuple[str, str]] = {
     "NB310": ("directional-language", "Orienting the reader by position ('the diagram above')"),
     "NB311": ("image-no-alt", "Image with no alt text (accessibility)"),
     "NB312": ("vague-link-text", "Link text that does not say where it goes"),
+    "NB313": ("heading-punctuation", "Heading ends in sentence punctuation"),
     "NB401": ("complex-phrase", "Complex / wordy phrase with a simpler alternative"),
     "NB501": ("ai-negation-contrast", "AI tell: 'it's not X, it's Y' negation-contrast"),
     "NB502": ("ai-puffery", "AI tell: puffery / buzzword vocabulary"),

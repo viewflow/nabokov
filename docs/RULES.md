@@ -139,6 +139,7 @@ report.md:12:1: NB201 very hard to read (grade 17)
 | `NB310` | directional-language | blue | Orienting the reader by position (advisory): a document element followed by a bare `above`/`below` ("the diagram above", "check the table below"), or a bare reference idiom ("see above", "as shown below"). Position does not survive reflow, pagination, screen readers, or the next editor reordering the page. A real preposition with a real object is untouched — "above 50 percent", "above the intake manifold" — and so is a non-document noun ("the shelf above"). Left and right are deliberately absent: "the right-hand side" usually describes a UI, where position is the content. Off for SOCIAL. | "In the **diagram above**, clients run jobs." → "In the preceding diagram…" |
 | `NB311` | image-no-alt | blue | An image whose alt text is empty or missing (advisory), in Markdown `![](x.png)` or a raw `<img>` tag, in `.md` and `.html` alike. Images inside a code fence are showing the syntax, not using it, and never fire. Precision is capped by the standard: Google says to mark a *decorative* image with empty alt text, so an empty alt is either that or an oversight and the source cannot say which — hence info, and a message that names the case. | `![](chart.png)` |
 | `NB312` | vague-link-text | blue | A link whose visible text could point anywhere — `click here`, `here`, `this`, `read more`, `learn more`. Screen readers can list a page's links stripped of their sentences, and a list of identical "here" entries points nowhere (WCAG 2.4.4, Level A). Matching is on the *whole* link text, so "Read the installation guide" is fine, and it reads the `link-text` span rather than the prose — the same words in a sentence about a button are untouched. The message names the target so the writer need not go and look. | "For the options, [**click here**](/config)." |
+| `NB313` | heading-punctuation | blue | A heading ending in `.`, `,`, `;` or `:` — a heading is a label, not a sentence (advisory). Question marks and ellipses stay legal, and only *trailing* punctuation counts, so "Step 1: Install" is untouched. Setext headings (underlined with `===`) are not indexed as headings and so are invisible here. Prior art: `HeadingPunctuation` in both Vale styles. | "## Requirements**:**" |
 | `NB401` | complex-phrase | magenta | A wordy phrase with a simpler alternative (`replace`, capitalization matched to the span). | "**in order to**" → "to" |
 
 ```
@@ -368,7 +369,7 @@ every offset are unchanged. `NB311` and `NB312` use it today. `NB312` is the cle
 existing: without `link-text` spans the check can only phrase-match "click
 here" anywhere in the prose, which misses the bare `[here](url)` — the
 commonest form by far — and cannot tell a link from someone writing the words
-*click here* about a button. The `heading`, `fence` and `table-row` kinds are
+*click here* about a button. `NB313` reads the `heading` kind. The `fence` and `table-row` kinds are
 recorded and not yet consumed.
 
 ## Data

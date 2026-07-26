@@ -154,6 +154,7 @@ Run `nabokov --list-rules` to see them all. The full reference lives in
 | `NB310` | Orienting by position: "the diagram **above**", "see **below**" (advisory). |
 | `NB311` | Images with no alt text (advisory). |
 | `NB312` | Link text that says nothing: "[**click here**](/config)". |
+| `NB313` | Headings ending in sentence punctuation: "## Requirements**:**". |
 | `NB401` | Wordy phrases, with a simpler suggestion. |
 | `NB601` | Abstract, "empty prose" paragraphs, scored against the Brysbaert concreteness norms (advisory). |
 | `NB101` | The document grade, reported with `--max-grade`. |
