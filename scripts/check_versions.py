@@ -40,9 +40,28 @@ def _find(path: str, pattern: str) -> str | None:
     return match.group(1) if match else None
 
 
+def _check_no_hardcoded_dunder(errors: list[str]) -> None:
+    """``__version__`` must come from package metadata, never a literal.
+
+    26.7.7 shipped reporting itself as 26.7.6 because ``src/nabokov/__init__.py``
+    held a literal that nothing checked — a sixth version location, one file
+    deeper than this script was looking. Rather than add it to the list and keep
+    remembering, the module now reads ``importlib.metadata``. This keeps it that
+    way.
+    """
+    path = "src/nabokov/__init__.py"
+    text = (ROOT / path).read_text(encoding="utf-8")
+    if re.search(r'^__version__\s*=\s*["\']\d', text, re.M):
+        errors.append(
+            f"{path}: __version__ is a hardcoded literal. Derive it from "
+            f"importlib.metadata so it cannot drift from pyproject.toml."
+        )
+
+
 def main() -> int:
     found: dict[str, str] = {}
     errors: list[str] = []
+    _check_no_hardcoded_dunder(errors)
 
     for path, pattern, label in SOURCES:
         version = _find(path, pattern)

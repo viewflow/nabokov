@@ -30,13 +30,13 @@ its code plus a plain gloss: "NB302 (passive voice)", not linter jargon.
 ## Layer 1 — static
 
 ```sh
-uvx 'nabokov>=26.7.7' --format=flake8 <file>  # first call: pins the floor these notes assume
+uvx 'nabokov>=26.7.8' --format=flake8 <file>  # first call: pins the floor these notes assume
 uvx nabokov --format=flake8 --ai <file>       # add the AI-writing / de-slop checks (NB5xx)
 uvx nabokov --format=json --ai <file>         # same findings, with fix + tier per finding
 uvx nabokov --format=flake8 --ai --hotspots <file>   # + the worst paragraphs, ranked
 ```
 
-**These notes describe nabokov 26.7.7 or newer.** The skill and the linter ship
+**These notes describe nabokov 26.7.8 or newer.** The skill and the linter ship
 through different channels — this file comes from git, the tool from PyPI — so
 they can drift apart. Run the version-pinned form **once** at the start of a
 session. If it fails to resolve, the installed tool is too old and every rule

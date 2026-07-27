@@ -12,7 +12,7 @@
       "name": "nabokov",
       "source": "./",
       "description": "Prose linter with de-slop editing and copywriting skills: readability and AI-tell checks, rewrites that keep your meaning, and copy rebuilt toward a goal.",
-      "version": "26.7.7",
+      "version": "26.7.8",
       "license": "MIT",
       "homepage": "https://nabokov.viewflow.io",
       "repository": "https://github.com/viewflow/nabokov",
