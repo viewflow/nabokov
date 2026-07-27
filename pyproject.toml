@@ -90,7 +90,7 @@ ignore = ["E501", "S101", "RUF012"]
 "tests/**" = ["S"]
 # This linter's whole subject is punctuation and script tells, so the "ambiguous
 # character" rules fire on the very things the code exists to detect: en/em dashes
-# in the AI-tell regexes, Cyrillic look-alikes in the NB519 homoglyph tables and
+# in the AI-tell regexes, Cyrillic look-alikes in the NB317 homoglyph tables and
 # their fixtures, the × in the color reporter's multiplier.
 # SIM905: the motion-verb list stays a readable word blob, not a 30-item literal.
 "src/nabokov/checks/ai_writing.py" = ["RUF001", "RUF002", "RUF003", "SIM905"]
@@ -101,6 +101,10 @@ ignore = ["E501", "S101", "RUF012"]
 "src/nabokov/checks/base.py" = ["RUF001"]
 "src/nabokov/checks/acronyms.py" = ["RUF001"]
 "src/nabokov/hotspots.py" = ["RUF001"]
+# NB317 IS the ambiguous-character rule. Its docstring, its regexes and its
+# fixtures must all contain the Cyrillic look-alikes it exists to find.
+"src/nabokov/checks/characters.py" = ["RUF001", "RUF002", "RUF003"]
+"tests/test_characters.py" = ["RUF001", "RUF002", "RUF003", "S"]
 "src/nabokov/score.py" = ["RUF002"]
 "tests/test_budgets.py" = ["RUF001", "RUF003"]
 "tests/test_clarity.py" = ["RUF001", "RUF003"]

@@ -163,6 +163,7 @@ Run `nabokov --list-rules` to see them all. The full reference lives in
 | `NB313` | Headings ending in sentence punctuation: "## Requirements**:**". |
 | `NB314` | List steps that name the reader: "1. **You should** click Save" → "Click Save". |
 | `NB316` | Claims attributed to nobody: "**Studies show**…", "**Experts agree**", "**It is widely believed that**…". |
+| `NB317` | Invisible or look-alike characters: zero-width spaces, a Cyrillic `е` inside a Latin word. |
 | `NB401` | Wordy phrases, with a simpler suggestion. |
 | `NB601` | Abstract, "empty prose" paragraphs, scored against the Brysbaert concreteness norms (advisory). |
 | `NB801` | A README that never says what the project is. |
