@@ -212,9 +212,15 @@ a prompt to look, not an order to delete.
 
 Grounding also buys back rhetoric: each checkable fact from the user's
 material earns the copy one more flourish. Rhetoric without grounding is what
-detectors and readers smell. For the worked example, read the "Human signals"
-section of nabokov-editor. It shows how Substack's Pangram-launch post scores
-100% human on the very detector it announces.
+readers smell. Read the "Human signals" section of nabokov-editor for the
+worked version.
+
+Do not chase a detector score here. The same edit moves different detectors in
+opposite directions — one measured synonym swap cost one detector 36 points and
+*improved* two others — so a number that fell may mean nothing
+(`docs/detection-research.md`). `--score` compares this draft against your
+earlier one. It is a drift check, not a verdict, and copy that scores well can
+still read machine-made.
 
 ## Approval gates — ask once, batched
 

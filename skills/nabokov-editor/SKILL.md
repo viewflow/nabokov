@@ -122,14 +122,18 @@ Read the prose yourself and look for:
   hedged both ways.
 - **Dead metaphor**; **press-release tone**; **flattery**.
 
-**Human signals — the inverse checklist.** Substack's Pangram-launch post
-scores 100% human while using the not-X-but-Y shape and a punchline ending.
-Why? Every shape stands on a checkable fact. The number has a source ("as
-much as 40%… according to Pangram's estimate"). A named person is quoted. The
-launch has a partner and a date. Grounding pays for rhetoric. The same shapes
-over abstractions read machine-made. So when you rewrite, add one real detail
-from the author's material before another round of tell-removal. Ask for it
-first — never invent it.
+**Human signals — the inverse checklist.** The shapes on the list above are not
+banned. A piece can use the not-X-but-Y shape and a punchline ending and still
+read human, and one well-known post does exactly that. What carries it is that
+every shape stands on a checkable fact: the number has a source, a named person
+is quoted, the launch has a partner and a date. Grounding pays for rhetoric. The
+same shapes over abstractions read machine-made.
+
+Treat that as a working rule, not a measured one — it rests on reading, not on a
+study. What *is* measured is the narrower point that word-level change is not
+where the signal lives (`docs/detection-research.md`). Both push the same way: when
+you rewrite, add one real detail from the author's material before another round
+of tell-removal. Ask for it first — never invent it.
 
 **The cadence pass.** Do this once, on the whole piece, after the bullet list
 above. It is the layer trained detectors key on, and no static rule reaches
@@ -147,8 +151,8 @@ patterns. One of each is craft. A run of them is machine cadence.
    slightly off-balance wording would. This is what minimal paraphrase
    protects.
 4. **Ungrounded rhetoric** — a flourish with no checkable fact under it.
-5. **Register uniformity** — every line at the same polish level. No aside,
-   no flat ending, no loose sentence left unbalanced.
+5. **Register uniformity** — every line sits at the same polish level, with
+   nothing thrown away: no aside, and no sentence left loose or ending flat.
 
 Discipline for this pass: quote the span verbatim, name the pattern, and say
 how to break it. **An empty list is a valid answer** — judge the piece for
@@ -166,33 +170,45 @@ rewrite of a machine cadence is another machine cadence. Say which lines
 need their hand.
 
 **Detector feedback.** Detectors come in two families. Statistical ones
-measure rhythm and word predictability; real structural variety moves them.
-Trained classifiers (Pangram, Turnitin) learned what whole human documents
-look like; only grounded specifics and a real voice move them. Word swaps
-are close to useless against the second family — measured, a synonym swap
-costs the best trained classifier about 3 points and an automated paraphrase
-about 8 (`docs/detection-research.md`). Against the first family they are not
-useless, they are wild: the same swap cost one statistical detector 36 points
-and *improved* two others. Either way, swapping words is not the fix. It
-either does nothing or moves a number without touching the writing. When a detector highlights a sentence, treat it as one of the
-cadence or pointer findings above. Ground it or roughen it; never just swap
-synonyms. Track movement with `nabokov --score <file>` before and after —
-and pass on the caveat it prints: it gauges the statistical family only. Fix only what the fix improves, and say where the detector is
-wrong. After rewriting, check the new sentences against this same list.
-Rewrites drift into sibling shapes: a cut not-X-but-Y comes back as "what X
-does is Y", and a punchline ending comes back as an "-ing" closer. Sometimes
-the detector still flags text that lints clean. Then the register is the
-tell: impersonal, every clause balanced, no lived detail. Word swaps will not
-move that score. Two things move it. One: the author's own details or first
-person — ask, never invent. Two: uneven syntax — `--score`'s punct-rhythm
-number tracks one form of it (metronome punctuation, a comma every clause);
-keep the author's long unpunctuated runs instead of comma-splitting them. One more note: a short
-polished excerpt seems to score worse than a whole document (not confirmed).
-So score the whole piece before rewriting further. Cap the loop at **two**
-rewrite → re-scan rounds. On the second round touch only the sentences still
-flagged — a clean sentence rewritten again can only drift. If flags survive
-round two, stop and report what remains and why; a third pass moves the
-meaning more than the score.
+measure rhythm and word predictability. Trained classifiers (Pangram, Turnitin)
+learned what whole human documents look like.
+
+**There is no single number to chase, and this is the part people get wrong.**
+The same edit moves the two families in opposite directions. Measured on one
+benchmark, a synonym swap cost one statistical detector 36 points, cost another
+detector 5, and *improved* two others (`docs/detection-research.md`). So "make a
+change, watch the score fall" is not a workflow. A number that went down may mean
+nothing.
+
+Against trained classifiers, word swaps are close to useless: a synonym swap
+costs the best one about 3 points, an automated paraphrase about 8. Commercial
+"humanizer" rewriting barely moves it either. Either way, swapping words is not
+the fix. It does nothing, or it moves a number without touching the writing.
+
+So when a detector flags a sentence, treat it as one of the cadence or pointer
+findings above. Ground it or loosen it; never just swap synonyms. Fix only what
+the fix improves, and say where you think the detector is wrong.
+
+**What `--score` is for.** It compares a draft against *your own earlier draft*.
+It is not a detector proxy and cannot be one: its inputs are burstiness, punctuation
+rhythm and diversity, which are the statistical family's features — the ones that
+move unreliably. A text scoring 12 has been observed reading 100% AI to a trained
+classifier. Use it to catch polish drift, never as evidence a piece will pass.
+
+After rewriting, check the new sentences against this same list. Rewrites drift
+into sibling shapes: a cut not-X-but-Y comes back as "what X does is Y", and a
+punchline ending comes back as an "-ing" closer. When a detector still flags text
+that lints clean, the register is the tell — impersonal, every clause balanced, no
+lived detail. Two things move that. One: the author's own details or first person,
+asked for and never invented. Two: uneven syntax — `--score`'s punct-rhythm number
+tracks one form of it, so keep the author's long unpunctuated runs instead of
+comma-splitting them.
+
+Score the whole piece, not an excerpt, because a short passage carries less signal
+either way. Cap the loop at **two** rewrite → re-scan rounds. On the second round
+touch only the sentences still flagged — a clean sentence rewritten again can only
+drift. If flags survive round two, stop and report what remains and why; a third
+pass moves the meaning more than the score.
 
 Essays, opinion pieces, and academic texts also get a structural macro pass.
 It covers the thesis, a reverse outline, stitching, cohesion, and the
