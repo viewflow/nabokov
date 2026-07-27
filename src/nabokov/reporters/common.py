@@ -80,4 +80,9 @@ def format_document_stats(results: list[AnalysisResult]) -> str:
             f"pronouns={s.pronoun_density:.1f}/100w "
             f"temporal_connectives={s.temporal_ratio:.2f}"
         )
+        lines.append(
+            f"    quality: cohesion={s.paragraph_cohesion:.2f} "
+            f"dep_distance={s.dependency_distance:.1f} "
+            f"formality={s.formality:.1f} modifiers={s.modifier_density:.2f}"
+        )
     return "\n".join(lines) + "\n"

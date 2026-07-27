@@ -95,6 +95,15 @@ class DocumentStats:
     # Register metrics — reported, never scored. No rule reads these and none feeds
     # --score: the research behind them gives directions without thresholds. See the
     # "register metrics" block in readability.py.
-    nominal_density: float = 0.0  # nouns / content words; high = noun-heavy, flat
+    # High is ambiguous on its own: AI drafts run noun-heavy, and so does competent
+    # academic prose (Biber puts complex noun phrases at the centre of it). The number
+    # cannot separate the two — read it with modifier_density, not alone.
+    nominal_density: float = 0.0  # nouns / content words
     pronoun_density: float = 0.0  # pronouns per 100 words; low = re-names, rarely refers
     temporal_ratio: float = 0.0  # temporal / (temporal + additive) connectives
+    # Quality metrics — also reported, also never scored. See the "quality metrics"
+    # block in readability.py for why a threshold would be an extrapolation.
+    paragraph_cohesion: float = 0.0  # adjacent-paragraph content-lemma overlap (Jaccard)
+    dependency_distance: float = 0.0  # mean head-to-dependent token gap
+    formality: float = 0.0  # Heylighen & Dewaele F-score, 0-100
+    modifier_density: float = 0.0  # modifiers per noun-phrase head

@@ -39,7 +39,9 @@ flatten, or reverse once competence stops being the bottleneck. That gap is
 the most important finding here, and it disqualifies more candidate features
 than any other consideration.
 
-Three things survive that filter and are worth building:
+Three things survive that filter. All three now ship as `--stats` metrics,
+alongside a fourth from Tier 2 — and **no new rule**, because the one rule
+worth trying was measured against this repo's prose and killed:
 
 1. **Adjacent-paragraph lexical overlap** is the highest-correlating feature
    nabokov could newly compute from the parse alone (r=.40 with quality, r=.42
@@ -425,10 +427,10 @@ tell nabokov what to *measure*, and almost nothing about what to *flag*.
 
 | Feature | Shape | spaCy | L2-only evidence? | Confidence | Verdict |
 |---|---|---|---|---|---|
-| Adjacent-paragraph lexical overlap | Metric, rule candidate | Easy | No | High | **Build** |
-| Dependency distance | Metric, feeds NB201/202 | Easy | Yes (FCE learner corpus) | High | **Build** |
-| Heylighen–Dewaele F-score | Metric | Easy | No | High formula, no English validation | **Build** |
-| Noun-phrase modifier density | Metric | Easy | Yes | Medium | **Build** |
+| Adjacent-paragraph lexical overlap | Metric (rule measured, killed) | Easy | No | High | **Shipped** |
+| Dependency distance | Metric (does not feed NB201/202) | Easy | Yes (FCE learner corpus) | High | **Shipped** |
+| Heylighen–Dewaele F-score | Metric | Easy | No | High formula, no English validation | **Shipped** |
+| Noun-phrase modifier density | Metric | Easy | Yes | Medium | **Shipped** |
 | Word-frequency band | Metric | Needs corpus | Learner populations | High | Packaging call |
 | Entity-grid coherence | Metric, rule candidate | Hard | No | High, but wrong task | Spike first |
 | Concreteness / psycholinguistic norms | Metric | Needs corpus | No | Low, sign unverified | Open |
@@ -447,25 +449,43 @@ fluent adult prose?" is least answered.
 
 ### Tier 1 — worth building
 
-**1. Adjacent-paragraph lexical overlap.** *Metric, plus a candidate rule.*
+**1. Adjacent-paragraph lexical overlap.** *Shipped as a metric. The rule was
+measured and killed.*
 
-The strongest positive predictor in the literature (r=.40 quality, r=.42
-coherence), needing only a content-lemma set per paragraph and a set
+The highest-correlating feature reachable from the parse alone (r=.40 quality,
+r=.42 coherence), needing only a content-lemma set per paragraph and a set
 intersection. No external resource, no new dependency.
 
-The reason to rank it first is not the correlation. It is that the editor
-skill currently says topic jumps are "the most common LLM failure" and that
-"no linter catches this." A paragraph boundary where adjacent paragraphs share
-**zero** content lemmas is a computable proxy for exactly that, and the fix is
-already written in the skill: write a real bridge.
+**Implementation note, because the obvious formula failed.** Jaccard was tried
+first and rejected: dividing by the union punishes a paragraph for being long,
+and every document in this repo collapsed to 0.04–0.05 with no room to tell
+them apart. Normalising by the *smaller* paragraph instead gives roughly three
+times the spread. Validation is a shuffle test — reorder a document's
+paragraphs, keeping every word and destroying only adjacency, and the score
+drops on every file tried. That is the evidence it reads order rather than
+vocabulary, which is the only claim being made for it. Repo prose calibrates to
+0.07–0.40 per file.
 
-*False-positive risk: moderate, and manageable.* Genuine section breaks
-legitimately share nothing. Mitigations: suppress across headings, require a
-paragraph length floor, and trigger on zero or near-zero overlap rather than
-on a low score. Ship the metric first, look at the distribution across the
-corpus, and only then decide whether the rule earns its place, the same
-measure-before-shipping discipline that killed the unsourced-statistic rule at
-262 hits.
+**The rule did not survive contact with the corpus.** The plan was NB602: flag
+a paragraph boundary where adjacent paragraphs share **zero** content lemmas,
+since the editor skill says topic jumps are "the most common LLM failure" and
+that no linter catches them. Measured against this repo's own hand-written
+prose:
+
+| Content-word floor | Zero-overlap pairs | Rate |
+|---|---|---|
+| ≥5 | 103 / 472 | 21.8% |
+| ≥10 | 48 / 382 | 12.6% |
+| ≥15 | 30 / 313 | 9.6% |
+| ≥20 | 21 / 249 | 8.4% |
+| ≥25 | 13 / 181 | 7.2% |
+
+Roughly one adjacent pair in five, in prose written by hand, shares no content
+lemma with its neighbour. Tightening the floor never reaches a usable rate, and
+by ≥25 it has discarded 60% of the corpus to get to 7.2%. This is the same
+shape as the unsourced-statistic rule (262 hits) and `missing-contributing`: a
+"defect rate" that is simply the norm. **No NB602.** The metric ships; the
+finding does not.
 
 **2. Dependency distance.** *Metric, feeding NB201/NB202.*
 

@@ -61,7 +61,7 @@ Run them in order. Each pass hands a better draft to the next.
 
 1. **De-slop** — clear the machine tells first, so you enliven signal, not
    noise. This is the nabokov-editor job; run it, or run the linter directly:
-   `uvx 'nabokov>=26.7.8' --ai --hotspots <file>` — these notes describe that
+   `uvx 'nabokov>=26.7.9' --ai --hotspots <file>` — these notes describe that
    version or newer, and the skill ships from git while the tool ships from
    PyPI, so they can drift. If it fails to resolve, the installed tool is too
    old: say so rather than trusting a thin report. Plain `uvx nabokov` after
@@ -175,6 +175,14 @@ left the bad one standing. That paragraph needs rewriting, not fixing.
 Beware the opposite failure too: an empty hotspot list is not a good piece of
 copy. Findings per word only measures what the rules can see, and flat, generic,
 perfectly clean prose scores zero here. The linter is the floor.
+
+**Check the register matches the channel.** `uvx nabokov --stats <file>` prints
+`formality` on its `quality:` line, a 0–100 part-of-speech score. For scale,
+published values put conversation near 44 and scientific writing near 66. Copy
+that reads at 70 is writing at the reader rather than to them; a landing page
+scoring like a research paper is the usual cause of "technically fine, nobody
+converts". Use it to compare drafts and channels, never as a target to hit —
+there is no threshold behind it and no rule reads it.
 
 **Voice profiles.** nabokov can also lint against an author's style
 signature. `uvx nabokov --profile-card list` names the bundled profiles;

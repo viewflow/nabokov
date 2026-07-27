@@ -9,6 +9,7 @@ from dataclasses import dataclass, replace
 from functools import lru_cache
 
 from .checks import ALL_RULES, CheckContext
+from .checks.base import paragraph_ranges
 from .config import BUDGET_CODES, Config
 from .data_loader import thresholds
 from .issue import DocumentStats, Issue, Severity
@@ -16,9 +17,13 @@ from .readability import (
     burstiness,
     classify,
     content_tokens,
+    dependency_distance,
+    formality,
     letters_in,
     mattr,
+    modifier_density,
     nominal_density,
+    paragraph_cohesion,
     pronoun_density,
     reading_level,
     segment_lengths,
@@ -480,4 +485,8 @@ def _document_stats(doc, target: str, issues: list[Issue]) -> DocumentStats:
         nominal_density=round(nominal_density(doc), 2),
         pronoun_density=round(pronoun_density(doc), 2),
         temporal_ratio=round(temporal_ratio(doc), 2),
+        paragraph_cohesion=round(paragraph_cohesion(doc, paragraph_ranges(doc.text)), 2),
+        dependency_distance=round(dependency_distance(doc), 1),
+        formality=round(formality(doc), 1),
+        modifier_density=round(modifier_density(doc), 2),
     )

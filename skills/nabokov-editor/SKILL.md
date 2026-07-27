@@ -30,13 +30,13 @@ its code plus a plain gloss: "NB302 (passive voice)", not linter jargon.
 ## Layer 1 — static
 
 ```sh
-uvx 'nabokov>=26.7.8' --format=flake8 <file>  # first call: pins the floor these notes assume
+uvx 'nabokov>=26.7.9' --format=flake8 <file>  # first call: pins the floor these notes assume
 uvx nabokov --format=flake8 --ai <file>       # add the AI-writing / de-slop checks (NB5xx)
 uvx nabokov --format=json --ai <file>         # same findings, with fix + tier per finding
 uvx nabokov --format=flake8 --ai --hotspots <file>   # + the worst paragraphs, ranked
 ```
 
-**These notes describe nabokov 26.7.8 or newer.** The skill and the linter ship
+**These notes describe nabokov 26.7.9 or newer.** The skill and the linter ship
 through different channels — this file comes from git, the tool from PyPI — so
 they can drift apart. Run the version-pinned form **once** at the start of a
 session. If it fails to resolve, the installed tool is too old and every rule
@@ -93,7 +93,11 @@ Read the prose yourself and look for:
   paragraph opening, ask: *how did we get here from the last one?* If you
   can't answer, a link is missing. Write a real bridge — a clause that carries
   the last point into this one. A bolted-on *Moreover / Additionally* is a
-  label, not a bridge. No linter catches this; it needs meaning, so it's yours.
+  label, not a bridge. `--stats` prints a `cohesion` number: how much
+  vocabulary each paragraph shares with the one before. It tracks this in
+  aggregate. No finding points at the gap, though. In ordinary hand-written
+  prose one pair in five shares no words at all, so a rule would be noise.
+  Reading for the missing bridge stays yours.
 - **Empty sentences** — grammatical sentences that say nothing. The strongest
   tell.
 - **Interchangeable claims** — put a competitor's name into the sentence. If
@@ -275,7 +279,17 @@ profile never supplies facts.
      legitimately noun-heavy. What matters is the direction. If `nominal` rose
      and `pronouns` fell, you turned verbs into noun phrases and started
      re-naming things instead of referring to them. That is how a rewrite reads
-     stiffer while every finding goes away.
+     stiffer while every finding goes away. A high `nominal` on its own proves
+     nothing either way: machine drafts run noun-heavy, and so does good
+     academic prose.
+   - *Disconnected* — the `quality:` line prints `cohesion`: how much
+     vocabulary each paragraph shares with the one before. Watch it after a
+     rewrite. Rewriting is the operation that breaks it. Swapping words
+     paragraph by paragraph cuts the threads that tied them together, and
+     every sentence still lints clean. In the essay-scoring research this is
+     the strongest single predictor of rated quality. It is also the one
+     number a de-slopping pass reliably makes worse. If `cohesion` fell, you
+     renamed something across a boundary — put the shared term back.
    - *Blander* — slop became clean generic claims that fail the
      competitor-name test. No new concrete fact and no stance means the slop
      was paraphrased, not fixed.
@@ -354,6 +368,10 @@ asking. Ask first — as one batch — before a change that:
 
 - **Meaning first.** If a clean fix and a faithful fix conflict, keep the
   meaning and ask.
+- **Length is not quality.** Word count alone explains 39% of the score
+  variance in human essay grading. That is a fact about graders, not about
+  prose. When a draft feels thin, adding words is the move that looks like an
+  improvement and is not — find the missing fact instead, or cut.
 - **Quotes are evidence, not the author's prose.** Never edit quoted material
   or cited examples ("phrases like X" shown for criticism). This holds even
   when the quote marks were lost in conversion. nabokov skips quoted spans;

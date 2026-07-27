@@ -15,6 +15,7 @@ from __future__ import annotations
 import math
 import re
 import statistics
+from itertools import pairwise
 
 from .data_loader import thresholds
 
@@ -271,6 +272,165 @@ def temporal_ratio(doc) -> float:
     if not total:
         return 0.0
     return temporal / total
+
+
+# --- quality metrics ----------------------------------------------------------
+#
+# Four numbers out of the automated essay scoring literature (see
+# docs/text-quality-research.md). Reported, never scored — same rule as the register
+# block above, and for a sharper reason. Every correlation behind them was measured
+# on student or L2 exam essays, where the variance being explained is basic writing
+# competence; nabokov edits prose by people who already write fluently. Nothing in
+# that literature tests whether the relationships survive the shift, so a threshold
+# here would be an extrapolation wearing a citation. The numbers are worth showing a
+# writer and a bad thing to fail a build on.
+
+_CONTENT_POS = frozenset({"NOUN", "PROPN", "VERB", "ADJ", "ADV"})
+
+
+def _content_lemmas(span) -> set[str]:
+    """Content lemmas of a span — the vocabulary a paragraph can share with its neighbour."""
+    return {
+        t.lemma_.lower() for t in span if t.pos_ in _CONTENT_POS and t.is_alpha and not t.is_stop
+    }
+
+
+# Below this many content words a paragraph has no vocabulary to share. Headings,
+# one-line asides and code captions would otherwise read as cohesion gaps and drag
+# the mean toward a failure the writer cannot fix.
+_MIN_PARA_CONTENT = 5
+
+
+def paragraph_cohesion(doc, ranges) -> float:
+    """Mean content-lemma overlap between adjacent paragraphs, 0.0-1.0.
+
+    The highest-correlating quality feature that a dependency parse alone can reach:
+    Crossley, Kyle & McNamara (2016) measure adjacent-paragraph overlap at r=.40
+    against expert quality ratings and r=.42 against coherence — while the *same*
+    study's sentence-level overlap runs negative (all-lemma TTR r=-.29). Global
+    cohesion predicts quality; local cohesion does not. Their conclusion: "coherence
+    for expert raters is a property of global cohesion and not of local cohesion."
+
+    Normalised by the smaller of the two paragraphs, not by their union. Jaccard was
+    tried first and rejected: it divides by total vocabulary, so a long paragraph
+    scores badly for being long, and every document in this repo collapsed into
+    0.04-0.05 with no room to tell them apart.
+
+    Calibration, and how it was checked. Repo prose measures 0.07-0.40 per file.
+    Shuffling a document's paragraphs — same vocabulary, destroyed adjacency — drops
+    the score on every file tried (0.116 to 0.065 on this repo's longest doc,
+    consistently in that direction across four files). That is the evidence it reads
+    order rather than word choice, which is the only claim being made for it.
+
+    Two honest limits. TAACO normalises differently and reports a family of indices,
+    so this number is comparable to itself across drafts, never to a published
+    figure. And the negative local result is confounded: the companion study that
+    *manipulated* cohesion found adding it raised quality. So this tracks the signal
+    that survived both designs — global beats local — and nothing finer.
+
+    Returns 0.0 when fewer than two paragraphs clear ``_MIN_PARA_CONTENT``, which is
+    indistinguishable here from paragraphs that genuinely share nothing.
+    """
+    sets: list[set[str]] = []
+    for start, end in ranges:
+        span = doc.char_span(start, end, alignment_mode="expand")
+        if span is None:
+            continue
+        lemmas = _content_lemmas(span)
+        if len(lemmas) >= _MIN_PARA_CONTENT:
+            sets.append(lemmas)
+    if len(sets) < 2:
+        return 0.0
+    scores = [
+        len(first & second) / min(len(first), len(second)) for first, second in pairwise(sets)
+    ]
+    return sum(scores) / len(scores) if scores else 0.0
+
+
+def dependency_distance(doc) -> float:
+    """Mean dependency distance — average head-to-dependent token gap.
+
+    Yannakoudakis, Briscoe & Medlock (2011) added grammatical-relation distance to a
+    model that already knew sentence length and watched score prediction rise from
+    r=.692 to r=.714; ablating it cost more than any feature except error rate. So it
+    carries signal that length alone does not.
+
+    Read it as structural spread, not as difficulty. That study predicts *exam
+    score*, which is a different construct from reading effort, and the
+    dependency-locality work that would license the difficulty reading is not in
+    evidence here. It is reported next to the grade for contrast, and deliberately
+    does not feed NB201/NB202.
+    """
+    gaps = [
+        abs(t.i - t.head.i) for t in doc if t.head is not t and not (t.is_punct or t.is_space)
+    ]
+    return sum(gaps) / len(gaps) if gaps else 0.0
+
+
+# The Heylighen & Dewaele deictic split: context-independent classes score up,
+# context-dependent ones score down. spaCy splits auxiliaries out of VERB, so AUX is
+# counted with the verbs — the original formula predates the distinction and treats
+# every verb alike.
+_FORMAL_POS = frozenset({"NOUN", "PROPN", "ADJ", "ADP"})
+_DEICTIC_POS = frozenset({"PRON", "VERB", "AUX", "ADV", "INTJ"})
+_ARTICLES = frozenset({"a", "an", "the"})
+
+
+def formality(doc) -> float:
+    """Heylighen & Dewaele F-score, 0-100. Higher = more formal and informational.
+
+    F = (noun% + adjective% + preposition% + article%
+         - pronoun% - verb% - adverb% - interjection% + 100) / 2
+
+    The published, validated combination of exactly the part-of-speech ratios the
+    register block above computes ad hoc. Reported values: written 62 vs spoken 42;
+    scientific 66, newspapers 68, novels 52. On matched material from the same
+    speakers, informal conversation 44 against a written exam essay 56.
+
+    Caveat worth carrying: those figures come from Dutch word-frequency lists and
+    French interlanguage. No English validation was retrieved. The formula is
+    language-general in construction, which is an argument rather than evidence.
+    """
+    words = [t for t in doc if not (t.is_punct or t.is_space)]
+    if not words:
+        return 0.0
+    total = len(words)
+    formal = sum(1 for t in words if t.pos_ in _FORMAL_POS)
+    formal += sum(1 for t in words if t.pos_ == "DET" and t.lower_ in _ARTICLES)
+    deictic = sum(1 for t in words if t.pos_ in _DEICTIC_POS)
+    return ((formal - deictic) / total * 100 + 100) / 2
+
+
+# Dependents that elaborate a noun. Both the pre-modifiers Coh-Metrix counts and the
+# post-modifying phrases Biber's compression argument turns on, since the interesting
+# claim is about noun phrases growing heavier, not about where the weight sits.
+_NP_MODIFIER_DEPS = frozenset(
+    {"amod", "det", "poss", "compound", "nummod", "nmod", "prep", "acl", "relcl", "appos"}
+)
+
+
+def modifier_density(doc) -> float:
+    """Modifiers per noun phrase head.
+
+    Replicated three times at modest strength: Crossley & McNamara (2014) report
+    r=.213 with quality, Guo, Crossley & McNamara (2013) r=.264 on integrated and
+    r=.377 on independent TOEFL essays. All three numbers were read inside a later
+    literature review rather than the underlying papers, and all three come from L2
+    writing.
+
+    It is the one survivor of the syntactic-complexity family. Biber, Gray & Poonpon
+    (2011) put complex noun phrases — not subordination — at the centre of mature
+    academic prose, and traditional T-unit complexity indices explain under 6% of
+    quality variance (Kyle & Crossley 2017), which is why nabokov computes this and
+    not L2SCA.
+
+    Compound children are excluded as heads so "machine learning model" counts once.
+    """
+    heads = [t for t in doc if t.pos_ in ("NOUN", "PROPN") and t.dep_ != "compound"]
+    if not heads:
+        return 0.0
+    mods = sum(1 for h in heads for c in h.children if c.dep_ in _NP_MODIFIER_DEPS)
+    return mods / len(heads)
 
 
 def target_config(target: str) -> dict[str, int]:
