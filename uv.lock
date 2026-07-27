@@ -475,7 +475,7 @@ wheels = [
 
 [[package]]
 name = "nabokov"
-version = "26.7.9"
+version = "26.7.10"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
