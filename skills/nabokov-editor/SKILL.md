@@ -30,13 +30,22 @@ its code plus a plain gloss: "NB302 (passive voice)", not linter jargon.
 ## Layer 1 — static
 
 ```sh
-uvx nabokov --format=flake8 <file>            # readability + style checks
+uvx 'nabokov>=26.7.7' --format=flake8 <file>  # first call: pins the floor these notes assume
 uvx nabokov --format=flake8 --ai <file>       # add the AI-writing / de-slop checks (NB5xx)
 uvx nabokov --format=json --ai <file>         # same findings, with fix + tier per finding
 uvx nabokov --format=flake8 --ai --hotspots <file>   # + the worst paragraphs, ranked
 ```
 
-(`uvx` needs no install; or `uv tool install nabokov && nabokov download-model`.)
+**These notes describe nabokov 26.7.7 or newer.** The skill and the linter ship
+through different channels — this file comes from git, the tool from PyPI — so
+they can drift apart. Run the version-pinned form **once** at the start of a
+session. If it fails to resolve, the installed tool is too old and every rule
+below that it has never heard of will silently return nothing; say so instead of
+reporting a clean file. After that first call, plain `uvx nabokov` is fine.
+
+(`uvx` needs no install; or `uv tool install nabokov && nabokov download-model`
+— note that a `uv tool install` does **not** auto-update, so it needs
+`uv tool upgrade nabokov`.)
 Pick a target. `--target essay` fits essays and blog posts — it allows long
 sentences, because literary prose uses them on purpose. `social` fits short
 posts. `email` fits business mail and is the strictest. Rule reference:

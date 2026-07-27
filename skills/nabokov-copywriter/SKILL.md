@@ -61,7 +61,11 @@ Run them in order. Each pass hands a better draft to the next.
 
 1. **De-slop** — clear the machine tells first, so you enliven signal, not
    noise. This is the nabokov-editor job; run it, or run the linter directly:
-   `uvx nabokov --ai --hotspots <file>`. Cut the confident tells — puffery, the
+   `uvx 'nabokov>=26.7.7' --ai --hotspots <file>` — these notes describe that
+   version or newer, and the skill ships from git while the tool ships from
+   PyPI, so they can drift. If it fails to resolve, the installed tool is too
+   old: say so rather than trusting a thin report. Plain `uvx nabokov` after
+   that. Cut the confident tells — puffery, the
    not-X-but-Y shape, hollow endings. Thin em-dash pileups and triples under
    the editor's severity rules. Triples (NB507) are advisory on purpose:
    human staccato looks the same, so judge each one. A draft full of slop

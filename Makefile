@@ -1,5 +1,5 @@
 .PHONY: deploy-web deploy-web-app deploy-bot update-bot bot-run bot-test \
-	test lint format typecheck prose check
+	test lint format typecheck prose check versions release
 
 # ─────────────────────────────────────────────────────────────────────────
 # Deploy (two separate playbooks, both under ansible/, shared inventory.ini).
@@ -56,3 +56,20 @@ prose:
 		skills/nabokov-editor/SKILL.md skills/nabokov-copywriter/SKILL.md
 
 check: lint typecheck prose test
+
+# The linter ships to PyPI, the skills ship through git (npx skills add, and the
+# Claude plugin marketplace). Nothing ties the two channels together, so a user
+# can end up with skill instructions describing rules their linter has never
+# heard of — and that fails SILENTLY: the agent asks for a rule that does not
+# exist, gets nothing, and reports a clean file. Every version must move at once.
+versions:
+	uv run python scripts/check_versions.py
+
+# Gate a release. Publish to PyPI and push git together — a push without a
+# release reopens exactly the skew this exists to prevent.
+release: versions check
+	rm -rf dist
+	uv build
+	@echo
+	@echo "Built. Now publish and push TOGETHER:"
+	@echo "    uv publish && git push && git push --tags"
