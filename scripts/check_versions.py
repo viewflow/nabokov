@@ -15,9 +15,12 @@ from __future__ import annotations
 
 import re
 import sys
+import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+
+BOT_LOCK = "bot/uv.lock"
 
 # (path, regex with one capture group, human name)
 SOURCES = [
@@ -56,6 +59,61 @@ def _check_no_hardcoded_dunder(errors: list[str]) -> None:
             f"{path}: __version__ is a hardcoded literal. Derive it from "
             f"importlib.metadata so it cannot drift from pyproject.toml."
         )
+
+
+def _bot_lock_version() -> str | None:
+    """The nabokov version ``bot/uv.lock`` resolves to.
+
+    Read as TOML, not by regex: the lock is a list of ``[[package]]`` tables in
+    alphabetical order, so a bare ``version = "..."`` search returns whichever
+    package sorts first, and the comparison would silently be against the wrong
+    number.
+    """
+    data = tomllib.loads((ROOT / BOT_LOCK).read_text(encoding="utf-8"))
+    for package in data.get("package", []):
+        if package.get("name") == "nabokov":
+            return package.get("version")
+    return None
+
+
+def check_bot_lock() -> int:
+    """Refuse to deploy the bot against a stale pin.
+
+    The bot depends on ``nabokov @ git+…`` with no pin, so its lock records a
+    commit, and ``uv sync`` on the server installs whatever that commit says —
+    deploying new bot code does not pull a new linter. 26.7.9 shipped to PyPI and
+    to the website while the bot ran 26.7.8 for exactly this reason.
+
+    This cannot join the checks in ``main()``. The lock resolves against the
+    remote, so it can only be bumped after the release commit is pushed, which
+    means it necessarily lags at ``make release`` time. The invariant that holds
+    is the deploy-time one, so this hangs off ``update-bot`` and ``deploy-bot``.
+
+    Version equality is the test. It catches a forgotten bump, which is the
+    failure that happens; it cannot catch a lock pointing at a different commit
+    carrying the same version, which would need an amended release.
+    """
+    package = _find("pyproject.toml", r'^version = "([^"]+)"')
+    locked = _bot_lock_version()
+    if package is None:
+        print("pyproject.toml: no version found", file=sys.stderr)
+        return 1
+    if locked is None:
+        print(f"{BOT_LOCK}: no nabokov entry", file=sys.stderr)
+        return 1
+    if locked != package:
+        print("bot lock check FAILED", file=sys.stderr)
+        print(f"  {BOT_LOCK} pins nabokov {locked}, this repo is at {package}", file=sys.stderr)
+        print(
+            "\nThe bot installs nabokov from the commit in its lock, so deploying now\n"
+            "would ship new bot code against the old linter. Push the release commit\n"
+            "first, then:\n"
+            "    make bot-lock && git add bot/uv.lock && git commit -m 'bot: bump lock'",
+            file=sys.stderr,
+        )
+        return 1
+    print(f"bot lock check OK — nabokov {locked}")
+    return 0
 
 
 def main() -> int:
@@ -101,4 +159,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(check_bot_lock() if "--bot-lock" in sys.argv else main())

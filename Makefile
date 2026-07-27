@@ -1,5 +1,5 @@
 .PHONY: deploy-web deploy-web-app deploy-bot update-bot bot-run bot-test \
-	test lint format typecheck prose check versions release
+	bot-lock bot-lock-check test lint format typecheck prose check versions release
 
 # ─────────────────────────────────────────────────────────────────────────
 # Deploy (two separate playbooks, both under ansible/, shared inventory.ini).
@@ -18,12 +18,24 @@ deploy-web-app:
 	ansible-playbook -i ansible/inventory.ini ansible/deploy.yml --limit app $(ANSIBLE_ARGS)
 
 # Telegram bot @nabokov_editor_bot on jack.lan (full run).
-deploy-bot:
+deploy-bot: bot-lock-check
 	ansible-playbook -i ansible/inventory.ini ansible/bot.yml $(ANSIBLE_ARGS)
 
 # Bot code + deps refresh only (rsync, uv sync, restart).
-update-bot:
+update-bot: bot-lock-check
 	ansible-playbook -i ansible/inventory.ini --tags=update ansible/bot.yml $(ANSIBLE_ARGS)
+
+# The bot installs nabokov from the git commit recorded in bot/uv.lock, so
+# shipping new bot code does NOT pull a new linter. Re-point the lock at the
+# pushed release commit (the dependency is unpinned, so this resolves remote
+# HEAD — push first), then commit bot/uv.lock.
+bot-lock:
+	cd bot && uv lock --upgrade-package nabokov
+
+# Guards both deploys: a lock still on the previous release means the bot would
+# run yesterday's rules against today's code. 26.7.9 shipped that way.
+bot-lock-check:
+	uv run python scripts/check_versions.py --bot-lock
 
 # ─────────────────────────────────────────────────────────────────────────
 # Bot local dev (bot/ is its own uv project).
@@ -73,3 +85,7 @@ release: versions check
 	@echo
 	@echo "Built. Now publish and push TOGETHER:"
 	@echo "    uv publish && git push && git push --tags"
+	@echo
+	@echo "Then re-point the bot at the pushed commit and ship it:"
+	@echo "    make bot-lock && git commit -am 'bot: bump lock' && git push"
+	@echo "    make deploy-web-app && make update-bot"

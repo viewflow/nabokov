@@ -1094,6 +1094,21 @@ class PufferyRule(_ListRule):
     # readings are ordinary English, not decoration.
     _VERB_ONLY = frozenset({"harness", "foster"})
 
+    # Lemmas that name a real thing before they name a buzzword. The tell is the
+    # metaphor — "a symphony of flavors", which the alternatives rewrite as "a mix
+    # of flavors" — while "the orchestra rehearsed the symphony" is just the noun.
+    # The metaphor takes an "of" complement and the literal sense does not, so the
+    # complement is the evidence.
+    #
+    # Polarity differs from _VERB_ONLY: that one DROPS a match whose POS is wrong,
+    # this one KEEPS a match only when the complement is there. Lemmas absent from
+    # this set are unaffected and stay flagged wherever they appear.
+    #
+    # Recall traded away on purpose: metaphor without the complement ("the result
+    # was pure symphony") goes unflagged. Widening this back to a bare lemma match
+    # brings back the false positive on literal orchestral prose.
+    _OF_METAPHOR_ONLY = frozenset({"symphony"})
+
     def _terms(self) -> list[str]:
         return ai_writing()["puffery"]
 
@@ -1130,12 +1145,19 @@ class PufferyRule(_ListRule):
             return False
         return tok.pos_ != "VERB"
 
+    @classmethod
+    def _metaphor_sense(cls, tok) -> bool:
+        if tok.lemma_.lower() not in cls._OF_METAPHOR_ONLY:
+            return True
+        return any(child.dep_ == "prep" and child.lower_ == "of" for child in tok.children)
+
+    @classmethod
+    def _keeps(cls, tok) -> bool:
+        """Whether a one-token match survives the sense guards."""
+        return not cls._noun_sense(tok) and cls._metaphor_sense(tok)
+
     def _spans(self, ctx: CheckContext):
-        return [
-            span
-            for span in super()._spans(ctx)
-            if not (len(span) == 1 and self._noun_sense(span[0]))
-        ]
+        return [span for span in super()._spans(ctx) if len(span) > 1 or self._keeps(span[0])]
 
     def check(self, ctx: CheckContext) -> Iterable[Issue]:
         spans = self._spans(ctx)

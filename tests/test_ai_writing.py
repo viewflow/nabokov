@@ -165,6 +165,23 @@ def test_puffery_skips_noun_sense_and_fixed_phrases(analyze):
     assert not r.issues
 
 
+def test_puffery_skips_literal_symphony(analyze):
+    """A symphony is a real piece of music before it is a buzzword."""
+    text = (
+        "The orchestra rehearsed the symphony twice. Mahler wrote his second "
+        "symphony in Vienna. She joined the symphony orchestra last year."
+    )
+    r = analyze(text, config=Config(select=("NB502",)))
+    assert not r.issues
+
+
+def test_puffery_still_flags_metaphorical_symphony(analyze):
+    """The "of" complement is what marks the metaphor, so it is what we require."""
+    text = "The kitchen produced a symphony of flavors. The garden was a symphony of scents."
+    r = analyze(text, config=Config(select=("NB502",)))
+    assert len([i for i in r.issues if i.code == "NB502"]) == 2
+
+
 def test_puffery_still_flags_verb_sense(analyze):
     # the imperative tags PROPN in context — must still be caught
     text = "Great tool. Harness the power of AI to foster innovation."
