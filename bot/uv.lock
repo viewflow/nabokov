@@ -647,8 +647,8 @@ wheels = [
 
 [[package]]
 name = "nabokov"
-version = "26.7.5"
-source = { git = "https://github.com/viewflow/nabokov.git#fa8812f06cce782a94e44f616eeb3a97c5ec2993" }
+version = "26.7.8"
+source = { git = "https://github.com/viewflow/nabokov.git#39666ed26d2c73d7d067c2f5762e69671cb435f3" }
 dependencies = [
     { name = "click" },
     { name = "rich" },
