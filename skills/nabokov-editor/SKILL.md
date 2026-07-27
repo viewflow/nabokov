@@ -169,7 +169,12 @@ need their hand.
 measure rhythm and word predictability; real structural variety moves them.
 Trained classifiers (Pangram, Turnitin) learned what whole human documents
 look like; only grounded specifics and a real voice move them. Word swaps
-move neither. When a detector highlights a sentence, treat it as one of the
+are close to useless against the second family — measured, a synonym swap
+costs the best trained classifier about 3 points and an automated paraphrase
+about 8 (`docs/detection-research.md`). Against the first family they are not
+useless, they are wild: the same swap cost one statistical detector 36 points
+and *improved* two others. Either way, swapping words is not the fix. It
+either does nothing or moves a number without touching the writing. When a detector highlights a sentence, treat it as one of the
 cadence or pointer findings above. Ground it or roughen it; never just swap
 synonyms. Track movement with `nabokov --score <file>` before and after —
 and pass on the caveat it prints: it gauges the statistical family only. Fix only what the fix improves, and say where the detector is
