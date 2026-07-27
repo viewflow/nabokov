@@ -287,6 +287,32 @@ the text as human. Texts under 25 words or 3 sentences are not scored.
 (Adapted from lakshitha-dev/ai-humanizer-skill's estimator, MIT; rebuilt on
 nabokov's own signals.)
 
+### The cadence layer — deliberately outside the tool
+
+There is a layer above words that trained detectors key on and nabokov cannot
+reach: beat-perfect rhetoric, metronome punctuation, model idiolect, ungrounded
+rhetoric, register uniformity. The 2026-07 Pangram gap experiment measured it —
+a text every static signal called human still read 100% AI to a trained
+classifier, and `--score` tied the pair at 12 vs 13.
+
+A `--judge` flag was written to close this (branch `llm-judge`, `c6ca177`): send
+the text to the Claude API, get back anchored cadence findings. **It is not in
+the tool, and should not be.** The reason is architectural rather than technical.
+nabokov's consumers are the two agent skills and the Telegram bot, and in every
+one of them *a capable model is already reading the document*. An API call from
+inside the linter re-invokes a second model that has strictly less context — no
+conversation, no author's other writing, no facts the user just supplied — while
+adding a credential, an optional dependency, a network hop, a per-run cost, a
+20k-character cap, and non-determinism to a tool whose value is being a static
+analyzer that returns the same answer twice.
+
+So the judge lives as **instructions** instead: the "cadence pass" in
+`skills/nabokov-editor/SKILL.md`, with the five patterns, the verbatim-quote
+discipline, and the rule that an empty finding list is a valid answer.
+
+The one real loss is the standalone path — cadence review is now unavailable in
+CI or a bare `nabokov` run with no model in the loop. That is the trade.
+
 ### Register metrics — reported, never scored
 
 `--stats` prints a second line per file with three numbers that no rule reads and

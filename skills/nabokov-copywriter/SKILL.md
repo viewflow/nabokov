@@ -115,6 +115,15 @@ Run them in order. Each pass hands a better draft to the next.
    repeated openers are the genre), so on a social post you enforce those
    two caps by eye.
 
+   This pass covers beat and punctuation. Two more cadence patterns sit
+   outside it. The "cadence pass" in nabokov-editor lists all five. The two
+   you will miss here are **model idiolect** — stock phrasing where the
+   author's own off-balance wording belongs — and **register uniformity**,
+   meaning every line at the same polish level, with no aside and no flat
+   ending. Read them there once per piece. And mind who does the fixing: a
+   model rewriting a model's cadence just makes more of it. Where a fix
+   needs a whole new sentence, offer it to the user. Don't quietly write it.
+
 4. **Connect** — the coherence pass. Copy fails not only sentence by
    sentence but section by section: parts that each read well yet don't carry
    the reader from one to the next. Sentence rhythm can be perfect and the

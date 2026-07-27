@@ -11,11 +11,13 @@ description: >-
 
 # nabokov-editor
 
-Lint and de-slop prose in two layers. Repeat until clean:
+Lint and de-slop prose in three layers. Repeat until clean:
 
 1. **Static** — the `nabokov` linter finds the mechanical tells.
 2. **Judgment** — you find what no regex can see: empty content, invented
    detail, dead metaphors.
+3. **Cadence** — you read the whole piece for beat, not words. This is the
+   layer trained detectors key on, and the linter is blind to it by design.
 
 Rewrite **without changing meaning**. Ask before any large change.
 
@@ -129,6 +131,40 @@ over abstractions read machine-made. So when you rewrite, add one real detail
 from the author's material before another round of tell-removal. Ask for it
 first — never invent it.
 
+**The cadence pass.** Do this once, on the whole piece, after the bullet list
+above. It is the layer trained detectors key on, and no static rule reaches
+it: nabokov sees words and measurable rhythm, not *beat*. Read for five
+patterns. One of each is craft. A run of them is machine cadence.
+
+1. **Beat-perfect rhetoric** — anaphora runs ("The X… The Y… The Z…"),
+   fragment couplets as punchlines, balanced two-clause aphorisms, every
+   paragraph landing on a short beat.
+2. **Metronome punctuation** — a comma or dash every clause, all clauses the
+   same weight. Human prose both under- and over-punctuates. Look for one
+   long unpunctuated run and one two-word aside. If neither exists, that is
+   the finding.
+3. **Model idiolect** — smooth stock phrasing sitting where the author's own
+   slightly off-balance wording would. This is what minimal paraphrase
+   protects.
+4. **Ungrounded rhetoric** — a flourish with no checkable fact under it.
+5. **Register uniformity** — every line at the same polish level. No aside,
+   no flat ending, no loose sentence left unbalanced.
+
+Discipline for this pass: quote the span verbatim, name the pattern, and say
+how to break it. **An empty list is a valid answer** — judge the piece for
+what it is, and do not manufacture findings. Never suggest injected errors,
+typos, or fake informality to break a pattern; that is fabrication, not
+cadence. Calibrate to the whole piece, not to its worst sentence.
+
+**Who rewrites matters, and this is measured.** In Beemo (NAACL 2025),
+LLM-edited machine text stays detectable — Binoculars reads 79.90 AUROC on
+LLM-edited and 78.15 on GPT-4o-edited text, against 61.24 on human-edited.
+A model polishing a model's draft leaves the machine signal in place. So for
+findings 1, 2 and 5 — the ones that need new sentences rather than a cut —
+prefer handing the author the diagnosis over rewriting it yourself. Your
+rewrite of a machine cadence is another machine cadence. Say which lines
+need their hand.
+
 **Detector feedback.** Detectors come in two families. Statistical ones
 measure rhythm and word predictability; real structural variety moves them.
 Trained classifiers (Pangram, Turnitin) learned what whole human documents
@@ -181,7 +217,9 @@ profile never supplies facts.
    findings across many codes is usually a rebuild, not a set of small fixes.
 2. **Judgment pass** (+ macro pass for essays). Read the whole piece, not only
    the hotspots — a topic jump leaves no finding behind, and the flattest
-   writing in a draft is often the part that lints clean.
+   writing in a draft is often the part that lints clean. Finish with the
+   **cadence pass** (above) when the goal is de-slopping or humanizing. Run it
+   once, on the whole document: a short excerpt has no beat to read.
 3. **Fix, keeping the meaning** — playbooks below. Keep the author's intent,
    facts, links, code, structure. Never invent content. **Minimal
    paraphrase:** a line that nothing flagged — linter, detector, judgment
