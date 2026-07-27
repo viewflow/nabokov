@@ -88,6 +88,12 @@
     "navigated to",
     "navigating to"
   ],
+  "_puffery_senses_note": "Lemmas that carry the tell in one sense only. The value names a guard in SENSE_GUARDS (checks/ai_writing.py); the guard says KEEP, so a lemma listed here is flagged ONLY where its guard fires, and a lemma absent from here is flagged everywhere. Adding a word is a data change. Weigh it first: the guard costs recall, and it only pays when the literal sense is more common in real prose than the unguarded form of the tell.",
+  "puffery_senses": {
+    "harness": "verb_only",
+    "foster": "verb_only",
+    "symphony": "of_metaphor"
+  },
   "_puffery_alternatives_note": "NB502: the plain word the buzzword is standing in for. A closed set — every key is a term already on the 'puffery' list, so this adds suggestions without widening what gets flagged. Deliberately NOT a general thesaurus: a broad synonym source returns the wrong sense and the wrong register, and one bad suggestion costs more trust than a missing one buys. Matching is by lemma, so the rule only offers these as a drop-in substitution when the writer used the base form verbatim ('delve' → 'examine'); an inflected hit ('delved') becomes a rewrite, because the alternatives are listed uninflected.",
   "puffery_alternatives": {
     "delve": [

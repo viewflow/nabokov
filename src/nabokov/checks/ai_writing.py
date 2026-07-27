@@ -1076,6 +1076,45 @@ class _ListRule(Rule):
             )
 
 
+def _verb_only(tok) -> bool:
+    """Keep "harness the power", drop "test harness" and "foster carers".
+
+    Sentence-initial imperatives ("Harness the power…") mis-tag NOUN or PROPN, but
+    they still carry a direct object, which a real noun never does.
+    """
+    if any(child.dep_ in ("dobj", "obj") for child in tok.children):
+        return True
+    return tok.pos_ == "VERB"
+
+
+def _of_metaphor(tok) -> bool:
+    """Keep "a symphony of flavors", drop "the orchestra rehearsed the symphony".
+
+    For a word that names a real thing before it names a buzzword, the tell is the
+    binominal metaphor, which takes an "of" complement — that is also why the
+    listed alternatives ("a mix of", "a blend of") only fit that frame. The literal
+    noun does not take the complement, so the complement is the evidence.
+
+    Recall traded away on purpose: metaphor without it ("the result was pure
+    symphony") goes unflagged. That is why the guard is opt-in per lemma rather
+    than the default — most of the list has no literal sense worth protecting, and
+    for some the bare form is the cliché ("a rich tapestry").
+    """
+    return any(child.dep_ == "prep" and child.lower_ == "of" for child in tok.children)
+
+
+# Sense guards, selected per lemma by ``puffery_senses`` in ai_writing.json. Each
+# answers one question: does THIS occurrence carry the tell-sense? Adding a word to
+# a guard is a data change; a new kind of guard is the only thing that needs code.
+#
+# Note the polarity — a guard says KEEP, not drop. A lemma with no guard is flagged
+# wherever it appears, which is the right default: puffery is usually puffery.
+SENSE_GUARDS = {
+    "verb_only": _verb_only,
+    "of_metaphor": _of_metaphor,
+}
+
+
 class PufferyRule(_ListRule):
     code = "NB502"
     name = "ai-puffery"
@@ -1088,26 +1127,6 @@ class PufferyRule(_ListRule):
     # topical at 2 uses — twice in a few hundred words is a subject, not garnish.
     _TOPICAL_USES = 3
     _SHORT_DOC_WORDS = 1000
-
-    # Lemmas whose tell-sense is the verb only: "harness the power" vs "test
-    # harness", "foster innovation" vs "foster child" — the noun/adjective
-    # readings are ordinary English, not decoration.
-    _VERB_ONLY = frozenset({"harness", "foster"})
-
-    # Lemmas that name a real thing before they name a buzzword. The tell is the
-    # metaphor — "a symphony of flavors", which the alternatives rewrite as "a mix
-    # of flavors" — while "the orchestra rehearsed the symphony" is just the noun.
-    # The metaphor takes an "of" complement and the literal sense does not, so the
-    # complement is the evidence.
-    #
-    # Polarity differs from _VERB_ONLY: that one DROPS a match whose POS is wrong,
-    # this one KEEPS a match only when the complement is there. Lemmas absent from
-    # this set are unaffected and stay flagged wherever they appear.
-    #
-    # Recall traded away on purpose: metaphor without the complement ("the result
-    # was pure symphony") goes unflagged. Widening this back to a bare lemma match
-    # brings back the false positive on literal orchestral prose.
-    _OF_METAPHOR_ONLY = frozenset({"symphony"})
 
     def _terms(self) -> list[str]:
         return ai_writing()["puffery"]
@@ -1135,26 +1154,31 @@ class PufferyRule(_ListRule):
         inflected = surface != self._lemma_key(span)
         return suggestion, Applicability.REWRITE if inflected else Applicability.REPLACE
 
-    @classmethod
-    def _noun_sense(cls, tok) -> bool:
-        if tok.lemma_.lower() not in cls._VERB_ONLY:
-            return False
-        # Sentence-initial imperatives ("Harness the power…") mis-tag NOUN or
-        # PROPN, but they still carry a direct object — a real noun never does.
-        if any(child.dep_ in ("dobj", "obj") for child in tok.children):
-            return False
-        return tok.pos_ != "VERB"
+    def _build(self, nlp):
+        """Validate the sense map before it can fail silently.
 
-    @classmethod
-    def _metaphor_sense(cls, tok) -> bool:
-        if tok.lemma_.lower() not in cls._OF_METAPHOR_ONLY:
-            return True
-        return any(child.dep_ == "prep" and child.lower_ == "of" for child in tok.children)
+        Both ways of getting ``puffery_senses`` wrong are invisible at runtime: an
+        unknown guard name would raise deep inside a lint run, and a guard on a word
+        that is not in the puffery list would simply never fire. A frozenset in
+        Python could not be wrong this way; data can, so it gets checked.
+        """
+        senses = ai_writing()["puffery_senses"]
+        if unknown := sorted(set(senses.values()) - set(SENSE_GUARDS)):
+            raise ValueError(
+                f"ai_writing.json puffery_senses: unknown guard(s) {unknown}. "
+                f"Known guards: {sorted(SENSE_GUARDS)}."
+            )
+        if orphan := sorted(set(senses) - {t.lower() for t in self._terms()}):
+            raise ValueError(
+                f"ai_writing.json puffery_senses: {orphan} not in the puffery list, "
+                f"so the guard would never fire. Add the word or drop the guard."
+            )
+        return super()._build(nlp)
 
-    @classmethod
-    def _keeps(cls, tok) -> bool:
-        """Whether a one-token match survives the sense guards."""
-        return not cls._noun_sense(tok) and cls._metaphor_sense(tok)
+    def _keeps(self, tok) -> bool:
+        """Whether a one-token match survives the sense guard its lemma asks for."""
+        guard = ai_writing()["puffery_senses"].get(tok.lemma_.lower())
+        return SENSE_GUARDS[guard](tok) if guard else True
 
     def _spans(self, ctx: CheckContext):
         return [span for span in super()._spans(ctx) if len(span) > 1 or self._keeps(span[0])]

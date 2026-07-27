@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import pytest
+
 from nabokov.config import Config
+from nabokov.data_loader import ai_writing
 
 AI = Config(select=("NB5",))
 
@@ -180,6 +183,43 @@ def test_puffery_still_flags_metaphorical_symphony(analyze):
     text = "The kitchen produced a symphony of flavors. The garden was a symphony of scents."
     r = analyze(text, config=Config(select=("NB502",)))
     assert len([i for i in r.issues if i.code == "NB502"]) == 2
+
+
+def test_puffery_senses_names_a_real_guard_and_a_real_term():
+    """Both ways of mistyping the sense map are silent at runtime, so check them here.
+
+    An unknown guard name would raise mid-lint; a guard on a word missing from the
+    puffery list would simply never fire and look like the rule was broken.
+    """
+    from nabokov.checks.ai_writing import SENSE_GUARDS
+
+    senses = ai_writing()["puffery_senses"]
+    assert set(senses.values()) <= set(SENSE_GUARDS)
+    assert set(senses) <= {t.lower() for t in ai_writing()["puffery"]}
+
+
+@pytest.mark.parametrize(
+    ("senses", "match"),
+    [
+        ({"symphony": "no_such_guard"}, "unknown guard"),
+        ({"notapufferyword": "of_metaphor"}, "not in the puffery list"),
+    ],
+)
+def test_puffery_rejects_a_broken_sense_map(monkeypatch, senses, match):
+    """The validation has to actually fire, or it is decoration.
+
+    Built on a fresh rule instance because the shipped one caches its matchers on
+    first use — which is also why validating in ``_build`` is enough: a real process
+    builds once, before any token reaches a guard.
+    """
+    from nabokov.analyzer import load_nlp
+    from nabokov.checks import ai_writing as mod
+
+    data = dict(ai_writing())
+    data["puffery_senses"] = senses
+    monkeypatch.setattr(mod, "ai_writing", lambda: data)
+    with pytest.raises(ValueError, match=match):
+        mod.PufferyRule()._build(load_nlp())
 
 
 def test_puffery_still_flags_verb_sense(analyze):
